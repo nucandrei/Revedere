@@ -1,6 +1,7 @@
 package org.nuc.revedere.service.core;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ public class Service {
     private final BrokerAdapter brokerAdapter;
     private final Map<String, String> settings;
     public final Logger LOGGER;
+    private final String serviceName;
     
     /**
      * Create the underline service
@@ -30,6 +32,7 @@ public class Service {
      * @throws Exception if something was not in its place
      */
     public Service(final String serviceName) throws Exception {
+        this.serviceName = serviceName;
         settings = loadSettingsFromFile(String.format("%s.xml", serviceName));
         LOGGER = Logger.getLogger(serviceName);
         String log4jFile = settings.get("log4jFile");
@@ -70,11 +73,15 @@ public class Service {
         brokerAdapter.setMessageListener(topic, listener);
     }
     
-    public void sendMessage(String topic, String message) throws Exception {
+    public void sendMessage(String topic, Serializable message) throws Exception {
         brokerAdapter.sendMessage(topic, message);
     }
     
     public Map<String, String> getSettings() {
         return settings;
+    }
+    
+    public String getServiceName() {
+        return this.serviceName;
     }
 }

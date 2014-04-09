@@ -1,5 +1,6 @@
 package org.nuc.revedere.service.core;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,8 +10,8 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -56,16 +57,16 @@ public class ActiveMQBrokerAdapter implements BrokerAdapter {
         consumer.setMessageListener(messageListener);
     }
 
-    public void sendMessage(String topicString, String message) throws JMSException {
-        final TextMessage textMessage = session.createTextMessage();
-        textMessage.setText(message);
+    public void sendMessage(String topicString, Serializable message) throws JMSException {
+        final ObjectMessage objectMessage = session.createObjectMessage();
+        objectMessage.setObject(message);
         MessageProducer intendedProducer = producerMap.get(topicString);
         if (intendedProducer == null) {
             Topic topic = session.createTopic(topicString);
             intendedProducer = session.createProducer(topic);
             producerMap.put(topicString, intendedProducer);
         }
-        intendedProducer.send(textMessage);
+        intendedProducer.send(objectMessage);
         LOGGER.debug("Sent message: " + message + " on topic: " + topicString);
     }
 
