@@ -7,5 +7,6 @@
   <modules>
   	<module>RevedereCore</module>
   	<module>RevedereService</module>
+  	<module>HeartMonitor</module>
   </modules>
 </project>

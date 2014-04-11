@@ -8,7 +8,7 @@ import org.nuc.revedere.service.core.hb.HeartbeatGenerator;
 import org.nuc.revedere.service.core.hb.ServiceState;
 
 public class SupervisedService extends Service {
-    private final int HEARTBEAT_INTERVAL = 10000;
+    public final static int HEARTBEAT_INTERVAL = 10000;
     final HeartbeatGenerator heartbeatGenerator = new HeartbeatGenerator(this.getServiceName());
 
     public SupervisedService(String serviceName) throws Exception {
@@ -24,6 +24,7 @@ public class SupervisedService extends Service {
                 Heartbeat heartbeat = heartbeatGenerator.generateHeartbeat();
                 try {
                     SupervisedService.this.sendMessage(SupervisorTopics.HEARTBEAT_TOPIC, heartbeat);
+                    LOGGER.info("Sent heartbeat");
                 } catch (Exception e) {
                     LOGGER.error("Could not send heartbeat.", e);
                 }
@@ -38,5 +39,9 @@ public class SupervisedService extends Service {
 
     public void setServiceComment(String comment) {
         this.heartbeatGenerator.setComment(comment);
+    }
+    
+    public static void main(String[] args) throws Exception {
+        new SupervisedService(args[0]);
     }
 }

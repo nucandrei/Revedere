@@ -4,14 +4,15 @@ import java.io.Serializable;
 
 public class Heartbeat implements Serializable{
     private static final long serialVersionUID = -1224566748643029326L;
+    private static final String TOSTRING_TEMPLATE = "[%s, %s, %s, %d]";
     private final String serviceName;
-    private final ServiceState serverState;
+    private final ServiceState serviceState;
     private final String commment;
     private final long time;
     
-    public Heartbeat(String serviceName, ServiceState serverState, String comment, long time) {
+    public Heartbeat(String serviceName, ServiceState serviceState, String comment, long time) {
         this.serviceName = serviceName;
-        this.serverState = serverState;
+        this.serviceState = serviceState;
         this.commment = comment;
         this.time = time;
     }
@@ -20,8 +21,8 @@ public class Heartbeat implements Serializable{
         return serviceName;
     }
 
-    public ServiceState getServerState() {
-        return serverState;
+    public ServiceState getServiceState() {
+        return serviceState;
     }
 
     public String getCommment() {
@@ -30,5 +31,10 @@ public class Heartbeat implements Serializable{
 
     public long getTime() {
         return time;
+    }
+    
+    @Override
+    public String toString() {
+        return String.format(TOSTRING_TEMPLATE, serviceName, serviceState, commment, time);
     }
 }
