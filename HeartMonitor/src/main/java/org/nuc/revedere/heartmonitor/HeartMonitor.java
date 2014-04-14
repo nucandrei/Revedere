@@ -19,7 +19,7 @@ import org.nuc.revedere.service.core.hb.Heartbeat;
 public class HeartMonitor extends Service {
 
     private final static String HEARTMONITOR_SERVICE_NAME = "HeartMonitor";
-    private final Map<String, ServiceStatus> servicesStatus = new HashMap<String, ServiceStatus>();
+    private final Map<String, ServiceHeartbeatCollector> servicesStatus = new HashMap<String, ServiceHeartbeatCollector>();
 
     public HeartMonitor() throws Exception {
         super(HEARTMONITOR_SERVICE_NAME);
@@ -32,7 +32,7 @@ public class HeartMonitor extends Service {
     private void loadConfiguredServices() {
         final Map<String, String> services = getSettings();
         for (String service : services.values()) {
-            servicesStatus.put(service, new ServiceStatus(service, true));
+            servicesStatus.put(service, new ServiceHeartbeatCollector(service, true));
         }
     }
     
@@ -58,10 +58,10 @@ public class HeartMonitor extends Service {
 
     private void addHeartbeatToServicesStatus(Heartbeat receivedHeartbeat) {
         final String serviceName = receivedHeartbeat.getServiceName();
-        ServiceStatus serviceStatus = servicesStatus.get(serviceName);
+        ServiceHeartbeatCollector serviceStatus = servicesStatus.get(serviceName);
 
         if (serviceStatus == null) {
-            serviceStatus = new ServiceStatus(serviceName, false);
+            serviceStatus = new ServiceHeartbeatCollector(serviceName, false);
             servicesStatus.put(serviceName, serviceStatus);
         }
 
@@ -74,7 +74,7 @@ public class HeartMonitor extends Service {
         final TimerTask tickTask = new TimerTask() {
             @Override
             public void run() {
-                for (ServiceStatus serviceStatus : servicesStatus.values()) {
+                for (ServiceHeartbeatCollector serviceStatus : servicesStatus.values()) {
                     serviceStatus.tick();
                 }
             }
