@@ -1,16 +1,18 @@
 package org.nuc.revedere.heartmonitor;
 
+import java.util.Observable;
+
 import org.nuc.revedere.service.core.hb.Heartbeat;
 
-public class ServiceHeartbeatCollector {
-    private ServiceStatus serviceState = ServiceStatus.UNKNOWN;
+public class ServiceHeartbeatCollector extends Observable implements Comparable<ServiceHeartbeatCollector> {
+    private ServiceStatus serviceStatus = ServiceStatus.UNKNOWN;
     private Heartbeat lastHeartbeat;
     private final boolean configured;
     private final String serviceName;
 
     public synchronized void updateHeartbeat(Heartbeat lastHeartbeat) {
         this.lastHeartbeat = lastHeartbeat;
-        this.serviceState = ServiceStatus.OK;
+        this.serviceStatus = ServiceStatus.OK;
     }
 
     public ServiceHeartbeatCollector(String serviceName, boolean configured) {
@@ -19,31 +21,32 @@ public class ServiceHeartbeatCollector {
     }
 
     public synchronized void tick() {
-        switch (serviceState) {
+        switch (serviceStatus) {
         case OK:
-            this.serviceState = ServiceStatus.OKLATE;
+            this.serviceStatus = ServiceStatus.OKLATE;
             break;
         case OKLATE:
-            this.serviceState = ServiceStatus.LATE;
+            this.serviceStatus = ServiceStatus.LATE;
             break;
         case LATE:
-            this.serviceState = ServiceStatus.LOST;
+            this.serviceStatus = ServiceStatus.LOST;
             break;
         default:
             // unknown remains unknown, lost remains lost
             break;
         }
+        notifyObservers();
     }
 
     public Heartbeat getLastHeartbeat() {
         return this.lastHeartbeat;
     }
 
-    public ServiceStatus getServiceState() {
-        if (serviceName.equals(ServiceStatus.OK) || serviceName.equals(ServiceStatus.OKLATE)) {
+    public ServiceStatus getServiceStatus() {
+        if (serviceStatus.equals(ServiceStatus.OK) || serviceStatus.equals(ServiceStatus.OKLATE)) {
             return ServiceStatus.OK;
         } else {
-            return serviceState;
+            return serviceStatus;
         }
     }
 
@@ -53,5 +56,9 @@ public class ServiceHeartbeatCollector {
 
     public String getServiceName() {
         return this.serviceName;
+    }
+
+    public int compareTo(ServiceHeartbeatCollector that) {
+        return this.getServiceName().compareTo(that.getServiceName());
     }
 }

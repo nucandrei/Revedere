@@ -1,0 +1,48 @@
+.servicename {
+	width: 20%;
+}
+
+.status {
+	width: 15%;
+}
+
+.state {
+	width: 15%;
+}
+
+.last {
+	width: 20%;
+}
+
+.actions {
+	width: 30%;
+}
+
+.services {
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+	border-collapse: collapse;
+	border : 2px solid black;
+	width: 100%;
+}
+
+.okservice {
+	background: white;
+	color: black;
+	border : 1px solid black;
+}
+
+.warningservice {
+	background: yellow;
+	color: black;
+	border : 1px solid black;
+	font-weight: bold;
+}
+
+.errorservice {
+	background: red;
+	color: white;
+	border : 1px solid black;
+	font-weight: bolder;
+}

@@ -17,13 +17,26 @@ import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.hb.Heartbeat;
 
 public class HeartMonitor extends Service {
-
+    private static HeartMonitor instance;
+    
     private final static String HEARTMONITOR_SERVICE_NAME = "HeartMonitor";
     private final Map<String, ServiceHeartbeatCollector> servicesStatus = new HashMap<String, ServiceHeartbeatCollector>();
+    private HeartbeatInfoListener heartbeatInfoListener;
 
-    public HeartMonitor() throws Exception {
+    public static HeartMonitor getInstance() {
+        if (instance == null) {
+            try {
+                instance = new HeartMonitor();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return instance;
+    }
+
+    private HeartMonitor() throws Exception {
         super(HEARTMONITOR_SERVICE_NAME);
-        
+
         loadConfiguredServices();
         startListeningForHeartbeats();
         startTick();
@@ -35,7 +48,7 @@ public class HeartMonitor extends Service {
             servicesStatus.put(service, new ServiceHeartbeatCollector(service, true));
         }
     }
-    
+
     private void startListeningForHeartbeats() throws Exception {
         final MessageListener heartbeatListener = new MessageListener() {
             public void onMessage(Message msg) {
@@ -77,13 +90,19 @@ public class HeartMonitor extends Service {
                 for (ServiceHeartbeatCollector serviceStatus : servicesStatus.values()) {
                     serviceStatus.tick();
                 }
+                notifyHeartbeatInfoListener();
             }
         };
         timer.scheduleAtFixedRate(tickTask, 0, SupervisedService.HEARTBEAT_INTERVAL);
     }
 
-    public static void main(String[] args) throws Exception {
-        new HeartMonitor();
+    public void notifyHeartbeatInfoListener() {
+        if (this.heartbeatInfoListener != null) {
+            this.heartbeatInfoListener.onHeartbeatInfoUpdate(servicesStatus);
+        }
     }
 
+    public void setHeartbeatInfoListener(HeartbeatInfoListener listener) {
+        this.heartbeatInfoListener = listener;
+    }
 }

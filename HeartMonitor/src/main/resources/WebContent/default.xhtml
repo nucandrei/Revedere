@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<h:head>
+	<title>HeartMonitor</title>
+	<h:outputStylesheet name = "style.css"/>
+</h:head>
+<h:body>
+	<h:form>
+		<center><p>Configured services</p></center>
+		<h:dataTable value="#{page.getServiceList(true)}" var="service" styleClass="services" columnClasses="servicename,status,state,last" rowClasses="#{page.getRowClasses(true)}">
+			<h:column>
+				<f:facet name="header">Service name</f:facet>
+				#{service.serviceName}
+			</h:column>
+			<h:column>
+				<f:facet name="header">Status</f:facet>
+				#{service.serviceStatus}
+			</h:column>
+			<h:column>
+				<f:facet name="header">State</f:facet>
+				#{service.getLastHeartbeat().getServiceState()}
+			</h:column>
+			<h:column>
+				<f:facet name="header">Last heartbeat</f:facet>
+				#{service.getLastHeartbeat().getTime()}
+			</h:column>
+			<h:column>
+				<f:facet name="header">Actions</f:facet>
+				<h:commandButton value="Kill" type = "submit" action="#{page.refresh}"/>
+			</h:column>
+		</h:dataTable>
+		<center><p>Unconfigured services</p></center>
+		<h:dataTable value="#{page.getServiceList(false)}" var="service" styleClass="services" columnClasses="servicename,status,state,last" rowClasses="#{page.getRowClasses(false)}">
+			<h:column>
+				<f:facet name="header">Service name</f:facet>
+				#{service.serviceName}
+			</h:column>
+			<h:column>
+				<f:facet name="header">Status</f:facet>
+				#{service.serviceStatus}
+			</h:column>
+			<h:column>
+				<f:facet name="header">State</f:facet>
+				#{service.getLastHeartbeat().getServiceState()}
+			</h:column>
+			<h:column>
+				<f:facet name="header">Last heartbeat</f:facet>
+				#{service.getLastHeartbeat().getTime()}
+			</h:column>
+			<h:column>
+				<f:facet name="header">Actions</f:facet>
+				<h:commandButton value="Kill" type = "submit" action="#{page.refresh}"/>
+			</h:column>
+		</h:dataTable>
+	</h:form>
+</h:body>
+</html>

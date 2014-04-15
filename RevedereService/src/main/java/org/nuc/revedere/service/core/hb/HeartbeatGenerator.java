@@ -2,8 +2,8 @@ package org.nuc.revedere.service.core.hb;
 
 public class HeartbeatGenerator {
     private final String serviceName;
-    private ServiceState serviceState;
-    private String commment;
+    private ServiceState serviceState = ServiceState.NO_ERROR;
+    private String commment = "";
     private long time;
 
     public HeartbeatGenerator(String serviceName) {
