@@ -1,6 +1,8 @@
 package org.nuc.revedere.service.core;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +23,7 @@ import org.nuc.revedere.util.LoggerUtil;
  */
 public class Service {
     private static final String DEFAULT_LOG4J_FILE = "log4j.properties";
+    private static final Object NEW_LINE = "\r\n";
     private final BrokerAdapter brokerAdapter;
     private final Map<String, String> settings;
     public final Logger LOGGER;
@@ -49,6 +52,26 @@ public class Service {
         this.brokerAdapter = new ActiveMQBrokerAdapter(brokerAddress);
     }
     
+    public Document loadXMLDocument(String documentName) throws Exception {
+        final File file = new File(documentName);
+        final SAXBuilder builder = new SAXBuilder();
+        final Document doc = (Document) builder.build(file);
+        return doc;
+    }
+    
+    public String loadTextFile(String filepath) throws Exception {
+        final File file = new File(filepath);
+        final BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+        String line;
+        final StringBuilder stringBuilder = new StringBuilder();
+        while ((line = bufferedReader.readLine()) != null) {
+            stringBuilder.append(line);
+            stringBuilder.append(NEW_LINE);
+        }
+        bufferedReader.close();
+        return stringBuilder.toString();
+    }
+    
     /**
      * Load settings from specified file
      * @param filename the name of settings file
@@ -57,10 +80,8 @@ public class Service {
      */
     private Map<String, String> loadSettingsFromFile(String filename) throws Exception {
         Map<String, String> settings = new HashMap<String, String>();
-        final File file = new File(filename);
-        final SAXBuilder builder = new SAXBuilder();
-        final Document doc = (Document) builder.build(file);
-        final Element rootNode = doc.getRootElement();
+        final Document settingsDocument = loadXMLDocument(filename);
+        final Element rootNode = settingsDocument.getRootElement();
         for (Element e : rootNode.getChildren()) {
             final String propertyName = e.getName();
             final String propertyValue = e.getValue();
