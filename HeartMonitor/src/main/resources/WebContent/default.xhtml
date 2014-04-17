@@ -27,7 +27,7 @@
 			</h:column>
 			<h:column>
 				<f:facet name="header">Last heartbeat</f:facet>
-				#{service.getLastHeartbeat().getTime()}
+				#{service.getLastHeartbeat().getTimeAsString()}
 			</h:column>
 			<h:column>
 				<f:facet name="header">Actions</f:facet>
@@ -50,7 +50,7 @@
 			</h:column>
 			<h:column>
 				<f:facet name="header">Last heartbeat</f:facet>
-				#{service.getLastHeartbeat().getTime()}
+				#{service.getLastHeartbeat().getTimeAsString()}
 			</h:column>
 			<h:column>
 				<f:facet name="header">Actions</f:facet>

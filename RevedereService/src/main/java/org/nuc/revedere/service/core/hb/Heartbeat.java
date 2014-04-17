@@ -1,6 +1,7 @@
 package org.nuc.revedere.service.core.hb;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class Heartbeat implements Serializable{
     private static final long serialVersionUID = -1224566748643029326L;
@@ -31,6 +32,11 @@ public class Heartbeat implements Serializable{
 
     public long getTime() {
         return time;
+    }
+    
+    public String getTimeAsString() {
+        Date date = new Date(time);
+        return date.toString();
     }
     
     @Override
