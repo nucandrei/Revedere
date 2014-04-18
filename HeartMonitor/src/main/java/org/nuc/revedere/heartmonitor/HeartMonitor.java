@@ -36,7 +36,6 @@ public class HeartMonitor extends Service {
 
     private HeartMonitor() throws Exception {
         super(HEARTMONITOR_SERVICE_NAME);
-
         loadConfiguredServices();
         startListeningForHeartbeats();
         startTick();
@@ -104,5 +103,6 @@ public class HeartMonitor extends Service {
 
     public void setHeartbeatInfoListener(HeartbeatInfoListener listener) {
         this.heartbeatInfoListener = listener;
+        listener.onHeartbeatInfoUpdate(servicesStatus);
     }
 }

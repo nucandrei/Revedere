@@ -8,12 +8,9 @@
 	
   <display-name>JavaServerFaces</display-name>
   
-  <!-- 
-  <context-param>
-    <param-name>facelets.SKIP_COMMENTS</param-name>
-    <param-value>true</param-value>
-  </context-param>
-   -->
+  <listener>
+    <listener-class>org.nuc.revedere.heartmonitor.web.ContextListener</listener-class>
+  </listener>
   
   <!-- Change to "Production" when you are ready to deploy -->
   <context-param>
