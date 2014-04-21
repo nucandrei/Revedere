@@ -46,3 +46,51 @@
 	border : 1px solid black;
 	font-weight: bolder;
 }
+
+/* This section is for login page */
+
+.centeredbox {
+	position: absolute;
+	top:50%; 
+	height:200px; 
+	margin-top:-100px;
+	
+	left:50%;
+	width:300px;
+	margin-left:-150px;
+}
+
+.centeredlogin {
+	position: absolute;
+	left:40px;
+	top:70px;
+}
+
+.box {
+	border:2px solid;
+	border-radius:5px;
+	border-color:#000099;
+	box-shadow: 10px 10px 5px #888888;
+}
+
+.logo {
+	background-color:#000099;
+	color:#ffffff;
+	border:5px solid;
+	border-color:#000099;
+}
+
+.button {
+    display: block;
+    padding: 4px 12px;
+}
+
+.grey {
+    color: #444;
+    border: 1px solid #D0D0D0;
+    background-image: linear-gradient(#EDEDED, #E1E1E1);
+    text-shadow: 1px 1px 1px #FFF;
+    background-color: #E1E1E1;
+}
+
+

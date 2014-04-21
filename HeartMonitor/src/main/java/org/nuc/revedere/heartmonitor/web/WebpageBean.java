@@ -39,6 +39,10 @@ public class WebpageBean implements Serializable, HeartbeatInfoListener {
         return serviceList.toArray(new ServiceHeartbeatCollector[serviceList.size()]);
     }
 
+    public boolean hasServices(boolean configured) {
+        return getServiceList(configured).length != 0;
+    }
+
     public String getRowClasses(boolean configured) {
         StringBuilder sBuilder = new StringBuilder();
         for (ServiceHeartbeatCollector collector : getServiceList(configured)) {

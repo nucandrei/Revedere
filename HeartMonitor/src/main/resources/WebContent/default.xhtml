@@ -7,57 +7,72 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 <h:head>
 	<title>HeartMonitor</title>
-	<h:outputStylesheet name = "style.css"/>
-	<meta http-equiv="refresh" content="5"/>
+	<h:outputStylesheet name="style.css" />
+	<meta http-equiv="refresh" content="5" />
 </h:head>
 <h:body>
 	<h:form>
-		<center><p>Configured services</p></center>
-		<h:dataTable value="#{page.getServiceList(true)}" var="service" styleClass="services" columnClasses="servicename,status,state,last" rowClasses="#{page.getRowClasses(true)}">
-			<h:column>
-				<f:facet name="header">Service name</f:facet>
+		<h:panelGroup rendered="#{page.hasServices(true)}" layout="block" styleClass="box">
+			<h:panelGroup layout="block" styleClass="logo">
+				Configured services
+			</h:panelGroup>
+			<h:dataTable value="#{page.getServiceList(true)}" var="service"
+				styleClass="services" columnClasses="servicename,status,state,last"
+				rowClasses="#{page.getRowClasses(true)}">
+				<h:column>
+					<f:facet name="header">Service name</f:facet>
 				#{service.serviceName}
 			</h:column>
-			<h:column>
-				<f:facet name="header">Status</f:facet>
+				<h:column>
+					<f:facet name="header">Status</f:facet>
 				#{service.serviceStatus}
 			</h:column>
-			<h:column>
-				<f:facet name="header">State</f:facet>
+				<h:column>
+					<f:facet name="header">State</f:facet>
 				#{service.getLastHeartbeat().getServiceState()}
 			</h:column>
-			<h:column>
-				<f:facet name="header">Last heartbeat</f:facet>
+				<h:column>
+					<f:facet name="header">Last heartbeat</f:facet>
 				#{service.getLastHeartbeat().getTimeAsString()}
 			</h:column>
-			<h:column>
-				<f:facet name="header">Actions</f:facet>
-				<h:commandButton value="Kill" type = "submit" action="#{page.refresh}"/>
-			</h:column>
-		</h:dataTable>
-		<center><p>Unconfigured services</p></center>
-		<h:dataTable value="#{page.getServiceList(false)}" var="service" styleClass="services" columnClasses="servicename,status,state,last" rowClasses="#{page.getRowClasses(false)}">
-			<h:column>
-				<f:facet name="header">Service name</f:facet>
+				<h:column>
+					<f:facet name="header">Actions</f:facet>
+					<h:commandButton value="Kill" type="submit"
+						action="#{page.refresh}" />
+				</h:column>
+			</h:dataTable>
+		</h:panelGroup>
+		<h:outputText value="&#160;"/>
+		<h:panelGroup rendered="#{page.hasServices(false)}" layout="block" styleClass="box">
+			<h:panelGroup layout="block" styleClass="logo">
+				Unconfigured services
+			</h:panelGroup>
+			<h:dataTable value="#{page.getServiceList(false)}" var="service"
+				styleClass="services" columnClasses="servicename,status,state,last"
+				rowClasses="#{page.getRowClasses(false)}">
+				<h:column>
+					<f:facet name="header">Service name</f:facet>
 				#{service.serviceName}
 			</h:column>
-			<h:column>
-				<f:facet name="header">Status</f:facet>
+				<h:column>
+					<f:facet name="header">Status</f:facet>
 				#{service.serviceStatus}
 			</h:column>
-			<h:column>
-				<f:facet name="header">State</f:facet>
+				<h:column>
+					<f:facet name="header">State</f:facet>
 				#{service.getLastHeartbeat().getServiceState()}
 			</h:column>
-			<h:column>
-				<f:facet name="header">Last heartbeat</f:facet>
+				<h:column>
+					<f:facet name="header">Last heartbeat</f:facet>
 				#{service.getLastHeartbeat().getTimeAsString()}
 			</h:column>
-			<h:column>
-				<f:facet name="header">Actions</f:facet>
-				<h:commandButton value="Kill" type = "submit" action="#{page.refresh}"/>
-			</h:column>
-		</h:dataTable>
+				<h:column>
+					<f:facet name="header">Actions</f:facet>
+					<h:commandButton value="Kill" type="submit"
+						action="#{page.refresh}" />
+				</h:column>
+			</h:dataTable>
+		</h:panelGroup>
 	</h:form>
 </h:body>
 </html>
