@@ -16,4 +16,8 @@ public class User {
     public boolean matchesAuthInfo(String triedAuthInfo) {
         return this.authInfo.equals(triedAuthInfo);
     }
+
+    public String getAuthInfo() {
+        return this.authInfo;
+    }
 }

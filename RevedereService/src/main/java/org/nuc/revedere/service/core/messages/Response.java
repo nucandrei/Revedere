@@ -7,6 +7,7 @@ public class Response<T extends Request> implements Serializable {
     private final T request;
     private final boolean successfull;
     private final String message;
+    private Serializable attachment;
 
     public Response(T request, boolean succesfull, String message) {
         this.request = request;
@@ -24,5 +25,17 @@ public class Response<T extends Request> implements Serializable {
 
     public String getMessage() {
         return this.message;
+    }
+    
+    public void attach(Serializable attachment) {
+        this.attachment = attachment;
+    }
+
+    public boolean hasAttachment() {
+        return this.attachment != null;
+    }
+
+    public Serializable getAttachment() {
+        return attachment;
     }
 }
