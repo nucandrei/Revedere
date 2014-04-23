@@ -1,10 +1,14 @@
 package org.nuc.revedere.heartmonitor;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -14,14 +18,21 @@ import javax.jms.ObjectMessage;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.SupervisedService;
 import org.nuc.revedere.service.core.SupervisorTopics;
+import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.service.core.hb.Heartbeat;
+import org.nuc.revedere.service.core.messages.Response;
+import org.nuc.revedere.service.core.messages.UserListRequest;
 
 public class HeartMonitor extends Service {
     private static HeartMonitor instance;
-    
+
     private final static String HEARTMONITOR_SERVICE_NAME = "HeartMonitor";
     private final Map<String, ServiceHeartbeatCollector> servicesStatus = new HashMap<String, ServiceHeartbeatCollector>();
     private HeartbeatInfoListener heartbeatInfoListener;
+    private UsersInfoListener userInfoListener;
+
+    private List<String> connectedUsers = new ArrayList<String>();
+    private List<String> disconnectedUsers = new ArrayList<String>();
 
     public static HeartMonitor getInstance() {
         if (instance == null) {
@@ -38,6 +49,7 @@ public class HeartMonitor extends Service {
         super(HEARTMONITOR_SERVICE_NAME);
         loadConfiguredServices();
         startListeningForHeartbeats();
+        startListeningForUsers();
         startTick();
     }
 
@@ -68,6 +80,28 @@ public class HeartMonitor extends Service {
         setMessageListener(SupervisorTopics.HEARTBEAT_TOPIC, heartbeatListener);
     }
 
+    private void startListeningForUsers() throws Exception {
+        LOGGER.info("Sending users list request");
+        final CountDownLatch latch = new CountDownLatch(1);
+        this.setMessageListener(Topics.USERS_RESPONSE_TOPIC, new MessageListener() {
+            @Override
+            public void onMessage(Message msg) {
+                parseUsersReceivedMessage(latch, msg);
+                notifyUserInfoListener();
+            }
+        });
+        this.sendMessage(Topics.USERS_REQUEST_TOPIC, new UserListRequest());
+        latch.await(10, TimeUnit.SECONDS);
+
+        this.setMessageListener(Topics.USERS_TOPIC, new MessageListener() {
+            @Override
+            public void onMessage(Message message) {
+                parseUsersReceivedMessage(new CountDownLatch(1), message);
+                notifyUserInfoListener();
+            }
+        });
+    }
+
     private void addHeartbeatToServicesStatus(Heartbeat receivedHeartbeat) {
         final String serviceName = receivedHeartbeat.getServiceName();
         ServiceHeartbeatCollector serviceStatus = servicesStatus.get(serviceName);
@@ -79,6 +113,26 @@ public class HeartMonitor extends Service {
 
         LOGGER.info("Received heartbeat for service " + serviceName);
         serviceStatus.updateHeartbeat(receivedHeartbeat);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void parseUsersReceivedMessage(final CountDownLatch latch, Message msg) {
+        final ObjectMessage objectMessage = (ObjectMessage) msg;
+        try {
+            Serializable message = objectMessage.getObject();
+            if (message instanceof Response<?>) {
+                final Response<UserListRequest> receivedResponse = (Response<UserListRequest>) message;
+                if (receivedResponse.hasAttachment()) {
+                    connectedUsers = (List<String>) ((Serializable[]) receivedResponse.getAttachment())[0];
+                    disconnectedUsers = (List<String>) ((Serializable[]) receivedResponse.getAttachment())[1];
+                } else {
+                    LOGGER.error("Expected users list as attachement, received nothing instead");
+                }
+                latch.countDown();
+            }
+        } catch (JMSException e) {
+            LOGGER.error("Caught exception while processing received message ", e);
+        }
     }
 
     private void startTick() {
@@ -101,8 +155,19 @@ public class HeartMonitor extends Service {
         }
     }
 
+    public void notifyUserInfoListener() {
+        if (this.userInfoListener != null) {
+            this.userInfoListener.onUsersUpdate(connectedUsers, disconnectedUsers);
+        }
+    }
+
     public void setHeartbeatInfoListener(HeartbeatInfoListener listener) {
         this.heartbeatInfoListener = listener;
         listener.onHeartbeatInfoUpdate(servicesStatus);
+    }
+
+    public void setUserInfoListener(UsersInfoListener listener) {
+        this.userInfoListener = listener;
+        listener.onUsersUpdate(connectedUsers, disconnectedUsers);
     }
 }

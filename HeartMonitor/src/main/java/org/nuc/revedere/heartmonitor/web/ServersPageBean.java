@@ -17,13 +17,13 @@ import org.nuc.revedere.service.core.hb.ServiceState;
 
 @ManagedBean(name = "page")
 @SessionScoped
-public class WebpageBean implements Serializable, HeartbeatInfoListener {
+public class ServersPageBean implements Serializable, HeartbeatInfoListener {
 
     private static final long serialVersionUID = 8388751329694282175L;
     private final HeartMonitor heartMonitor;
     private Map<String, ServiceHeartbeatCollector> persistence = new HashMap<String, ServiceHeartbeatCollector>();
 
-    public WebpageBean() {
+    public ServersPageBean() {
         heartMonitor = HeartMonitor.getInstance();
         heartMonitor.setHeartbeatInfoListener(this);
     }

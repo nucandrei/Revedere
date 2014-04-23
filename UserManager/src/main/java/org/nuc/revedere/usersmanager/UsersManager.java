@@ -62,7 +62,15 @@ public class UsersManager extends SupervisedService {
             }
         });
     }
-    
+
+    public void sendUpdateToSubscribers(Serializable update) {
+        try {
+            sendMessage(Topics.USERS_TOPIC, update);
+        } catch (Exception e) {
+            LOGGER.error("Could not send update", e);
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         new UsersManager();
     }

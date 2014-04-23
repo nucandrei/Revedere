@@ -60,7 +60,7 @@ public class UsersHandler {
             connectedUsers.add(correspondingUser);
             disconnectedUsers.remove(correspondingUser);
             LOGGER.info(String.format("Authentification succedded for \"%s\"", username));
-            notifyLogin(correspondingUser);
+            notifySubscribers();
             return new Response<LoginRequest>(request, true, AUTH_SUCCESS);
         } else {
             LOGGER.info(String.format("Authentification failed for \"%s\"", username));
@@ -78,7 +78,7 @@ public class UsersHandler {
         }
 
         if (connectedUsers.remove(user)) {
-            notifyLogout(user);
+            notifySubscribers();
         } else {
             LOGGER.error(String.format("User \"%s\" was already disconnected", username));
 
@@ -107,11 +107,11 @@ public class UsersHandler {
         for (User user : connectedUsers) {
             connected.add(user.getUsername());
         }
-        
+
         for (User user : disconnectedUsers) {
             disconnected.add(user.getUsername());
         }
-        
+
         final Serializable[] lists = new Serializable[2];
         lists[0] = (Serializable) connected;
         lists[1] = (Serializable) disconnected;
@@ -154,7 +154,9 @@ public class UsersHandler {
             for (Element e : rootNode.getChildren("user")) {
                 final String username = e.getAttributeValue("username");
                 final String authInfo = e.getAttributeValue("authinfo");
-                users.put(username, new User(username, authInfo));
+                final User newUser = new User(username, authInfo);
+                users.put(username, newUser);
+                disconnectedUsers.add(newUser);
                 LOGGER.info(String.format("Loaded user \"%s\" ", username));
             }
             LOGGER.info("Loaded users manager persistence");
@@ -175,12 +177,8 @@ public class UsersHandler {
         }
     }
 
-    private void notifyLogin(User user) {
-
-    }
-
-    private void notifyLogout(User user) {
-
+    private void notifySubscribers() {
+        parentManager.sendUpdateToSubscribers(listUsers(null));
     }
 
 }

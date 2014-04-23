@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<h:head>
+	<title>HeartMonitor</title>
+	<h:outputStylesheet name="style.css" />
+	<meta http-equiv="refresh" content="5" />
+</h:head>
+<h:body>
+	<h:form>
+		<h:panelGroup styleClass="left" layout="block">
+			<h:panelGroup layout="block" styleClass="box">
+				<h:panelGroup layout="block" styleClass="logo">
+					Menu
+				</h:panelGroup>
+				<h:link value="Users" outcome="login"/>
+			</h:panelGroup>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="center">
+			<h:panelGroup layout="block"
+				styleClass="box">
+				<h:panelGroup layout="block" styleClass="logo">
+				Users
+			</h:panelGroup>
+				<h:dataTable value="#{users.getUserLines()}" var="user" styleClass="services">
+					<h:column>
+						<f:facet name="header">User</f:facet>
+						#{user.getUsername()}
+					</h:column>
+					<h:column>
+						<f:facet name="header">Status</f:facet>
+						#{user.getStatus()}
+					</h:column>
+					
+				</h:dataTable>
+			</h:panelGroup>
+		</h:panelGroup>
+	</h:form>
+</h:body>
+</html>

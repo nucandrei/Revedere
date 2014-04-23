@@ -93,4 +93,14 @@
     background-color: #E1E1E1;
 }
 
+.left {
+	float:left;
+	width:150px;
+}
+
+.center {
+	margin-left:170px;
+}
+
+
 
