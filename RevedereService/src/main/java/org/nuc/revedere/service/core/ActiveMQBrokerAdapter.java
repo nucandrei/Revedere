@@ -26,14 +26,14 @@ public class ActiveMQBrokerAdapter implements BrokerAdapter {
     private final String address;
     private Session session;
 
-    public ActiveMQBrokerAdapter(String brokerAddress) throws Exception {
+    public ActiveMQBrokerAdapter(String brokerAddress) throws JMSException{
         consumerMap = new HashMap<String, MessageConsumer>();
         producerMap = new HashMap<String, MessageProducer>();
         this.address = brokerAddress;
         connectToBroker();
     }
 
-    private void connectToBroker() throws Exception {
+    private void connectToBroker() throws JMSException {
         LOGGER.info(String.format("Trying to connect to : %s", address));
         connectionFactory = new ActiveMQConnectionFactory(address);
         connection = connectionFactory.createConnection();

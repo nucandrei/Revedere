@@ -24,8 +24,17 @@ public class UserLine implements Comparable<UserLine>, Serializable {
         return connected ? "Connected" : "Disconnected";
     }
 
-    @Override
     public int compareTo(UserLine that) {
         return this.username.compareTo(that.username);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof UserLine)) {
+            return false;
+        }
+        
+        final UserLine that = (UserLine) object;
+        return this.username.equals(that.username);
     }
 }

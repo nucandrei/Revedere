@@ -1,5 +1,6 @@
 package org.nuc.revedere.service.core;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -10,6 +11,7 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
 import org.apache.log4j.LogManager;
+import org.jdom2.JDOMException;
 import org.nuc.revedere.service.core.cmd.Command;
 import org.nuc.revedere.service.core.hb.Heartbeat;
 import org.nuc.revedere.service.core.hb.HeartbeatGenerator;
@@ -19,7 +21,7 @@ public class SupervisedService extends Service {
     public final static int HEARTBEAT_INTERVAL = 10000;
     final HeartbeatGenerator heartbeatGenerator = new HeartbeatGenerator(this.getServiceName());
 
-    public SupervisedService(String serviceName) throws Exception {
+    public SupervisedService(String serviceName) throws JDOMException, IOException, JMSException {
         super(serviceName);
         startHeartbeatGenerator();
         startListeningForCommands();
@@ -35,7 +37,7 @@ public class SupervisedService extends Service {
         };
         timer.scheduleAtFixedRate(heartbeatTask, 0, HEARTBEAT_INTERVAL);
     }
-    
+
     private void sendHeartbeat() {
         Heartbeat heartbeat = heartbeatGenerator.generateHeartbeat();
         try {
@@ -46,7 +48,7 @@ public class SupervisedService extends Service {
         }
     }
 
-    private void startListeningForCommands() throws Exception {
+    private void startListeningForCommands() throws JMSException {
         final MessageListener commandListener = new MessageListener() {
             public void onMessage(Message msg) {
                 final ObjectMessage objectMessage = (ObjectMessage) msg;
@@ -67,7 +69,7 @@ public class SupervisedService extends Service {
             }
         };
         setMessageListener(SupervisorTopics.COMMAND_TOPIC, commandListener);
-        
+
     }
 
     public void setServiceState(ServiceState state) {
@@ -77,7 +79,7 @@ public class SupervisedService extends Service {
     public void setServiceComment(String comment) {
         this.heartbeatGenerator.setComment(comment);
     }
-    
+
     public void shutdownGracefully() {
         sendHeartbeat();
         LOGGER.info("Sent last heartbeat");
@@ -85,7 +87,11 @@ public class SupervisedService extends Service {
         System.exit(0);
     }
 
-    public static void main(String[] args) throws Exception {
-        new SupervisedService(args[0]);
+    public static void main(String[] args) {
+        try {
+            new SupervisedService(args[0]);
+        } catch (JDOMException | IOException | JMSException e) {
+            Service.BACKUP_LOGGER.error("Could not start service", e);
+        }
     }
 }

@@ -19,4 +19,9 @@ public class Request implements Serializable {
         Request that = (Request) object;
         return this.id.equals(that.id);
     }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
+    }
 }

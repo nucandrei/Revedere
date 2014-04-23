@@ -10,14 +10,15 @@ public class ServiceHeartbeatCollector extends Observable implements Comparable<
     private final boolean configured;
     private final String serviceName;
 
-    public synchronized void updateHeartbeat(Heartbeat lastHeartbeat) {
-        this.lastHeartbeat = lastHeartbeat;
-        this.serviceStatus = ServiceStatus.OK;
-    }
-
     public ServiceHeartbeatCollector(String serviceName, boolean configured) {
         this.serviceName = serviceName;
         this.configured = configured;
+    }
+
+    
+    public synchronized void updateHeartbeat(Heartbeat lastHeartbeat) {
+        this.lastHeartbeat = lastHeartbeat;
+        this.serviceStatus = ServiceStatus.OK;
     }
 
     public synchronized void tick() {
@@ -60,5 +61,15 @@ public class ServiceHeartbeatCollector extends Observable implements Comparable<
 
     public int compareTo(ServiceHeartbeatCollector that) {
         return this.getServiceName().compareTo(that.getServiceName());
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof ServiceHeartbeatCollector)) {
+            return false;
+        }
+
+        final ServiceHeartbeatCollector that = (ServiceHeartbeatCollector) object;
+        return this.serviceName.equals(that.serviceName);
     }
 }

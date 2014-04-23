@@ -9,6 +9,7 @@ import java.util.Map;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+
 import org.nuc.revedere.heartmonitor.HeartMonitor;
 import org.nuc.revedere.heartmonitor.HeartbeatInfoListener;
 import org.nuc.revedere.heartmonitor.ServiceHeartbeatCollector;
@@ -19,6 +20,9 @@ import org.nuc.revedere.service.core.hb.ServiceState;
 @SessionScoped
 public class ServersPageBean implements Serializable, HeartbeatInfoListener {
 
+    private static final String CSS_CLASS_WARNING_SERVICE = "warningservice";
+    private static final String CSS_CLASS_ERROR_SERVICE = "errorservice";
+    private static final String CSS_CLASS_OK_SERVICE = "okservice";
     private static final long serialVersionUID = 8388751329694282175L;
     private final HeartMonitor heartMonitor;
     private Map<String, ServiceHeartbeatCollector> persistence = new HashMap<String, ServiceHeartbeatCollector>();
@@ -58,22 +62,22 @@ public class ServersPageBean implements Serializable, HeartbeatInfoListener {
 
     private String getRowClass(ServiceHeartbeatCollector collector) {
         if (collector.getServiceStatus().equals(ServiceStatus.UNKNOWN)) {
-            return "okservice";
+            return CSS_CLASS_OK_SERVICE;
         }
 
         if (collector.getServiceStatus().equals(ServiceStatus.LOST)) {
-            return "errorservice";
+            return CSS_CLASS_ERROR_SERVICE;
         }
 
         if (collector.getLastHeartbeat().equals(ServiceState.ERROR) || collector.getLastHeartbeat().equals(ServiceState.FATAL)) {
-            return "errorservice";
+            return CSS_CLASS_ERROR_SERVICE;
         }
 
         if (collector.getServiceStatus().equals(ServiceStatus.LATE) || collector.getLastHeartbeat().equals(ServiceState.WARNING)) {
-            return "warningservice";
+            return CSS_CLASS_WARNING_SERVICE;
         }
 
-        return "okservice";
+        return CSS_CLASS_OK_SERVICE;
     }
 
     public void onHeartbeatInfoUpdate(Map<String, ServiceHeartbeatCollector> servicesStatus) {

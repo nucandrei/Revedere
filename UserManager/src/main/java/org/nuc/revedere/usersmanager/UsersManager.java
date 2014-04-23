@@ -11,6 +11,7 @@ import org.nuc.revedere.core.messages.LogoutRequest;
 import org.nuc.revedere.core.messages.RegisterRequest;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.UserListRequest;
+import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.SupervisedService;
 import org.nuc.revedere.service.core.Topics;
 
@@ -71,7 +72,11 @@ public class UsersManager extends SupervisedService {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        new UsersManager();
+    public static void main(String[] args) {
+        try {
+            new UsersManager();
+        } catch (Exception e) {
+            Service.BACKUP_LOGGER.error("Could not start users manager", e);
+        }
     }
 }

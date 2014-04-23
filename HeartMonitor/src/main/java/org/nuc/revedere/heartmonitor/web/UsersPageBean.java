@@ -25,7 +25,6 @@ public class UsersPageBean implements Serializable, UsersInfoListener {
         heartMonitor.setUserInfoListener(this);
     }
 
-    @Override
     public void onUsersUpdate(List<String> connectedUsers, List<String> disconnectedUsers) {
         this.connectedUsers = connectedUsers;
         this.disconnectedUsers = disconnectedUsers;
@@ -44,13 +43,5 @@ public class UsersPageBean implements Serializable, UsersInfoListener {
 
         Collections.sort(list);
         return list.toArray(new UserLine[arraySize]);
-        
-//        final int arraySize = connectedUsers.size() + disconnectedUsers.size();
-//        final List<String> list = new ArrayList<>(arraySize);
-//        list.addAll(connectedUsers);
-//        list.addAll(disconnectedUsers);
-//
-//        Collections.sort(list);
-//        return list.toArray(new String[arraySize]);
     }
 }

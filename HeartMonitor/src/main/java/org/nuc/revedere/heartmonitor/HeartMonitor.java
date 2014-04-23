@@ -34,17 +34,6 @@ public class HeartMonitor extends Service {
     private List<String> connectedUsers = new ArrayList<String>();
     private List<String> disconnectedUsers = new ArrayList<String>();
 
-    public static HeartMonitor getInstance() {
-        if (instance == null) {
-            try {
-                instance = new HeartMonitor();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return instance;
-    }
-
     private HeartMonitor() throws Exception {
         super(HEARTMONITOR_SERVICE_NAME);
         loadConfiguredServices();
@@ -52,7 +41,18 @@ public class HeartMonitor extends Service {
         startListeningForUsers();
         startTick();
     }
-
+    
+    public static HeartMonitor getInstance() {
+        if (instance == null) {
+            try {
+                instance = new HeartMonitor();
+            } catch (Exception e) {
+                Service.BACKUP_LOGGER.error("Could not start heartMonitor instance", e);
+            }
+        }
+        return instance;
+    }
+    
     private void loadConfiguredServices() {
         final Map<String, String> services = getSettings();
         for (String service : services.values()) {
@@ -60,7 +60,7 @@ public class HeartMonitor extends Service {
         }
     }
 
-    private void startListeningForHeartbeats() throws Exception {
+    private void startListeningForHeartbeats() throws JMSException {
         final MessageListener heartbeatListener = new MessageListener() {
             public void onMessage(Message msg) {
                 final ObjectMessage objectMessage = (ObjectMessage) msg;
@@ -80,11 +80,10 @@ public class HeartMonitor extends Service {
         setMessageListener(SupervisorTopics.HEARTBEAT_TOPIC, heartbeatListener);
     }
 
-    private void startListeningForUsers() throws Exception {
+    private void startListeningForUsers() throws JMSException, InterruptedException {
         LOGGER.info("Sending users list request");
         final CountDownLatch latch = new CountDownLatch(1);
         this.setMessageListener(Topics.USERS_RESPONSE_TOPIC, new MessageListener() {
-            @Override
             public void onMessage(Message msg) {
                 parseUsersReceivedMessage(latch, msg);
                 notifyUserInfoListener();
@@ -94,7 +93,6 @@ public class HeartMonitor extends Service {
         latch.await(10, TimeUnit.SECONDS);
 
         this.setMessageListener(Topics.USERS_TOPIC, new MessageListener() {
-            @Override
             public void onMessage(Message message) {
                 parseUsersReceivedMessage(new CountDownLatch(1), message);
                 notifyUserInfoListener();

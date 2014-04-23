@@ -47,6 +47,7 @@ public class Requestor {
             });
         } catch (Exception e) {
             supportService.LOGGER.error("Could not set listener for request on topic: " + responseTopic, e);
+            return null;
         }
 
         try {

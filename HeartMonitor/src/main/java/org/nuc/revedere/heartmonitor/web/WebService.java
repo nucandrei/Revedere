@@ -1,16 +1,23 @@
 package org.nuc.revedere.heartmonitor.web;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
+import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.embeddable.archive.ScatteredArchive;
 import org.glassfish.embeddable.archive.ScatteredArchive.Type;
+import org.nuc.revedere.heartmonitor.ServiceHeartbeatCollector;
+import org.nuc.revedere.service.core.Service;
 
 /**
- * See implementation <a href="http://docs.oracle.com/cd/E26576_01/doc.312/e24932/embedded-server-guide.htm#gjrcs">http://docs.oracle.com/cd/E26576_01/doc.312/e24932/embedded-server-guide.htm#gjrcs</a>
+ * See implementation <a
+ * href="http://docs.oracle.com/cd/E26576_01/doc.312/e24932/embedded-server-guide.htm#gjrcs">http://docs.oracle.com/cd/E26576_01/doc.312/e24932/embedded-server-guide.htm#gjrcs</a>
+ * 
  * @author Nuc
  *
  */
@@ -19,7 +26,7 @@ public class WebService {
     final GlassFish glassFish;
     final Deployer deployer;
 
-    public WebService(int port) throws Exception {
+    public WebService(int port) throws GlassFishException, URISyntaxException, IOException {
         glassFishProperties = new GlassFishProperties();
         glassFishProperties.setPort("http-listener", port);
         glassFish = GlassFishRuntime.bootstrap().newGlassFish(glassFishProperties);
@@ -33,11 +40,15 @@ public class WebService {
         deployer.deploy(archive.toURI(), "--contextroot=hello");
     }
 
-    public void stop() throws Exception {
+    public void stop() throws GlassFishException {
         glassFish.stop();
     }
-    
-    public static void main(String[] args) throws Exception {
-        new WebService(8080);
+
+    public static void main(String[] args) {
+        try {
+            new WebService(8080);
+        } catch (Exception e) {
+            Service.BACKUP_LOGGER.error("Could not start web service", e);
+        }
     }
 }

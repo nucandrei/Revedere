@@ -13,7 +13,7 @@ public class Topics {
     public static final String MAIL_RESPONSE_TOPIC = "Revedere.Mail.Response";
 
     private Topics() {
-
+        // empty constructor. It protects from creating instances of Topics
     }
 
 }

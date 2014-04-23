@@ -11,6 +11,7 @@ import org.apache.commons.mail.Email;
 import org.apache.commons.mail.SimpleEmail;
 import org.nuc.revedere.core.messages.SimpleMailRequest;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.SupervisedService;
 import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.service.core.hb.ServiceState;
@@ -89,7 +90,7 @@ public class MailService extends SupervisedService {
                 }
             });
         } catch (Exception e) {
-            LOGGER.error("Could not set message listener on topic " + Topics.MAIL_REQUEST_TOPIC);
+            LOGGER.error("Could not set message listener on topic " + Topics.MAIL_REQUEST_TOPIC, e);
             setServiceState(ServiceState.ERROR);
             setServiceComment("Could not listen to mail requests");
         }
@@ -103,9 +104,11 @@ public class MailService extends SupervisedService {
         return new Response<SimpleMailRequest>(request, mailSent, mailSent ? "Mail sent" : "Mail not sent");
     }
 
-    public static void main(String[] args) throws Exception {
-        MailService service = new MailService();
-        Thread.sleep(1000);
-        service.sendMessage(Topics.MAIL_REQUEST_TOPIC, new SimpleMailRequest("you_nuc@yahoo.com", "test", "mesaj generat automat"));
+    public static void main(String[] args) {
+        try {
+            new MailService();
+        } catch (Exception e) {
+            Service.BACKUP_LOGGER.error("Could not start mail service", e);
+        }
     }
 }
