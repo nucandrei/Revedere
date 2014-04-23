@@ -8,5 +8,6 @@
   	<module>RevedereCore</module>
   	<module>RevedereService</module>
   	<module>HeartMonitor</module>
+  	<module>Gateway</module>
   </modules>
 </project>

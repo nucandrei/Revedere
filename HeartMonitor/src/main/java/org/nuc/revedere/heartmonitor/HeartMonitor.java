@@ -15,13 +15,13 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
+import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.UserListRequest;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.SupervisedService;
 import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.service.core.hb.Heartbeat;
-import org.nuc.revedere.service.core.messages.Response;
-import org.nuc.revedere.service.core.messages.UserListRequest;
 
 public class HeartMonitor extends Service {
     private static HeartMonitor instance;

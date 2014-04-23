@@ -9,8 +9,8 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
-import org.nuc.revedere.service.core.messages.Request;
-import org.nuc.revedere.service.core.messages.Response;
+import org.nuc.revedere.core.messages.Request;
+import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.util.Container;
 
 public class Requestor {

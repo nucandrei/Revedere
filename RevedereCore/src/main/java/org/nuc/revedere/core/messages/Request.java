@@ -1,4 +1,4 @@
-package org.nuc.revedere.service.core.messages;
+package org.nuc.revedere.core.messages;
 
 import java.io.Serializable;
 import java.util.UUID;

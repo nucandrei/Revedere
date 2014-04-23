@@ -6,13 +6,13 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
+import org.nuc.revedere.core.messages.LoginRequest;
+import org.nuc.revedere.core.messages.LogoutRequest;
+import org.nuc.revedere.core.messages.RegisterRequest;
+import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.UserListRequest;
 import org.nuc.revedere.service.core.SupervisedService;
 import org.nuc.revedere.service.core.Topics;
-import org.nuc.revedere.service.core.messages.LoginRequest;
-import org.nuc.revedere.service.core.messages.LogoutRequest;
-import org.nuc.revedere.service.core.messages.RegisterRequest;
-import org.nuc.revedere.service.core.messages.Response;
-import org.nuc.revedere.service.core.messages.UserListRequest;
 
 public class UsersManager extends SupervisedService {
     private final static String USERSMANAGER_SERVICE_NAME = "UsersManager";

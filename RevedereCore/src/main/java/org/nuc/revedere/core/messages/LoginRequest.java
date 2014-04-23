@@ -1,4 +1,4 @@
-package org.nuc.revedere.service.core.messages;
+package org.nuc.revedere.core.messages;
 
 public class LoginRequest extends CredentialsBasedRequest {
 

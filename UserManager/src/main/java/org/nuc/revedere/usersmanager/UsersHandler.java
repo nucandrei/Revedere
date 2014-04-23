@@ -19,11 +19,11 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.nuc.revedere.core.User;
-import org.nuc.revedere.service.core.messages.LoginRequest;
-import org.nuc.revedere.service.core.messages.LogoutRequest;
-import org.nuc.revedere.service.core.messages.RegisterRequest;
-import org.nuc.revedere.service.core.messages.Response;
-import org.nuc.revedere.service.core.messages.UserListRequest;
+import org.nuc.revedere.core.messages.LoginRequest;
+import org.nuc.revedere.core.messages.LogoutRequest;
+import org.nuc.revedere.core.messages.RegisterRequest;
+import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.UserListRequest;
 
 public class UsersHandler {
     private static final String USER_DOES_NOT_EXIST = "User does not exist";
