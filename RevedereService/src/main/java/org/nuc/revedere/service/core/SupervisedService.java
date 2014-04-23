@@ -30,16 +30,20 @@ public class SupervisedService extends Service {
         final TimerTask heartbeatTask = new TimerTask() {
             @Override
             public void run() {
-                Heartbeat heartbeat = heartbeatGenerator.generateHeartbeat();
-                try {
-                    SupervisedService.this.sendMessage(SupervisorTopics.HEARTBEAT_TOPIC, heartbeat);
-                    LOGGER.info("Sent heartbeat");
-                } catch (Exception e) {
-                    LOGGER.error("Could not send heartbeat.", e);
-                }
+                sendHeartbeat();
             }
         };
         timer.scheduleAtFixedRate(heartbeatTask, 0, HEARTBEAT_INTERVAL);
+    }
+    
+    private void sendHeartbeat() {
+        Heartbeat heartbeat = heartbeatGenerator.generateHeartbeat();
+        try {
+            SupervisedService.this.sendMessage(SupervisorTopics.HEARTBEAT_TOPIC, heartbeat);
+            LOGGER.info("Sent heartbeat");
+        } catch (Exception e) {
+            LOGGER.error("Could not send heartbeat.", e);
+        }
     }
 
     private void startListeningForCommands() throws Exception {
@@ -52,8 +56,7 @@ public class SupervisedService extends Service {
                         Command command = (Command) message;
                         if (SupervisedService.this.getServiceName().equals(command.getServiceName())) {
                             LOGGER.info("Received command");
-                            LogManager.shutdown();
-                            System.exit(0);
+                            shutdownGracefully();
                         }
                     } else {
                         LOGGER.warn("Received unwanted message on command topic : " + message.getClass().toString());
@@ -73,6 +76,13 @@ public class SupervisedService extends Service {
 
     public void setServiceComment(String comment) {
         this.heartbeatGenerator.setComment(comment);
+    }
+    
+    public void shutdownGracefully() {
+        sendHeartbeat();
+        LOGGER.info("Sent last heartbeat");
+        LogManager.shutdown();
+        System.exit(0);
     }
 
     public static void main(String[] args) throws Exception {

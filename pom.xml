@@ -9,5 +9,6 @@
   	<module>RevedereService</module>
   	<module>HeartMonitor</module>
   	<module>Gateway</module>
+  	<module>MailService</module>
   </modules>
 </project>
