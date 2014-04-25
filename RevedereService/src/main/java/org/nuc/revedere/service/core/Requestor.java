@@ -13,17 +13,17 @@ import org.nuc.revedere.core.messages.Request;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.util.Container;
 
-public class Requestor {
+public class Requestor<T extends Request> {
     private Service supportService;
 
     public Requestor(Service supportService) {
         this.supportService = supportService;
     }
 
-    public Response<Request> request(String topic, final Request request) {
+    public Response<T> request(String topic, final T request) {
         final String requestTopic = String.format("%s.Request", topic);
         final String responseTopic = String.format("%s.Response", topic);
-        final Container<Response<Request>> responseContainer = new Container<>();
+        final Container<Response<T>> responseContainer = new Container<>();
         final CountDownLatch latch = new CountDownLatch(1);
 
         try {
@@ -33,20 +33,22 @@ public class Requestor {
                     final ObjectMessage objectMessage = (ObjectMessage) msg;
                     try {
                         Serializable message = objectMessage.getObject();
-                        if (message instanceof Response) {
-                            final Response<Request> possibleResponse = (Response<Request>) message;
+                        try {
+                            final Response<T> possibleResponse = (Response<T>) message;
                             if (possibleResponse.getRequest().equals(request)) {
                                 responseContainer.setContent(possibleResponse);
                                 latch.countDown();
                             }
+                        } catch (ClassCastException e) {
+                            // ignore this message.
                         }
                     } catch (JMSException e) {
-                        supportService.LOGGER.error("Caught exception while processing received message ", e);
+                        Service.LOGGER.error("Caught exception while processing received message ", e);
                     }
                 }
             });
         } catch (Exception e) {
-            supportService.LOGGER.error("Could not set listener for request on topic: " + responseTopic, e);
+            Service.LOGGER.error("Could not set listener for request on topic: " + responseTopic, e);
             return null;
         }
 
@@ -55,7 +57,7 @@ public class Requestor {
             latch.await(10, TimeUnit.SECONDS);
             supportService.setMessageListener(responseTopic, null);
         } catch (Exception e) {
-            supportService.LOGGER.error("Could not send request on topic: " + requestTopic, e);
+            Service.LOGGER.error("Could not send request on topic: " + requestTopic, e);
         }
 
         return responseContainer.getContent();

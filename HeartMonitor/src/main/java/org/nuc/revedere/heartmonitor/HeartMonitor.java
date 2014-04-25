@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -17,6 +14,7 @@ import javax.jms.ObjectMessage;
 
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.UserListRequest;
+import org.nuc.revedere.service.core.Requestor;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.SupervisedService;
 import org.nuc.revedere.service.core.SupervisorTopics;
@@ -41,7 +39,7 @@ public class HeartMonitor extends Service {
         startListeningForUsers();
         startTick();
     }
-    
+
     public static HeartMonitor getInstance() {
         if (instance == null) {
             try {
@@ -52,7 +50,7 @@ public class HeartMonitor extends Service {
         }
         return instance;
     }
-    
+
     private void loadConfiguredServices() {
         final Map<String, String> services = getSettings();
         for (String service : services.values()) {
@@ -80,22 +78,41 @@ public class HeartMonitor extends Service {
         setMessageListener(SupervisorTopics.HEARTBEAT_TOPIC, heartbeatListener);
     }
 
+    @SuppressWarnings("unchecked")
     private void startListeningForUsers() throws JMSException, InterruptedException {
         LOGGER.info("Sending users list request");
-        final CountDownLatch latch = new CountDownLatch(1);
-        this.setMessageListener(Topics.USERS_RESPONSE_TOPIC, new MessageListener() {
-            public void onMessage(Message msg) {
-                parseUsersReceivedMessage(latch, msg);
-                notifyUserInfoListener();
-            }
-        });
-        this.sendMessage(Topics.USERS_REQUEST_TOPIC, new UserListRequest());
-        latch.await(10, TimeUnit.SECONDS);
+        final Requestor<UserListRequest> requestor = new Requestor<UserListRequest>(this);
+        final Response<UserListRequest> receivedResponse = requestor.request(Topics.USERS_TOPIC, new UserListRequest());
+        if (receivedResponse == null) {
+            LOGGER.error("Did not receive response in timeout");
+            return;
+        }
+        if (receivedResponse.hasAttachment()) {
+            connectedUsers = (List<String>) ((Serializable[]) receivedResponse.getAttachment())[0];
+            disconnectedUsers = (List<String>) ((Serializable[]) receivedResponse.getAttachment())[1];
+            notifyUserInfoListener();
+        } else {
+            LOGGER.error("Expected users list as attachement, received nothing instead");
+            return;
+        }
 
         this.setMessageListener(Topics.USERS_TOPIC, new MessageListener() {
-            public void onMessage(Message message) {
-                parseUsersReceivedMessage(new CountDownLatch(1), message);
-                notifyUserInfoListener();
+            public void onMessage(Message msg) {
+                final ObjectMessage objectMessage = (ObjectMessage) msg;
+                try {
+                    Serializable message = objectMessage.getObject();
+                    if (message instanceof Response<?>) {
+                        final Response<UserListRequest> receivedResponse = (Response<UserListRequest>) message;
+                        if (receivedResponse.hasAttachment()) {
+                            connectedUsers = (List<String>) ((Serializable[]) receivedResponse.getAttachment())[0];
+                            disconnectedUsers = (List<String>) ((Serializable[]) receivedResponse.getAttachment())[1];
+                        } else {
+                            LOGGER.error("Expected users list as attachement, received nothing instead");
+                        }
+                    }
+                } catch (JMSException e) {
+                    LOGGER.error("Caught exception while processing received message ", e);
+                }
             }
         });
     }
@@ -111,26 +128,6 @@ public class HeartMonitor extends Service {
 
         LOGGER.info("Received heartbeat for service " + serviceName);
         serviceStatus.updateHeartbeat(receivedHeartbeat);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void parseUsersReceivedMessage(final CountDownLatch latch, Message msg) {
-        final ObjectMessage objectMessage = (ObjectMessage) msg;
-        try {
-            Serializable message = objectMessage.getObject();
-            if (message instanceof Response<?>) {
-                final Response<UserListRequest> receivedResponse = (Response<UserListRequest>) message;
-                if (receivedResponse.hasAttachment()) {
-                    connectedUsers = (List<String>) ((Serializable[]) receivedResponse.getAttachment())[0];
-                    disconnectedUsers = (List<String>) ((Serializable[]) receivedResponse.getAttachment())[1];
-                } else {
-                    LOGGER.error("Expected users list as attachement, received nothing instead");
-                }
-                latch.countDown();
-            }
-        } catch (JMSException e) {
-            LOGGER.error("Caught exception while processing received message ", e);
-        }
     }
 
     private void startTick() {
