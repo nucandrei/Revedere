@@ -62,4 +62,13 @@ public class Requestor<T extends Request> {
 
         return responseContainer.getContent();
     }
+
+    public void inform(String topic, final T request) {
+        final String requestTopic = String.format("%s.Request", topic);
+        try {
+            supportService.sendMessage(requestTopic, request);
+        } catch (Exception e) {
+            Service.LOGGER.error("Could not send inform on topic: " + requestTopic, e);
+        }
+    }
 }
