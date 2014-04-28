@@ -23,6 +23,7 @@ import org.nuc.revedere.core.messages.LoginRequest;
 import org.nuc.revedere.core.messages.LogoutRequest;
 import org.nuc.revedere.core.messages.RegisterRequest;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.UnregisterRequest;
 import org.nuc.revedere.core.messages.UserListRequest;
 
 public class UsersHandler {
@@ -31,6 +32,7 @@ public class UsersHandler {
     private static final String AUTH_SUCCESS = "Authentification succedded";
     private static final String AUTH_FAILED = "Authentification failed";
     private static final String REGISTER_SUCCEDDED = "Register succedded";
+    private static final String UNREGISTER_SUCCEDDED = "Unregister succedded";
 
     private static final String USERS_FILE = "users.xml";
     private static final Logger LOGGER = Logger.getLogger(UsersHandler.class.getName());
@@ -50,7 +52,7 @@ public class UsersHandler {
         final String username = request.getUsername();
         final String authInfo = request.getAuthInfo();
         LOGGER.info(String.format("Received login request from \"%s\"", username));
-        User correspondingUser = users.get(username);
+        final User correspondingUser = users.get(username);
 
         if (correspondingUser == null) {
             return new Response<LoginRequest>(request, false, USER_DOES_NOT_EXIST);
@@ -99,6 +101,23 @@ public class UsersHandler {
         saveUsers();
         LOGGER.info(String.format("User \"%s\" registered succesfully", username));
         return new Response<RegisterRequest>(request, true, REGISTER_SUCCEDDED);
+    }
+
+    public Response<UnregisterRequest> unregister(UnregisterRequest request) {
+        final String username = request.getUsername();
+        final String authInfo = request.getAuthInfo();
+        LOGGER.info(String.format("Received unregister request from \"%s\"", username));
+        final User userToUnregister = users.get(username);
+        if (userToUnregister == null) {
+            return new Response<UnregisterRequest>(request, false, USER_DOES_NOT_EXIST);
+        }
+        if (userToUnregister.matchesAuthInfo(authInfo)) {
+            users.remove(username);
+            saveUsers();
+            return new Response<UnregisterRequest>(request, true, UNREGISTER_SUCCEDDED);
+        } else {
+            return new Response<UnregisterRequest>(request, false, AUTH_FAILED);
+        }
     }
 
     public Response<UserListRequest> listUsers(UserListRequest userListRequest) {

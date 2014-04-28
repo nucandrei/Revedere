@@ -11,6 +11,7 @@ import org.nuc.revedere.core.messages.LogoutRequest;
 import org.nuc.revedere.core.messages.Ping;
 import org.nuc.revedere.core.messages.RegisterRequest;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.UnregisterRequest;
 import org.nuc.revedere.gateway.connectors.UsersManagerConnector;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.SupervisedService;
@@ -30,7 +31,7 @@ public class Gateway extends SupervisedService {
         final GatewayListener gatewayListener = new GatewayListener() {
             @Override
             public void onLoginRequest(LoginRequest request, IoSession session) {
-                Response<LoginRequest> response = usersManagerConnector.login(request);
+                final Response<LoginRequest> response = usersManagerConnector.login(request);
                 if (response.isSuccessfull()) {
                     sessionManager.setOnline(request.getUsername(), session);
                 }
@@ -45,8 +46,15 @@ public class Gateway extends SupervisedService {
 
             @Override
             public void onRegisterRequest(RegisterRequest request, IoSession session) {
-                Response<RegisterRequest> response = usersManagerConnector.register(request);
+                final Response<RegisterRequest> response = usersManagerConnector.register(request);
                 session.write(response);
+            }
+            
+            @Override
+            public void onUnregisterRequest(UnregisterRequest request, IoSession session) {
+                final Response<UnregisterRequest> response = usersManagerConnector.unregister(request);
+                session.write(response);
+                
             }
 
             @Override
@@ -58,7 +66,7 @@ public class Gateway extends SupervisedService {
 
             @Override
             public void onClosedSession(IoSession session) {
-                String connectedUser = sessionManager.getUserFromSession(session);
+                final String connectedUser = sessionManager.getUserFromSession(session);
                 if (connectedUser != null) {
                     usersManagerConnector.logout(new LogoutRequest(connectedUser));
                     sessionManager.setOffine(session);

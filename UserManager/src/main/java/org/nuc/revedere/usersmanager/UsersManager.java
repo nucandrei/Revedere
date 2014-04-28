@@ -10,6 +10,7 @@ import org.nuc.revedere.core.messages.LoginRequest;
 import org.nuc.revedere.core.messages.LogoutRequest;
 import org.nuc.revedere.core.messages.RegisterRequest;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.UnregisterRequest;
 import org.nuc.revedere.core.messages.UserListRequest;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.SupervisedService;
@@ -33,27 +34,34 @@ public class UsersManager extends SupervisedService {
                 try {
                     Serializable message = objectMessage.getObject();
                     if (message instanceof LoginRequest) {
-                        LoginRequest loginRequest = (LoginRequest) message;
-                        Response<LoginRequest> response = usersHandler.login(loginRequest);
+                        final LoginRequest loginRequest = (LoginRequest) message;
+                        final Response<LoginRequest> response = usersHandler.login(loginRequest);
                         sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
                         return;
                     }
 
                     if (message instanceof RegisterRequest) {
-                        RegisterRequest registerRequest = (RegisterRequest) message;
-                        Response<RegisterRequest> response = usersHandler.register(registerRequest);
+                        final RegisterRequest registerRequest = (RegisterRequest) message;
+                        final Response<RegisterRequest> response = usersHandler.register(registerRequest);
+                        sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
+                        return;
+                    }
+
+                    if (message instanceof UnregisterRequest) {
+                        final UnregisterRequest unregisterRequest = (UnregisterRequest) message;
+                        final Response<UnregisterRequest> response = usersHandler.unregister(unregisterRequest);
                         sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
                         return;
                     }
 
                     if (message instanceof LogoutRequest) {
-                        LogoutRequest logoutRequest = (LogoutRequest) message;
+                        final LogoutRequest logoutRequest = (LogoutRequest) message;
                         usersHandler.logout(logoutRequest);
                     }
 
                     if (message instanceof UserListRequest) {
-                        UserListRequest userListRequest = (UserListRequest) message;
-                        Response<UserListRequest> response = usersHandler.listUsers(userListRequest);
+                        final UserListRequest userListRequest = (UserListRequest) message;
+                        final Response<UserListRequest> response = usersHandler.listUsers(userListRequest);
                         sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
                     }
 
