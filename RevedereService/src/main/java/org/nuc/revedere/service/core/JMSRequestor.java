@@ -9,14 +9,16 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
+import org.apache.log4j.Logger;
 import org.nuc.revedere.core.messages.Request;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.util.Container;
 
-public class Requestor<T extends Request> {
+public class JMSRequestor<T extends Request> {
+    private static final Logger LOGGER = Logger.getLogger(JMSRequestor.class);
     private Service supportService;
 
-    public Requestor(Service supportService) {
+    public JMSRequestor(Service supportService) {
         this.supportService = supportService;
     }
 
@@ -43,12 +45,12 @@ public class Requestor<T extends Request> {
                             // ignore this message.
                         }
                     } catch (JMSException e) {
-                        Service.LOGGER.error("Caught exception while processing received message ", e);
+                        LOGGER.error("Caught exception while processing received message ", e);
                     }
                 }
             });
         } catch (Exception e) {
-            Service.LOGGER.error("Could not set listener for request on topic: " + responseTopic, e);
+            LOGGER.error("Could not set listener for request on topic: " + responseTopic, e);
             return null;
         }
 
@@ -57,7 +59,7 @@ public class Requestor<T extends Request> {
             latch.await(10, TimeUnit.SECONDS);
             supportService.setMessageListener(responseTopic, null);
         } catch (Exception e) {
-            Service.LOGGER.error("Could not send request on topic: " + requestTopic, e);
+            LOGGER.error("Could not send request on topic: " + requestTopic, e);
         }
 
         return responseContainer.getContent();
@@ -68,7 +70,7 @@ public class Requestor<T extends Request> {
         try {
             supportService.sendMessage(requestTopic, request);
         } catch (Exception e) {
-            Service.LOGGER.error("Could not send inform on topic: " + requestTopic, e);
+            LOGGER.error("Could not send inform on topic: " + requestTopic, e);
         }
     }
 }

@@ -14,7 +14,7 @@ import javax.jms.ObjectMessage;
 
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.UserListRequest;
-import org.nuc.revedere.service.core.Requestor;
+import org.nuc.revedere.service.core.JMSRequestor;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.SupervisedService;
 import org.nuc.revedere.service.core.SupervisorTopics;
@@ -81,7 +81,7 @@ public class HeartMonitor extends Service {
     @SuppressWarnings("unchecked")
     private void startListeningForUsers() throws JMSException, InterruptedException {
         LOGGER.info("Sending users list request");
-        final Requestor<UserListRequest> requestor = new Requestor<UserListRequest>(this);
+        final JMSRequestor<UserListRequest> requestor = new JMSRequestor<UserListRequest>(this);
         final Response<UserListRequest> receivedResponse = requestor.request(Topics.USERS_TOPIC, new UserListRequest());
         if (receivedResponse == null) {
             LOGGER.error("Did not receive response in timeout");

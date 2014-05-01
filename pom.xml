@@ -10,5 +10,6 @@
   	<module>HeartMonitor</module>
   	<module>Gateway</module>
   	<module>MailService</module>
+  	<module>RevedereClient</module>
   </modules>
 </project>

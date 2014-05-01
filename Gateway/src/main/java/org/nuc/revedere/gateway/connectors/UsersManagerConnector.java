@@ -5,7 +5,7 @@ import org.nuc.revedere.core.messages.LogoutRequest;
 import org.nuc.revedere.core.messages.RegisterRequest;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.UnregisterRequest;
-import org.nuc.revedere.service.core.Requestor;
+import org.nuc.revedere.service.core.JMSRequestor;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.Topics;
 
@@ -17,21 +17,21 @@ public class UsersManagerConnector {
     }
 
     public Response<LoginRequest> login(LoginRequest request) {
-        Requestor<LoginRequest> requestor = new Requestor<LoginRequest>(supportService);
+        JMSRequestor<LoginRequest> requestor = new JMSRequestor<LoginRequest>(supportService);
         return requestor.request(Topics.USERS_TOPIC, request);
     }
 
     public Response<RegisterRequest> register(RegisterRequest request) {
-        Requestor<RegisterRequest> requestor = new Requestor<RegisterRequest>(supportService);
+        JMSRequestor<RegisterRequest> requestor = new JMSRequestor<RegisterRequest>(supportService);
         return requestor.request(Topics.USERS_TOPIC, request);
     }
     
     public Response<UnregisterRequest> unregister(UnregisterRequest request) {
-        Requestor<UnregisterRequest> requestor = new Requestor<UnregisterRequest>(supportService);
+        JMSRequestor<UnregisterRequest> requestor = new JMSRequestor<UnregisterRequest>(supportService);
         return requestor.request(Topics.USERS_TOPIC, request);
     }
 
     public void logout(LogoutRequest request) {
-        new Requestor<LogoutRequest>(supportService).inform(Topics.USERS_TOPIC, request);
+        new JMSRequestor<LogoutRequest>(supportService).inform(Topics.USERS_TOPIC, request);
     }
 }
