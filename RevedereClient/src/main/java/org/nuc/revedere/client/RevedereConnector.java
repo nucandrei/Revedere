@@ -2,7 +2,6 @@ package org.nuc.revedere.client;
 
 import org.nuc.revedere.client.connector.MinaClient;
 import org.nuc.revedere.core.messages.LoginRequest;
-import org.nuc.revedere.core.messages.LogoutRequest;
 import org.nuc.revedere.core.messages.RegisterRequest;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.UnregisterRequest;
@@ -10,16 +9,16 @@ import org.nuc.revedere.core.messages.UnregisterRequest;
 public class RevedereConnector {
     private final MinaClient minaClient;
 
-    public RevedereConnector(String address, int port) throws Exception {
-        this.minaClient = new MinaClient(address, port);
+    public RevedereConnector(String address) throws Exception {
+        this.minaClient = new MinaClient(address);
     }
 
-    public void login(String username, String authInfo) throws Exception {
+    public RevedereSession login(String username, String authInfo) throws Exception {
         final LoginRequest loginRequest = new LoginRequest(username, authInfo);
         final MinaRequestor<LoginRequest> requestor = new MinaRequestor<LoginRequest>(minaClient);
         final Response<LoginRequest> response = requestor.request(loginRequest);
         if (response.isSuccessfull()) {
-            return;
+            return new RevedereSession(minaClient, username);
         } else {
             throw new Exception(response.getMessage());
         }

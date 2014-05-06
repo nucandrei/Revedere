@@ -11,6 +11,7 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.serialization.ObjectSerializationCodecFactory;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.nuc.revedere.client.util.NetworkUtils;
 
 public class MinaClient {
 
@@ -18,7 +19,7 @@ public class MinaClient {
     private final IoConnector connector;
     private final MinaHandler handler;
 
-    public MinaClient(String address, int port) throws Exception {
+    public MinaClient(String address) throws Exception {
         this.connector = new NioSocketConnector();
         this.handler = new MinaHandler();
 
@@ -28,15 +29,11 @@ public class MinaClient {
         connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(new ObjectSerializationCodecFactory()));
         connector.setHandler(handler);
 
-        if (!validAddress(address)) {
-            throw new Exception("Invalid address");
-        }
+        final String ipAddress= NetworkUtils.extractIP(address);;
+        final int port = NetworkUtils.extractPort(address);
 
-        if (port <= 0) {
-            throw new Exception("Invalid port. Expected value bigger than 0, actually it is " + port);
-        }
-
-        final ConnectFuture future = connector.connect(new InetSocketAddress(address, port));
+        final InetSocketAddress remoteAddress = new InetSocketAddress(ipAddress, port);
+        final ConnectFuture future = connector.connect(remoteAddress);
         future.awaitUninterruptibly();
 
         if (!future.isConnected()) {
@@ -55,17 +52,7 @@ public class MinaClient {
         session.write(message);
     }
 
-    public static boolean validAddress(String address) {
-        if (address == null) {
-            return false;
-        }
-
-        if (address.matches("(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+    
 
     public void removeHandler() {
         this.handler.removeHandler();
