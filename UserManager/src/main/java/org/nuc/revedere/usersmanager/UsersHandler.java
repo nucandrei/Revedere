@@ -25,6 +25,7 @@ import org.nuc.revedere.core.messages.RegisterRequest;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.UnregisterRequest;
 import org.nuc.revedere.core.messages.UserListRequest;
+import org.nuc.revedere.core.messages.update.UserListUpdate;
 
 public class UsersHandler {
     private static final String USER_DOES_NOT_EXIST = "User does not exist";
@@ -121,22 +122,19 @@ public class UsersHandler {
     }
 
     public Response<UserListRequest> listUsers(UserListRequest userListRequest) {
-        final List<String> connected = new ArrayList<String>(connectedUsers.size());
-        final List<String> disconnected = new ArrayList<String>(disconnectedUsers.size());
+        final Set<User> onlineUsers = new HashSet<User>();
+        final Set<User> offlineUsers = new HashSet<User>();
         for (User user : connectedUsers) {
-            connected.add(user.getUsername());
+            onlineUsers.add(user.getCleanInstance());
         }
 
         for (User user : disconnectedUsers) {
-            disconnected.add(user.getUsername());
+            offlineUsers.add(user.getCleanInstance());
         }
-
-        final Serializable[] lists = new Serializable[2];
-        lists[0] = (Serializable) connected;
-        lists[1] = (Serializable) disconnected;
-
+        
+        final UserListUpdate userListUpdate = new UserListUpdate(false, onlineUsers, offlineUsers);
         final Response<UserListRequest> response = new Response<UserListRequest>(userListRequest, true, "");
-        response.attach(lists);
+        response.attach(userListUpdate);
         return response;
     }
 

@@ -1,6 +1,9 @@
 package org.nuc.revedere.core;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
+    private static final long serialVersionUID = 1935328134263444764L;
     private final String username;
     private final String authInfo;
 
@@ -19,5 +22,9 @@ public class User {
 
     public String getAuthInfo() {
         return this.authInfo;
+    }
+
+    public User getCleanInstance() {
+        return new User(username, "");
     }
 }

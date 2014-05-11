@@ -1,7 +1,9 @@
 package org.nuc.revedere.heartmonitor;
 
-import java.util.List;
+import java.util.Set;
+
+import org.nuc.revedere.core.User;
 
 public interface UsersInfoListener {
-    public void onUsersUpdate(List<String> connectedUsers, List<String> disconnectedUsers);
+    public void onUsersUpdate(Set<User> connectedUsers, Set<User> disconnectedUsers);
 }
