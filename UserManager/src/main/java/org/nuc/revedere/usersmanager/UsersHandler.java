@@ -131,7 +131,7 @@ public class UsersHandler {
         for (User user : disconnectedUsers) {
             offlineUsers.add(user.getCleanInstance());
         }
-        
+
         final UserListUpdate userListUpdate = new UserListUpdate(false, onlineUsers, offlineUsers);
         final Response<UserListRequest> response = new Response<UserListRequest>(userListRequest, true, "");
         response.attach(userListUpdate);
@@ -195,7 +195,17 @@ public class UsersHandler {
     }
 
     private void notifySubscribers() {
-        parentManager.sendUpdateToSubscribers(listUsers(null));
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(1000);
+                    parentManager.sendUpdateToSubscribers(listUsers(null));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
 }

@@ -1,8 +1,12 @@
 package org.nuc.revedere.gateway;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
 
 import org.apache.mina.core.session.IoSession;
 import org.jdom2.JDOMException;
@@ -12,9 +16,12 @@ import org.nuc.revedere.core.messages.Ping;
 import org.nuc.revedere.core.messages.RegisterRequest;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.UnregisterRequest;
+import org.nuc.revedere.core.messages.UserListRequest;
 import org.nuc.revedere.gateway.connectors.UsersManagerConnector;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.SupervisedService;
+import org.nuc.revedere.service.core.Topics;
+import org.nuc.revedere.util.Convertor;
 
 public class Gateway extends SupervisedService {
     private final static String GATEWAY_SERVICE_NAME = "Gateway";
@@ -24,7 +31,7 @@ public class Gateway extends SupervisedService {
         start();
     }
 
-    private void start() throws IOException {
+    private void start() throws IOException, JMSException {
         final UsersManagerConnector usersManagerConnector = new UsersManagerConnector(this);
         final SessionManager sessionManager = new SessionManager();
 
@@ -49,12 +56,12 @@ public class Gateway extends SupervisedService {
                 final Response<RegisterRequest> response = usersManagerConnector.register(request);
                 session.write(response);
             }
-            
+
             @Override
             public void onUnregisterRequest(UnregisterRequest request, IoSession session) {
                 final Response<UnregisterRequest> response = usersManagerConnector.unregister(request);
                 session.write(response);
-                
+
             }
 
             @Override
@@ -80,6 +87,20 @@ public class Gateway extends SupervisedService {
         };
         new MinaServer(new ServerHandler(gatewayListener));
 
+        this.setMessageListener(Topics.USERS_TOPIC, new MessageListener() {
+            public void onMessage(Message msg) {
+                final ObjectMessage objectMessage = (ObjectMessage) msg;
+                try {
+                    Serializable message = objectMessage.getObject();
+                    final Response<UserListRequest> convertedMessage = new Convertor<Response<UserListRequest>>().convert(message);
+                    if (convertedMessage != null) {
+                        sessionManager.broadcastMessage(convertedMessage);
+                    }
+                } catch (JMSException e) {
+                    LOGGER.error("Caught exception while processing received message ", e);
+                }
+            }
+        });
     }
 
     public static void main(String[] args) {

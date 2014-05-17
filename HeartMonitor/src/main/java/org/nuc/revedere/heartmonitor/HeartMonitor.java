@@ -24,6 +24,7 @@ import org.nuc.revedere.service.core.SupervisedService;
 import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.service.core.hb.Heartbeat;
+import org.nuc.revedere.util.Convertor;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class HeartMonitor extends Service {
@@ -80,7 +81,6 @@ public class HeartMonitor extends Service {
         setMessageListener(SupervisorTopics.HEARTBEAT_TOPIC, heartbeatListener);
     }
 
-    @SuppressWarnings("unchecked")
     private void startListeningForUsers() throws JMSException, InterruptedException {
         LOGGER.info("Sending users list request");
         final JMSRequestor<UserListRequest> requestor = new JMSRequestor<UserListRequest>(this);
@@ -102,9 +102,9 @@ public class HeartMonitor extends Service {
                 final ObjectMessage objectMessage = (ObjectMessage) msg;
                 try {
                     Serializable message = objectMessage.getObject();
-                    if (message instanceof Response<?>) {
-                        final Response<UserListRequest> receivedResponse = (Response<UserListRequest>) message;
-                        if (receivedResponse.hasAttachment()) {
+                    final Response<UserListRequest> covertedMessage = new Convertor<Response<UserListRequest>>().convert(message);
+                    if (covertedMessage != null) {
+                        if (covertedMessage.hasAttachment()) {
                             final UserListUpdate userListUpdate = (UserListUpdate) receivedResponse.getAttachment();
                             userCollector.agregate(userListUpdate);
                         } else {
@@ -159,7 +159,7 @@ public class HeartMonitor extends Service {
     public void addUserCollectorListener(CollectorListener<UserListUpdate> listener) {
         userCollector.addListener(listener);
     }
-    
+
     public void removeUserCollectorListener(CollectorListener<UserListUpdate> listener) {
         userCollector.removeListener(listener);
     }
