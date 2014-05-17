@@ -10,12 +10,14 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
 import org.nuc.revedere.core.User;
+import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.heartmonitor.HeartMonitor;
-import org.nuc.revedere.heartmonitor.UsersInfoListener;
+import org.nuc.revedere.util.Collector;
+import org.nuc.revedere.util.Collector.CollectorListener;
 
 @ManagedBean(name = "users")
 @SessionScoped
-public class UsersPageBean implements Serializable, UsersInfoListener {
+public class UsersPageBean implements Serializable, CollectorListener<UserListUpdate> {
 
     private static final long serialVersionUID = 8388751329694282175L;
     private final HeartMonitor heartMonitor;
@@ -25,12 +27,7 @@ public class UsersPageBean implements Serializable, UsersInfoListener {
 
     public UsersPageBean() {
         heartMonitor = HeartMonitor.getInstance();
-        heartMonitor.setUserInfoListener(this);
-    }
-
-    public void onUsersUpdate(Set<User> connectedUsers, Set<User> disconnectedUsers) {
-        this.connectedUsers = connectedUsers;
-        this.disconnectedUsers = disconnectedUsers;
+        heartMonitor.addUserCollectorListener(this);
     }
 
     public UserLine[] getUserLines() {
@@ -46,5 +43,17 @@ public class UsersPageBean implements Serializable, UsersInfoListener {
 
         Collections.sort(list);
         return list.toArray(new UserLine[arraySize]);
+    }
+
+    public void onUpdate(UserListUpdate update) {
+        this.connectedUsers = update.getUsersWhoWentOnline();
+        this.disconnectedUsers = update.getUsersWhoWentOffline();
+
+    }
+
+    public void onUpdate(Collector<UserListUpdate> source, UserListUpdate update) {
+        this.connectedUsers = source.getCurrentState().getUsersWhoWentOnline();
+        this.disconnectedUsers = source.getCurrentState().getUsersWhoWentOffline();
+
     }
 }

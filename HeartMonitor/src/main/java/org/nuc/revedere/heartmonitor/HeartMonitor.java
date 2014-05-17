@@ -14,6 +14,7 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
 import org.nuc.revedere.core.User;
+import org.nuc.revedere.core.UserCollector;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.UserListRequest;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
@@ -23,6 +24,7 @@ import org.nuc.revedere.service.core.SupervisedService;
 import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.service.core.hb.Heartbeat;
+import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class HeartMonitor extends Service {
     private static HeartMonitor instance;
@@ -30,10 +32,7 @@ public class HeartMonitor extends Service {
     private final static String HEARTMONITOR_SERVICE_NAME = "HeartMonitor";
     private final Map<String, ServiceHeartbeatCollector> servicesStatus = new HashMap<String, ServiceHeartbeatCollector>();
     private HeartbeatInfoListener heartbeatInfoListener;
-    private UsersInfoListener userInfoListener;
-
-    private Set<User> connectedUsers = new HashSet<User>();
-    private Set<User> disconnectedUsers = new HashSet<User>();
+    private UserCollector userCollector = new UserCollector();
 
     private HeartMonitor() throws Exception {
         super(HEARTMONITOR_SERVICE_NAME);
@@ -92,7 +91,7 @@ public class HeartMonitor extends Service {
         }
         if (receivedResponse.hasAttachment()) {
             final UserListUpdate userListUpdate = (UserListUpdate) receivedResponse.getAttachment();
-            updateUserList(userListUpdate);
+            userCollector.agregate(userListUpdate);
         } else {
             LOGGER.error("Expected users list as attachement, received nothing instead");
             return;
@@ -107,7 +106,7 @@ public class HeartMonitor extends Service {
                         final Response<UserListRequest> receivedResponse = (Response<UserListRequest>) message;
                         if (receivedResponse.hasAttachment()) {
                             final UserListUpdate userListUpdate = (UserListUpdate) receivedResponse.getAttachment();
-                            updateUserList(userListUpdate);
+                            userCollector.agregate(userListUpdate);
                         } else {
                             LOGGER.error("Expected users list as attachement, received nothing instead");
                         }
@@ -152,37 +151,16 @@ public class HeartMonitor extends Service {
         }
     }
 
-    public void notifyUserInfoListener() {
-        if (this.userInfoListener != null) {
-            this.userInfoListener.onUsersUpdate(connectedUsers, disconnectedUsers);
-        }
-    }
-
     public void setHeartbeatInfoListener(HeartbeatInfoListener listener) {
         this.heartbeatInfoListener = listener;
         listener.onHeartbeatInfoUpdate(servicesStatus);
     }
 
-    public void setUserInfoListener(UsersInfoListener listener) {
-        this.userInfoListener = listener;
-        listener.onUsersUpdate(connectedUsers, disconnectedUsers);
+    public void addUserCollectorListener(CollectorListener<UserListUpdate> listener) {
+        userCollector.addListener(listener);
     }
-
-    private void updateUserList(UserListUpdate update) {
-        if (update.isDeltaUpdate()) {
-            for (User user : update.getUsersWhoWentOnline()) {
-                connectedUsers.add(user);
-                disconnectedUsers.remove(user);
-            }
-
-            for (User user : update.getUsersWhoWentOffline()) {
-                disconnectedUsers.add(user);
-                connectedUsers.remove(user);
-            }
-        } else {
-            connectedUsers = update.getUsersWhoWentOnline();
-            disconnectedUsers = update.getUsersWhoWentOffline();
-        }
-        notifyUserInfoListener();
+    
+    public void removeUserCollectorListener(CollectorListener<UserListUpdate> listener) {
+        userCollector.removeListener(listener);
     }
 }
