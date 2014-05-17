@@ -12,11 +12,11 @@ import org.apache.commons.mail.SimpleEmail;
 import org.nuc.revedere.core.messages.SimpleMailRequest;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.service.core.Service;
-import org.nuc.revedere.service.core.SupervisedService;
+import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.service.core.hb.ServiceState;
 
-public class MailService extends SupervisedService {
+public class MailService extends RevedereService {
 
     private String hostName;
     private int port;

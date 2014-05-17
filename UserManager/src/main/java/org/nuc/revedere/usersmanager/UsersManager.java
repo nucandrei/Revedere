@@ -13,10 +13,10 @@ import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.UnregisterRequest;
 import org.nuc.revedere.core.messages.UserListRequest;
 import org.nuc.revedere.service.core.Service;
-import org.nuc.revedere.service.core.SupervisedService;
+import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.Topics;
 
-public class UsersManager extends SupervisedService {
+public class UsersManager extends RevedereService {
     private final static String USERSMANAGER_SERVICE_NAME = "UsersManager";
     private final UsersHandler usersHandler = new UsersHandler(this);
 

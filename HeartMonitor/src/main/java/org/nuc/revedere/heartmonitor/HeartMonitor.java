@@ -2,9 +2,7 @@ package org.nuc.revedere.heartmonitor;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -13,21 +11,20 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
-import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.UserCollector;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.UserListRequest;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.service.core.JMSRequestor;
 import org.nuc.revedere.service.core.Service;
-import org.nuc.revedere.service.core.SupervisedService;
+import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.service.core.hb.Heartbeat;
 import org.nuc.revedere.util.Convertor;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
-public class HeartMonitor extends Service {
+public class HeartMonitor extends RevedereService {
     private static HeartMonitor instance;
 
     private final static String HEARTMONITOR_SERVICE_NAME = "HeartMonitor";
@@ -142,7 +139,7 @@ public class HeartMonitor extends Service {
                 notifyHeartbeatInfoListener();
             }
         };
-        timer.scheduleAtFixedRate(tickTask, 0, SupervisedService.HEARTBEAT_INTERVAL);
+        timer.scheduleAtFixedRate(tickTask, 0, RevedereService.HEARTBEAT_INTERVAL);
     }
 
     public void notifyHeartbeatInfoListener() {

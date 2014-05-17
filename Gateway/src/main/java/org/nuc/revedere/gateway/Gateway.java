@@ -19,11 +19,11 @@ import org.nuc.revedere.core.messages.UnregisterRequest;
 import org.nuc.revedere.core.messages.UserListRequest;
 import org.nuc.revedere.gateway.connectors.UsersManagerConnector;
 import org.nuc.revedere.service.core.Service;
-import org.nuc.revedere.service.core.SupervisedService;
+import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.util.Convertor;
 
-public class Gateway extends SupervisedService {
+public class Gateway extends RevedereService {
     private final static String GATEWAY_SERVICE_NAME = "Gateway";
 
     public Gateway() throws JDOMException, IOException, JMSException {

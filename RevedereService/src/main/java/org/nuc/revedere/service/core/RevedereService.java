@@ -17,11 +17,11 @@ import org.nuc.revedere.service.core.hb.Heartbeat;
 import org.nuc.revedere.service.core.hb.HeartbeatGenerator;
 import org.nuc.revedere.service.core.hb.ServiceState;
 
-public class SupervisedService extends Service {
+public class RevedereService extends Service {
     public final static int HEARTBEAT_INTERVAL = 10000;
     final HeartbeatGenerator heartbeatGenerator = new HeartbeatGenerator(this.getServiceName());
 
-    public SupervisedService(String serviceName) throws JDOMException, IOException, JMSException {
+    public RevedereService(String serviceName) throws JDOMException, IOException, JMSException {
         super(serviceName);
         startHeartbeatGenerator();
         startListeningForCommands();
@@ -41,7 +41,7 @@ public class SupervisedService extends Service {
     private void sendHeartbeat() {
         Heartbeat heartbeat = heartbeatGenerator.generateHeartbeat();
         try {
-            SupervisedService.this.sendMessage(SupervisorTopics.HEARTBEAT_TOPIC, heartbeat);
+            RevedereService.this.sendMessage(SupervisorTopics.HEARTBEAT_TOPIC, heartbeat);
             LOGGER.info("Sent heartbeat");
         } catch (Exception e) {
             LOGGER.error("Could not send heartbeat.", e);
@@ -56,7 +56,7 @@ public class SupervisedService extends Service {
                     Serializable message = objectMessage.getObject();
                     if (message instanceof Command) {
                         Command command = (Command) message;
-                        if (SupervisedService.this.getServiceName().equals(command.getServiceName())) {
+                        if (RevedereService.this.getServiceName().equals(command.getServiceName())) {
                             LOGGER.info("Received command");
                             shutdownGracefully();
                         }
@@ -89,7 +89,7 @@ public class SupervisedService extends Service {
 
     public static void main(String[] args) {
         try {
-            new SupervisedService(args[0]);
+            new RevedereService(args[0]);
         } catch (JDOMException | IOException | JMSException e) {
             Service.BACKUP_LOGGER.error("Could not start service", e);
         }
