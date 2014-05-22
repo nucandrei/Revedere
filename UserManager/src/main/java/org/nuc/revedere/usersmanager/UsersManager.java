@@ -22,6 +22,8 @@ public class UsersManager extends RevedereService {
 
     public UsersManager() throws Exception {
         super(USERSMANAGER_SERVICE_NAME);
+        super.start(true, true, false);
+        
         startListeningForUsersEvents();
     }
 

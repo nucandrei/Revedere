@@ -1,3 +1,4 @@
 <root>
 	<service1>UsersManager</service1>
+	<service2>HeartMonitor</service2>
 </root>

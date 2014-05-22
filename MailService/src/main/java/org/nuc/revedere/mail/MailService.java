@@ -25,6 +25,8 @@ public class MailService extends RevedereService {
 
     public MailService() throws Exception {
         super("MailService");
+        super.start(true, true, false);
+        
         loadSettings();
         startListeningForMailRequests();
     }

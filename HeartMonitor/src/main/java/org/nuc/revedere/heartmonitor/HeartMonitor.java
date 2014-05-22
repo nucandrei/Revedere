@@ -11,17 +11,11 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
-import org.nuc.revedere.core.UserCollector;
-import org.nuc.revedere.core.messages.Response;
-import org.nuc.revedere.core.messages.UserListRequest;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
-import org.nuc.revedere.service.core.JMSRequestor;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.SupervisorTopics;
-import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.service.core.hb.Heartbeat;
-import org.nuc.revedere.util.Convertor;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class HeartMonitor extends RevedereService {
@@ -30,13 +24,13 @@ public class HeartMonitor extends RevedereService {
     private final static String HEARTMONITOR_SERVICE_NAME = "HeartMonitor";
     private final Map<String, ServiceHeartbeatCollector> servicesStatus = new HashMap<String, ServiceHeartbeatCollector>();
     private HeartbeatInfoListener heartbeatInfoListener;
-    private UserCollector userCollector = new UserCollector();
 
     private HeartMonitor() throws Exception {
         super(HEARTMONITOR_SERVICE_NAME);
+        super.start(true, true, true);
+        
         loadConfiguredServices();
         startListeningForHeartbeats();
-        startListeningForUsers();
         startTick();
     }
 
@@ -78,43 +72,6 @@ public class HeartMonitor extends RevedereService {
         setMessageListener(SupervisorTopics.HEARTBEAT_TOPIC, heartbeatListener);
     }
 
-    private void startListeningForUsers() throws JMSException, InterruptedException {
-        LOGGER.info("Sending users list request");
-        final JMSRequestor<UserListRequest> requestor = new JMSRequestor<UserListRequest>(this);
-        final Response<UserListRequest> receivedResponse = requestor.request(Topics.USERS_TOPIC, new UserListRequest());
-        if (receivedResponse == null) {
-            LOGGER.error("Did not receive response in timeout");
-            return;
-        }
-        if (receivedResponse.hasAttachment()) {
-            final UserListUpdate userListUpdate = (UserListUpdate) receivedResponse.getAttachment();
-            userCollector.agregate(userListUpdate);
-        } else {
-            LOGGER.error("Expected users list as attachement, received nothing instead");
-            return;
-        }
-
-        this.setMessageListener(Topics.USERS_TOPIC, new MessageListener() {
-            public void onMessage(Message msg) {
-                final ObjectMessage objectMessage = (ObjectMessage) msg;
-                try {
-                    Serializable message = objectMessage.getObject();
-                    final Response<UserListRequest> covertedMessage = new Convertor<Response<UserListRequest>>().convert(message);
-                    if (covertedMessage != null) {
-                        if (covertedMessage.hasAttachment()) {
-                            final UserListUpdate userListUpdate = (UserListUpdate) receivedResponse.getAttachment();
-                            userCollector.agregate(userListUpdate);
-                        } else {
-                            LOGGER.error("Expected users list as attachement, received nothing instead");
-                        }
-                    }
-                } catch (JMSException e) {
-                    LOGGER.error("Caught exception while processing received message ", e);
-                }
-            }
-        });
-    }
-
     private void addHeartbeatToServicesStatus(Heartbeat receivedHeartbeat) {
         final String serviceName = receivedHeartbeat.getServiceName();
         ServiceHeartbeatCollector serviceStatus = servicesStatus.get(serviceName);
@@ -154,10 +111,10 @@ public class HeartMonitor extends RevedereService {
     }
 
     public void addUserCollectorListener(CollectorListener<UserListUpdate> listener) {
-        userCollector.addListener(listener);
+        getUserCollector().addListener(listener);
     }
 
     public void removeUserCollectorListener(CollectorListener<UserListUpdate> listener) {
-        userCollector.removeListener(listener);
+        getUserCollector().removeListener(listener);
     }
 }

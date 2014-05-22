@@ -12,19 +12,74 @@ import javax.jms.ObjectMessage;
 
 import org.apache.log4j.LogManager;
 import org.jdom2.JDOMException;
+import org.nuc.revedere.core.UserCollector;
+import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.UserListRequest;
+import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.service.core.cmd.Command;
 import org.nuc.revedere.service.core.hb.Heartbeat;
 import org.nuc.revedere.service.core.hb.HeartbeatGenerator;
 import org.nuc.revedere.service.core.hb.ServiceState;
+import org.nuc.revedere.util.Convertor;
 
 public class RevedereService extends Service {
     public final static int HEARTBEAT_INTERVAL = 10000;
-    final HeartbeatGenerator heartbeatGenerator = new HeartbeatGenerator(this.getServiceName());
+    private final HeartbeatGenerator heartbeatGenerator = new HeartbeatGenerator(this.getServiceName());
+    private final UserCollector userCollector = new UserCollector();
 
     public RevedereService(String serviceName) throws JDOMException, IOException, JMSException {
         super(serviceName);
-        startHeartbeatGenerator();
-        startListeningForCommands();
+    }
+
+    public void start(boolean sendHeartbeats, boolean listenForCommands, boolean listenForUsers) throws Exception {
+        if (sendHeartbeats) {
+            startHeartbeatGenerator();
+        }
+
+        if (listenForCommands) {
+            startListeningForCommands();
+        }
+
+        if (listenForUsers) {
+            startListeningForUsers();
+        }
+    }
+
+    private void startListeningForUsers() throws JMSException, InterruptedException {
+        LOGGER.info("Sending users list request");
+        final JMSRequestor<UserListRequest> requestor = new JMSRequestor<UserListRequest>(this);
+        final Response<UserListRequest> receivedResponse = requestor.request(Topics.USERS_TOPIC, new UserListRequest());
+        if (receivedResponse == null) {
+            LOGGER.error("Did not receive response in timeout");
+            return;
+        }
+        if (receivedResponse.hasAttachment()) {
+            final UserListUpdate userListUpdate = (UserListUpdate) receivedResponse.getAttachment();
+            userCollector.agregate(userListUpdate);
+        } else {
+            LOGGER.error("Expected users list as attachement, received nothing instead");
+            return;
+        }
+
+        this.setMessageListener(Topics.USERS_TOPIC, new MessageListener() {
+            public void onMessage(Message msg) {
+                final ObjectMessage objectMessage = (ObjectMessage) msg;
+                try {
+                    final Serializable message = objectMessage.getObject();
+                    final Response<UserListRequest> convertedMessage = new Convertor<Response<UserListRequest>>().convert(message);
+                    if (convertedMessage != null) {
+                        if (convertedMessage.hasAttachment()) {
+                            final UserListUpdate userListUpdate = (UserListUpdate) convertedMessage.getAttachment();
+                            userCollector.agregate(userListUpdate);
+                        } else {
+                            LOGGER.error("Expected users list as attachement, received nothing instead");
+                        }
+                    }
+                } catch (JMSException e) {
+                    LOGGER.error("Caught exception while processing received message ", e);
+                }
+            }
+        });
     }
 
     private void startHeartbeatGenerator() {
@@ -78,6 +133,10 @@ public class RevedereService extends Service {
 
     public void setServiceComment(String comment) {
         this.heartbeatGenerator.setComment(comment);
+    }
+
+    public UserCollector getUserCollector() {
+        return userCollector;
     }
 
     public void shutdownGracefully() {
