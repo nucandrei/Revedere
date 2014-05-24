@@ -7,6 +7,7 @@ import org.nuc.revedere.core.messages.LoginRequest;
 import org.nuc.revedere.core.messages.LogoutRequest;
 import org.nuc.revedere.core.messages.Ping;
 import org.nuc.revedere.core.messages.RegisterRequest;
+import org.nuc.revedere.core.messages.UnregisterRequest;
 
 public class ServerHandler extends IoHandlerAdapter {
     private final GatewayListener listener;
@@ -25,6 +26,10 @@ public class ServerHandler extends IoHandlerAdapter {
         if (message instanceof RegisterRequest) {
             listener.onRegisterRequest((RegisterRequest) message, session);
             return;
+        }
+
+        if (message instanceof UnregisterRequest) {
+            listener.onUnregisterRequest((UnregisterRequest) message, session);
         }
 
         if (message instanceof LogoutRequest) {

@@ -6,7 +6,7 @@
 		<artifactId>Revedere</artifactId>
 		<version>0.1</version>
 	</parent>
-	<artifactId>UserManager</artifactId>
+	<artifactId>UsersManager</artifactId>
 	<dependencies>
 		<dependency>
 			<groupId>org.nuc.revedere</groupId>

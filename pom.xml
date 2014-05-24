@@ -11,5 +11,6 @@
   	<module>Gateway</module>
   	<module>MailService</module>
   	<module>RevedereClient</module>
+  	<module>Integration</module>
   </modules>
 </project>

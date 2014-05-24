@@ -1,12 +1,5 @@
 package org.nuc.revedere.gateway;
 
-import java.io.Serializable;
-
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-
 import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.core.messages.LoginRequest;
 import org.nuc.revedere.core.messages.LogoutRequest;
@@ -19,10 +12,8 @@ import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.gateway.connectors.UsersManagerConnector;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
-import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.util.Collector;
 import org.nuc.revedere.util.Collector.CollectorListener;
-import org.nuc.revedere.util.Convertor;
 
 public class Gateway extends RevedereService {
     private final static String GATEWAY_SERVICE_NAME = "Gateway";
