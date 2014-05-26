@@ -20,7 +20,6 @@ import org.nuc.revedere.service.core.cmd.Command;
 import org.nuc.revedere.service.core.hb.Heartbeat;
 import org.nuc.revedere.service.core.hb.HeartbeatGenerator;
 import org.nuc.revedere.service.core.hb.ServiceState;
-import org.nuc.revedere.util.Convertor;
 
 public class RevedereService extends Service {
     public final static int HEARTBEAT_INTERVAL = 10000;
@@ -66,14 +65,17 @@ public class RevedereService extends Service {
                 final ObjectMessage objectMessage = (ObjectMessage) msg;
                 try {
                     final Serializable message = objectMessage.getObject();
-                    final Response<UserListRequest> convertedMessage = new Convertor<Response<UserListRequest>>().convert(message);
-                    if (convertedMessage != null) {
-                        if (convertedMessage.hasAttachment()) {
-                            final UserListUpdate userListUpdate = (UserListUpdate) convertedMessage.getAttachment();
+                    try {
+                        @SuppressWarnings("unchecked")
+                        final Response<UserListRequest> userListResponse = (Response<UserListRequest>) message;
+                        if (userListResponse.hasAttachment()) {
+                            final UserListUpdate userListUpdate = (UserListUpdate) userListResponse.getAttachment();
                             userCollector.agregate(userListUpdate);
                         } else {
                             LOGGER.error("Expected users list as attachement, received nothing instead");
                         }
+                    } catch (ClassCastException e) {
+                        // ignore the exception
                     }
                 } catch (JMSException e) {
                     LOGGER.error("Caught exception while processing received message ", e);

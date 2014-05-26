@@ -3,6 +3,7 @@ package org.nuc.revedere.gateway;
 import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.core.messages.Ping;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
@@ -33,9 +34,15 @@ public class Gateway extends RevedereService {
             public void onLoginRequest(LoginRequest request, IoSession session) {
                 final Response<LoginRequest> response = usersManagerConnector.login(request);
                 if (response.isSuccessfull()) {
-                    sessionManager.setOnline(request.getUsername(), session);
+                    sessionManager.setAwaitingAcknowledgement(request.getUsername(), session);
                 }
                 session.write(response);
+            }
+            
+            @Override
+            public void onAcknowledgement(Acknowledgement<LoginRequest> acknowledgement, IoSession session) {
+                sessionManager.markReceivedAcknowledgement(session);
+                usersManagerConnector.acknowledgeLogin(acknowledgement);
             }
 
             @Override
@@ -77,7 +84,6 @@ public class Gateway extends RevedereService {
             public void onPing(IoSession session) {
                 sessionManager.notePing(session);
             }
-
         };
         new MinaServer(new ServerHandler(gatewayListener));
 

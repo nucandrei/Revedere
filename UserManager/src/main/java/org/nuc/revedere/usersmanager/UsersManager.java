@@ -7,6 +7,7 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
@@ -23,7 +24,7 @@ public class UsersManager extends RevedereService {
     public UsersManager() throws Exception {
         super(USERSMANAGER_SERVICE_NAME);
         super.start(true, true, false);
-        
+
         startListeningForUsersEvents();
     }
 
@@ -59,6 +60,7 @@ public class UsersManager extends RevedereService {
                     if (message instanceof LogoutRequest) {
                         final LogoutRequest logoutRequest = (LogoutRequest) message;
                         usersHandler.logout(logoutRequest);
+                        return;
                     }
 
                     if (message instanceof UserListRequest) {
@@ -67,6 +69,14 @@ public class UsersManager extends RevedereService {
                         sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
                     }
 
+                    try {
+                        @SuppressWarnings("unchecked")
+                        Acknowledgement<LoginRequest> acknowledgement = (Acknowledgement<LoginRequest>) message;
+                        usersHandler.ack(acknowledgement);
+                        return;
+                    } catch (ClassCastException e) {
+                        // ignore this exception
+                    }
                 } catch (Exception e) {
                     LOGGER.error("Caught exception while processing received message ", e);
                 }

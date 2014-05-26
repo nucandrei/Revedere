@@ -27,4 +27,23 @@ public class User implements Serializable {
     public User getCleanInstance() {
         return new User(username, "");
     }
+
+    @Override
+    public String toString() {
+        return this.username;
+    }
+    
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof User)) {
+            return false;
+        }
+        User that = (User) object;
+        return this.getUsername().equals(that.getUsername());
+    }
+
+    @Override
+    public int hashCode() {
+        return username.hashCode();
+    }
 }

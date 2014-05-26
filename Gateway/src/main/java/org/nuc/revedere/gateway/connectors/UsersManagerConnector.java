@@ -1,6 +1,7 @@
 package org.nuc.revedere.gateway.connectors;
 
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
@@ -35,5 +36,10 @@ public class UsersManagerConnector {
     public void logout(LogoutRequest request) {
         final JMSShouter<LogoutRequest> shouter = new JMSShouter<LogoutRequest>(supportService);
         shouter.shout(Topics.USERS_TOPIC, request);
+    }
+
+    public void acknowledgeLogin(Acknowledgement<LoginRequest> ack) {
+        final JMSShouter<Acknowledgement<LoginRequest>> shouter = new JMSShouter<Acknowledgement<LoginRequest>>(supportService);
+        shouter.shout(Topics.USERS_TOPIC, ack);
     }
 }

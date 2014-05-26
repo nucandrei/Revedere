@@ -8,7 +8,6 @@ import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
-import org.nuc.revedere.util.Convertor;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class RevedereSession {
@@ -34,14 +33,22 @@ public class RevedereSession {
     public void logout() {
         this.minaClient.sendMessage(new LogoutRequest(username));
     }
+    
+    public void close() {
+        this.minaClient.close();
+    }
 
     private void initialize() {
         this.minaClient.setHandler(new IoHandlerAdapter() {
             @Override
             public void messageReceived(IoSession session, Object message) {
-                final Response<UserListRequest> possibleResponse = new Convertor<Response<UserListRequest>>().convert(message);
-                if (possibleResponse != null) {
-                    userCollector.agregate((UserListUpdate) possibleResponse.getAttachment());
+                try {
+                    @SuppressWarnings("unchecked")
+                    final Response<UserListRequest> userListResponse = (Response<UserListRequest>) message;
+                    userCollector.agregate((UserListUpdate) userListResponse.getAttachment());
+                    return;
+                } catch (ClassCastException e) {
+                    // ignore this exception
                 }
             }
         });

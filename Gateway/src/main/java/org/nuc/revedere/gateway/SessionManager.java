@@ -1,7 +1,9 @@
 package org.nuc.revedere.gateway;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.mina.core.session.IoSession;
@@ -9,6 +11,7 @@ import org.nuc.revedere.util.BidirectionMap;
 
 public class SessionManager {
     private final BidirectionMap<String, IoSession> connectedUsers = new BidirectionMap<>();
+    private final Map<IoSession, String> awaitingAcknowledgement = new HashMap<IoSession, String>();
     private final Set<IoSession> idleConnections = new HashSet<>();
 
     public void setOnline(String user, IoSession activeSession) {
@@ -25,6 +28,15 @@ public class SessionManager {
 
     public void setOffine(IoSession session) {
         connectedUsers.removeValue(session);
+    }
+
+    public void setAwaitingAcknowledgement(String user, IoSession session) {
+        awaitingAcknowledgement.put(session, user);
+    }
+
+    public void markReceivedAcknowledgement(IoSession session) {
+        final String correspondingUser = awaitingAcknowledgement.remove(session);
+        connectedUsers.put(correspondingUser, session);
     }
 
     public void sendMessageIfOnline(String user, Serializable message) {

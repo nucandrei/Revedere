@@ -2,6 +2,7 @@ package org.nuc.revedere.client;
 
 import org.nuc.revedere.client.connector.MinaClient;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
@@ -18,6 +19,7 @@ public class RevedereConnector {
         final MinaRequestor<LoginRequest> requestor = new MinaRequestor<LoginRequest>(minaClient);
         final Response<LoginRequest> response = requestor.request(loginRequest);
         if (response.isSuccessfull()) {
+            sendAck(response);
             return new RevedereSession(minaClient, username);
         } else {
             throw new Exception(response.getMessage());
@@ -36,5 +38,9 @@ public class RevedereConnector {
         final MinaRequestor<UnregisterRequest> requestor = new MinaRequestor<UnregisterRequest>(minaClient);
         final Response<UnregisterRequest> response = requestor.request(unregisterRequest);
         return response.getMessage();
+    }
+
+    private void sendAck(Response<LoginRequest> loginResponse) {
+        minaClient.sendMessage(new Acknowledgement<LoginRequest>(loginResponse));
     }
 }

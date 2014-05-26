@@ -17,6 +17,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
@@ -38,6 +39,7 @@ public class UsersHandler {
     private final Map<String, User> users = new HashMap<>();
     private final Set<User> connectedUsers = new HashSet<>();
     private final Set<User> disconnectedUsers = new HashSet<>();
+    private final Map<LoginRequest, User> usersWaitingAcknowledgement = new HashMap<LoginRequest, User>();
 
     private final UsersManager parentManager;
 
@@ -51,16 +53,13 @@ public class UsersHandler {
         final String authInfo = request.getAuthInfo();
         LOGGER.info(String.format("Received login request from \"%s\"", username));
         final User correspondingUser = users.get(username);
-
         if (correspondingUser == null) {
             return new Response<LoginRequest>(request, false, USER_DOES_NOT_EXIST);
         }
 
         if (correspondingUser.matchesAuthInfo(authInfo)) {
-            connectedUsers.add(correspondingUser);
-            disconnectedUsers.remove(correspondingUser);
             LOGGER.info(String.format("Authentification succedded for \"%s\"", username));
-            notifySubscribers();
+            usersWaitingAcknowledgement.put(request, correspondingUser);
             return new Response<LoginRequest>(request, true, AUTH_SUCCESS);
         } else {
             LOGGER.info(String.format("Authentification failed for \"%s\"", username));
@@ -116,6 +115,18 @@ public class UsersHandler {
         } else {
             return new Response<UnregisterRequest>(request, false, AUTH_FAILED);
         }
+    }
+    
+    public void ack(Acknowledgement<LoginRequest> possibleAcknowledgement) {
+        final User correspondingUser = usersWaitingAcknowledgement.remove(possibleAcknowledgement.getResponse().getRequest());
+        if (correspondingUser == null) {
+            LOGGER.error("Received acknowledgement for not logged in user");
+            return;
+        }
+        LOGGER.info(String.format("Received acknowledgement from \"%s\"", correspondingUser.getUsername()));
+        connectedUsers.add(correspondingUser);
+        disconnectedUsers.remove(correspondingUser);
+        notifySubscribers();
     }
 
     public Response<UserListRequest> listUsers(UserListRequest userListRequest) {
@@ -192,17 +203,6 @@ public class UsersHandler {
     }
 
     private void notifySubscribers() {
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000);
-                    parentManager.sendUpdateToSubscribers(listUsers(null));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
+        parentManager.sendUpdateToSubscribers(listUsers(null));
     }
-
 }

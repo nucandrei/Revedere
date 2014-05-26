@@ -52,7 +52,9 @@ public class MinaClient {
         session.write(message);
     }
 
-    
+    public void close() {
+        session.close(false);
+    }
 
     public void removeHandler() {
         this.handler.removeHandler();
