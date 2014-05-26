@@ -3,11 +3,8 @@ package org.nuc.revedere.usersmanager;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,12 +16,12 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.nuc.revedere.core.User;
-import org.nuc.revedere.core.messages.LoginRequest;
-import org.nuc.revedere.core.messages.LogoutRequest;
-import org.nuc.revedere.core.messages.RegisterRequest;
 import org.nuc.revedere.core.messages.Response;
-import org.nuc.revedere.core.messages.UnregisterRequest;
-import org.nuc.revedere.core.messages.UserListRequest;
+import org.nuc.revedere.core.messages.request.LoginRequest;
+import org.nuc.revedere.core.messages.request.LogoutRequest;
+import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.UnregisterRequest;
+import org.nuc.revedere.core.messages.request.UserListRequest;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
 
 public class UsersHandler {

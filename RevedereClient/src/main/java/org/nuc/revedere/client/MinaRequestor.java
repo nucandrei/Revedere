@@ -8,8 +8,8 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.client.connector.MinaClient;
 import org.nuc.revedere.client.connector.MinaHandler;
-import org.nuc.revedere.core.messages.Request;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.request.Request;
 import org.nuc.revedere.util.Container;
 
 public class MinaRequestor<T extends Request> {

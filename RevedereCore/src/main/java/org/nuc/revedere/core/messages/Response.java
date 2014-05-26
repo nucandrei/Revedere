@@ -2,6 +2,8 @@ package org.nuc.revedere.core.messages;
 
 import java.io.Serializable;
 
+import org.nuc.revedere.core.messages.request.Request;
+
 public class Response<T extends Request> implements Serializable {
     private static final long serialVersionUID = 4233992620922562786L;
     private final T request;

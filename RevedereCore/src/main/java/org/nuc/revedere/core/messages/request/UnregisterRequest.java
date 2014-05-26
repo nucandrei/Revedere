@@ -1,4 +1,4 @@
-package org.nuc.revedere.core.messages;
+package org.nuc.revedere.core.messages.request;
 
 public class UnregisterRequest extends CredentialsBasedRequest {
 

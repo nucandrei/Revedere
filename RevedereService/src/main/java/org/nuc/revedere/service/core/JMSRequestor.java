@@ -10,8 +10,8 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
 import org.apache.log4j.Logger;
-import org.nuc.revedere.core.messages.Request;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.request.Request;
 import org.nuc.revedere.util.Container;
 
 public class JMSRequestor<T extends Request> {
@@ -63,14 +63,5 @@ public class JMSRequestor<T extends Request> {
         }
 
         return responseContainer.getContent();
-    }
-
-    public void inform(String topic, final T request) {
-        final String requestTopic = String.format("%s.Request", topic);
-        try {
-            supportService.sendMessage(requestTopic, request);
-        } catch (Exception e) {
-            LOGGER.error("Could not send inform on topic: " + requestTopic, e);
-        }
     }
 }

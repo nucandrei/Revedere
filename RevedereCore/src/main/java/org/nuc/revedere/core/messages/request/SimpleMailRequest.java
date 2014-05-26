@@ -1,4 +1,4 @@
-package org.nuc.revedere.core.messages;
+package org.nuc.revedere.core.messages.request;
 
 public class SimpleMailRequest extends Request {
     private static final long serialVersionUID = -2485315669367301785L;

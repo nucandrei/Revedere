@@ -1,10 +1,10 @@
 package org.nuc.revedere.client;
 
 import org.nuc.revedere.client.connector.MinaClient;
-import org.nuc.revedere.core.messages.LoginRequest;
-import org.nuc.revedere.core.messages.RegisterRequest;
 import org.nuc.revedere.core.messages.Response;
-import org.nuc.revedere.core.messages.UnregisterRequest;
+import org.nuc.revedere.core.messages.request.LoginRequest;
+import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.UnregisterRequest;
 
 public class RevedereConnector {
     private final MinaClient minaClient;

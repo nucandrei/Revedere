@@ -3,11 +3,11 @@ package org.nuc.revedere.gateway;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
-import org.nuc.revedere.core.messages.LoginRequest;
-import org.nuc.revedere.core.messages.LogoutRequest;
 import org.nuc.revedere.core.messages.Ping;
-import org.nuc.revedere.core.messages.RegisterRequest;
-import org.nuc.revedere.core.messages.UnregisterRequest;
+import org.nuc.revedere.core.messages.request.LoginRequest;
+import org.nuc.revedere.core.messages.request.LogoutRequest;
+import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.UnregisterRequest;
 
 public class ServerHandler extends IoHandlerAdapter {
     private final GatewayListener listener;

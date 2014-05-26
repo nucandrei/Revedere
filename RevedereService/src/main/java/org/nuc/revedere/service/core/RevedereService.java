@@ -14,7 +14,7 @@ import org.apache.log4j.LogManager;
 import org.jdom2.JDOMException;
 import org.nuc.revedere.core.UserCollector;
 import org.nuc.revedere.core.messages.Response;
-import org.nuc.revedere.core.messages.UserListRequest;
+import org.nuc.revedere.core.messages.request.UserListRequest;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.service.core.cmd.Command;
 import org.nuc.revedere.service.core.hb.Heartbeat;

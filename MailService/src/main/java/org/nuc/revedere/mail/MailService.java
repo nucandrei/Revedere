@@ -9,8 +9,8 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.mail.Email;
 import org.apache.commons.mail.SimpleEmail;
-import org.nuc.revedere.core.messages.SimpleMailRequest;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.request.SimpleMailRequest;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.Topics;

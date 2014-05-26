@@ -6,12 +6,12 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
-import org.nuc.revedere.core.messages.LoginRequest;
-import org.nuc.revedere.core.messages.LogoutRequest;
-import org.nuc.revedere.core.messages.RegisterRequest;
 import org.nuc.revedere.core.messages.Response;
-import org.nuc.revedere.core.messages.UnregisterRequest;
-import org.nuc.revedere.core.messages.UserListRequest;
+import org.nuc.revedere.core.messages.request.LoginRequest;
+import org.nuc.revedere.core.messages.request.LogoutRequest;
+import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.UnregisterRequest;
+import org.nuc.revedere.core.messages.request.UserListRequest;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.Topics;

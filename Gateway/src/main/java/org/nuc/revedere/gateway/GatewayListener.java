@@ -1,16 +1,16 @@
 package org.nuc.revedere.gateway;
 
 import org.apache.mina.core.session.IoSession;
-import org.nuc.revedere.core.messages.LoginRequest;
-import org.nuc.revedere.core.messages.LogoutRequest;
-import org.nuc.revedere.core.messages.RegisterRequest;
-import org.nuc.revedere.core.messages.UnregisterRequest;
+import org.nuc.revedere.core.messages.request.LoginRequest;
+import org.nuc.revedere.core.messages.request.LogoutRequest;
+import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.UnregisterRequest;
 
 public interface GatewayListener {
     public void onLoginRequest(LoginRequest request, IoSession session);
 
     public void onRegisterRequest(RegisterRequest request, IoSession session);
-    
+
     public void onUnregisterRequest(UnregisterRequest request, IoSession session);
 
     public void onLogoutRequest(LogoutRequest request, IoSession session);
