@@ -3,12 +3,16 @@ package org.nuc.revedere;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.nuc.revedere.util.LoggerUtil;
 
 public class ActiveMQBroker {
+    private static final String LOG4J_PROPERTIES_PATH = "log4j.properties";
     private final static Logger LOGGER = Logger.getLogger(ActiveMQBroker.class);
 
     public static void main(String[] args) {
-
+        PropertyConfigurator.configure(LOG4J_PROPERTIES_PATH);
+        LoggerUtil.startLoggingSession("New run");
         if (args.length != 1) {
             LOGGER.fatal("Could not extract broker address");
             showExample();
