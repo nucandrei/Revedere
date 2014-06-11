@@ -2,10 +2,6 @@ package org.nuc.revedere.usersmanager;
 
 import java.io.Serializable;
 
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
@@ -13,6 +9,7 @@ import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
+import org.nuc.revedere.service.core.BrokerMessageListener;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.Topics;
@@ -29,13 +26,10 @@ public class UsersManager extends RevedereService {
     }
 
     private void startListeningForUsersEvents() throws Exception {
-        super.setMessageListener(Topics.USERS_REQUEST_TOPIC, new MessageListener() {
-
+        super.addMessageListener(Topics.USERS_REQUEST_TOPIC, new BrokerMessageListener() {
             @Override
-            public void onMessage(Message msg) {
-                final ObjectMessage objectMessage = (ObjectMessage) msg;
+            public void onMessage(Serializable message) {
                 try {
-                    Serializable message = objectMessage.getObject();
                     if (message instanceof LoginRequest) {
                         final LoginRequest loginRequest = (LoginRequest) message;
                         final Response<LoginRequest> response = usersHandler.login(loginRequest);
