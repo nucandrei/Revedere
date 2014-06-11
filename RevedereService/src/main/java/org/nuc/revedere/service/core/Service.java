@@ -50,7 +50,7 @@ public class Service {
             log4jFile = DEFAULT_LOG4J_FILE;
         }
         PropertyConfigurator.configure(log4jFile);
-        LoggerUtil.startLoggingSession(LOGGER, "New run");
+        LoggerUtil.startLoggingSession("New run");
 
         String brokerAddress = settings.get("brokerAddress");
         if (brokerAddress == null) {
