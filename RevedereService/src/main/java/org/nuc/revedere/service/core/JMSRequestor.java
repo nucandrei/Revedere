@@ -22,35 +22,36 @@ public class JMSRequestor<T extends Request> {
         final String responseTopic = String.format("%s.Response", topic);
         final Container<Response<T>> responseContainer = new Container<>();
         final CountDownLatch latch = new CountDownLatch(1);
-
-        try {
-            supportService.setMessageListener(responseTopic, new BrokerMessageListener() {
-                @SuppressWarnings("unchecked")
-                public void onMessage(Serializable message) {
-                    try {
-                        final Response<T> possibleResponse = (Response<T>) message;
-                        if (possibleResponse.getRequest().equals(request)) {
-                            responseContainer.setContent(possibleResponse);
-                            latch.countDown();
-                        }
-                    } catch (ClassCastException e) {
-                        // ignore this message.
+        final BrokerMessageListener responseListener = new BrokerMessageListener() {
+            @SuppressWarnings("unchecked")
+            public void onMessage(Serializable message) {
+                try {
+                    final Response<T> possibleResponse = (Response<T>) message;
+                    if (possibleResponse.getRequest().equals(request)) {
+                        responseContainer.setContent(possibleResponse);
+                        latch.countDown();
                     }
+                } catch (ClassCastException e) {
+                    // ignore this message.
                 }
-            });
+            }
+        };
+        try {
+            supportService.addMessageListener(responseTopic, responseListener);
         } catch (Exception e) {
             LOGGER.error("Could not set listener for request on topic: " + responseTopic, e);
+            supportService.removeMessageListener(responseTopic, responseListener);
             return null;
         }
 
         try {
             supportService.sendMessage(requestTopic, request);
             latch.await(10, TimeUnit.SECONDS);
-            supportService.setMessageListener(responseTopic, null);
         } catch (Exception e) {
             LOGGER.error("Could not send request on topic: " + requestTopic, e);
         }
 
+        supportService.removeMessageListener(responseTopic, responseListener);
         return responseContainer.getContent();
     }
 }

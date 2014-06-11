@@ -60,7 +60,7 @@ public class HeartMonitor extends RevedereService {
                 }
             }
         };
-        setMessageListener(SupervisorTopics.HEARTBEAT_TOPIC, heartbeatListener);
+        addMessageListener(SupervisorTopics.HEARTBEAT_TOPIC, heartbeatListener);
     }
 
     private void addHeartbeatToServicesStatus(Heartbeat receivedHeartbeat) {

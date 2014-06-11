@@ -73,7 +73,7 @@ public class MailService extends RevedereService {
 
     private void startListeningForMailRequests() {
         try {
-            this.setMessageListener(Topics.MAIL_REQUEST_TOPIC, new BrokerMessageListener() {
+            this.addMessageListener(Topics.MAIL_REQUEST_TOPIC, new BrokerMessageListener() {
                 public void onMessage(Serializable message) {
                     try {
                         if (message instanceof SimpleMailRequest) {

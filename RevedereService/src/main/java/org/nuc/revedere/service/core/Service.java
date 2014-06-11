@@ -96,8 +96,12 @@ public class Service {
         return loadedSettings;
     }
     
-    public void setMessageListener(String topic, BrokerMessageListener brokerMessageListener) throws JMSException {
-        brokerAdapter.setMessageListener(topic, brokerMessageListener);
+    public void addMessageListener(String topic, BrokerMessageListener brokerMessageListener) throws JMSException {
+        brokerAdapter.addMessageListener(topic, brokerMessageListener);
+    }
+    
+    public void removeMessageListener(String topic, BrokerMessageListener brokerMessageListener) {
+        brokerAdapter.removeMessageListener(topic, brokerMessageListener);
     }
     
     public void sendMessage(String topic, Serializable message) throws JMSException {

@@ -56,7 +56,7 @@ public class RevedereService extends Service {
             return;
         }
 
-        this.setMessageListener(Topics.USERS_TOPIC, new BrokerMessageListener() {
+        this.addMessageListener(Topics.USERS_TOPIC, new BrokerMessageListener() {
             public void onMessage(Serializable message) {
                 try {
                     @SuppressWarnings("unchecked")
@@ -109,7 +109,7 @@ public class RevedereService extends Service {
                 }
             }
         };
-        setMessageListener(SupervisorTopics.COMMAND_TOPIC, commandListener);
+        addMessageListener(SupervisorTopics.COMMAND_TOPIC, commandListener);
     }
 
     public void setServiceState(ServiceState state) {
