@@ -11,7 +11,6 @@ import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.embeddable.archive.ScatteredArchive;
 import org.glassfish.embeddable.archive.ScatteredArchive.Type;
-import org.nuc.revedere.heartmonitor.ServiceHeartbeatCollector;
 import org.nuc.revedere.service.core.Service;
 
 /**

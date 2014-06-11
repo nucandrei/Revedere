@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
-import javax.jms.MessageListener;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.jdom2.Document;
@@ -98,8 +96,8 @@ public class Service {
         return loadedSettings;
     }
     
-    public void setMessageListener(String topic, MessageListener listener) throws JMSException {
-        brokerAdapter.setMessageListener(topic, listener);
+    public void setMessageListener(String topic, BrokerMessageListener brokerMessageListener) throws JMSException {
+        brokerAdapter.setMessageListener(topic, brokerMessageListener);
     }
     
     public void sendMessage(String topic, Serializable message) throws JMSException {

@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
@@ -26,7 +27,7 @@ public class ActiveMQBrokerAdapter implements BrokerAdapter {
     private final String address;
     private Session session;
 
-    public ActiveMQBrokerAdapter(String brokerAddress) throws JMSException{
+    public ActiveMQBrokerAdapter(String brokerAddress) throws JMSException {
         consumerMap = new HashMap<String, MessageConsumer>();
         producerMap = new HashMap<String, MessageProducer>();
         this.address = brokerAddress;
@@ -46,7 +47,7 @@ public class ActiveMQBrokerAdapter implements BrokerAdapter {
         return this.session != null;
     }
 
-    public void setMessageListener(String topicString, MessageListener messageListener) throws JMSException {
+    public void setMessageListener(String topicString, final BrokerMessageListener messageListener) throws JMSException {
         LOGGER.info("Linking message listener to topic: " + topicString);
         MessageConsumer consumer = consumerMap.get(topicString);
         if (consumer == null) {
@@ -54,7 +55,18 @@ public class ActiveMQBrokerAdapter implements BrokerAdapter {
             consumer = session.createConsumer(topic);
             consumerMap.put(topicString, consumer);
         }
-        consumer.setMessageListener(messageListener);
+
+        consumer.setMessageListener(new MessageListener() {
+            @Override
+            public void onMessage(Message msg) {
+                final ObjectMessage objectMessage = (ObjectMessage) msg;
+                try {
+                    messageListener.onMessage(objectMessage.getObject());
+                } catch (Exception e) {
+                    LOGGER.error("Caught exception while processing received message ", e);
+                }
+            }
+        });
     }
 
     public void sendMessage(String topicString, Serializable message) throws JMSException {

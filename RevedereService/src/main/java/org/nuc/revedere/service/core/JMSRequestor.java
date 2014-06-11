@@ -4,11 +4,6 @@ import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-
 import org.apache.log4j.Logger;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.Request;
@@ -29,23 +24,17 @@ public class JMSRequestor<T extends Request> {
         final CountDownLatch latch = new CountDownLatch(1);
 
         try {
-            supportService.setMessageListener(responseTopic, new MessageListener() {
+            supportService.setMessageListener(responseTopic, new BrokerMessageListener() {
                 @SuppressWarnings("unchecked")
-                public void onMessage(Message msg) {
-                    final ObjectMessage objectMessage = (ObjectMessage) msg;
+                public void onMessage(Serializable message) {
                     try {
-                        Serializable message = objectMessage.getObject();
-                        try {
-                            final Response<T> possibleResponse = (Response<T>) message;
-                            if (possibleResponse.getRequest().equals(request)) {
-                                responseContainer.setContent(possibleResponse);
-                                latch.countDown();
-                            }
-                        } catch (ClassCastException e) {
-                            // ignore this message.
+                        final Response<T> possibleResponse = (Response<T>) message;
+                        if (possibleResponse.getRequest().equals(request)) {
+                            responseContainer.setContent(possibleResponse);
+                            latch.countDown();
                         }
-                    } catch (JMSException e) {
-                        LOGGER.error("Caught exception while processing received message ", e);
+                    } catch (ClassCastException e) {
+                        // ignore this message.
                     }
                 }
             });

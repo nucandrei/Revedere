@@ -6,10 +6,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-
 import org.apache.log4j.LogManager;
 import org.jdom2.JDOMException;
 import org.nuc.revedere.core.UserCollector;
@@ -60,25 +56,19 @@ public class RevedereService extends Service {
             return;
         }
 
-        this.setMessageListener(Topics.USERS_TOPIC, new MessageListener() {
-            public void onMessage(Message msg) {
-                final ObjectMessage objectMessage = (ObjectMessage) msg;
+        this.setMessageListener(Topics.USERS_TOPIC, new BrokerMessageListener() {
+            public void onMessage(Serializable message) {
                 try {
-                    final Serializable message = objectMessage.getObject();
-                    try {
-                        @SuppressWarnings("unchecked")
-                        final Response<UserListRequest> userListResponse = (Response<UserListRequest>) message;
-                        if (userListResponse.hasAttachment()) {
-                            final UserListUpdate userListUpdate = (UserListUpdate) userListResponse.getAttachment();
-                            userCollector.agregate(userListUpdate);
-                        } else {
-                            LOGGER.error("Expected users list as attachement, received nothing instead");
-                        }
-                    } catch (ClassCastException e) {
-                        // ignore the exception
+                    @SuppressWarnings("unchecked")
+                    final Response<UserListRequest> userListResponse = (Response<UserListRequest>) message;
+                    if (userListResponse.hasAttachment()) {
+                        final UserListUpdate userListUpdate = (UserListUpdate) userListResponse.getAttachment();
+                        userCollector.agregate(userListUpdate);
+                    } else {
+                        LOGGER.error("Expected users list as attachement, received nothing instead");
                     }
-                } catch (JMSException e) {
-                    LOGGER.error("Caught exception while processing received message ", e);
+                } catch (ClassCastException e) {
+                    // ignore the exception
                 }
             }
         });
@@ -106,27 +96,20 @@ public class RevedereService extends Service {
     }
 
     private void startListeningForCommands() throws JMSException {
-        final MessageListener commandListener = new MessageListener() {
-            public void onMessage(Message msg) {
-                final ObjectMessage objectMessage = (ObjectMessage) msg;
-                try {
-                    Serializable message = objectMessage.getObject();
-                    if (message instanceof Command) {
-                        Command command = (Command) message;
-                        if (RevedereService.this.getServiceName().equals(command.getServiceName())) {
-                            LOGGER.info("Received command");
-                            shutdownGracefully();
-                        }
-                    } else {
-                        LOGGER.warn("Received unwanted message on command topic : " + message.getClass().toString());
+        final BrokerMessageListener commandListener = new BrokerMessageListener() {
+            public void onMessage(Serializable message) {
+                if (message instanceof Command) {
+                    Command command = (Command) message;
+                    if (RevedereService.this.getServiceName().equals(command.getServiceName())) {
+                        LOGGER.info("Received command");
+                        shutdownGracefully();
                     }
-                } catch (JMSException e) {
-                    LOGGER.error("Caught exception while processing received message ", e);
+                } else {
+                    LOGGER.warn("Received unwanted message on command topic : " + message.getClass().toString());
                 }
             }
         };
         setMessageListener(SupervisorTopics.COMMAND_TOPIC, commandListener);
-
     }
 
     public void setServiceState(ServiceState state) {

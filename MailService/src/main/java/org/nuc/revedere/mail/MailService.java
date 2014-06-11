@@ -3,14 +3,11 @@ package org.nuc.revedere.mail;
 import java.io.Serializable;
 import java.util.Map;
 
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-
 import org.apache.commons.mail.Email;
 import org.apache.commons.mail.SimpleEmail;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.SimpleMailRequest;
+import org.nuc.revedere.service.core.BrokerMessageListener;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.Topics;
@@ -26,7 +23,7 @@ public class MailService extends RevedereService {
     public MailService() throws Exception {
         super("MailService");
         super.start(true, true, false);
-        
+
         loadSettings();
         startListeningForMailRequests();
     }
@@ -76,11 +73,9 @@ public class MailService extends RevedereService {
 
     private void startListeningForMailRequests() {
         try {
-            this.setMessageListener(Topics.MAIL_REQUEST_TOPIC, new MessageListener() {
-                public void onMessage(Message msg) {
-                    final ObjectMessage objectMessage = (ObjectMessage) msg;
+            this.setMessageListener(Topics.MAIL_REQUEST_TOPIC, new BrokerMessageListener() {
+                public void onMessage(Serializable message) {
                     try {
-                        final Serializable message = (Serializable) objectMessage.getObject();
                         if (message instanceof SimpleMailRequest) {
                             final SimpleMailRequest request = (SimpleMailRequest) message;
                             final Response<SimpleMailRequest> response = handleRequest(request);

@@ -7,11 +7,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-
 import org.nuc.revedere.core.messages.update.UserListUpdate;
+import org.nuc.revedere.service.core.BrokerMessageListener;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.SupervisorTopics;
@@ -28,7 +25,7 @@ public class HeartMonitor extends RevedereService {
     private HeartMonitor() throws Exception {
         super(HEARTMONITOR_SERVICE_NAME);
         super.start(true, true, true);
-        
+
         loadConfiguredServices();
         startListeningForHeartbeats();
         startTick();
@@ -53,19 +50,13 @@ public class HeartMonitor extends RevedereService {
     }
 
     private void startListeningForHeartbeats() throws JMSException {
-        final MessageListener heartbeatListener = new MessageListener() {
-            public void onMessage(Message msg) {
-                final ObjectMessage objectMessage = (ObjectMessage) msg;
-                try {
-                    Serializable message = objectMessage.getObject();
-                    if (message instanceof Heartbeat) {
-                        final Heartbeat receivedHeartbeat = (Heartbeat) message;
-                        addHeartbeatToServicesStatus(receivedHeartbeat);
-                    } else {
-                        LOGGER.warn("Received unwanted message on heartbeat topic : " + message.getClass().toString());
-                    }
-                } catch (JMSException e) {
-                    LOGGER.error("Caught exception while processing received message ", e);
+        final BrokerMessageListener heartbeatListener = new BrokerMessageListener() {
+            public void onMessage(Serializable message) {
+                if (message instanceof Heartbeat) {
+                    final Heartbeat receivedHeartbeat = (Heartbeat) message;
+                    addHeartbeatToServicesStatus(receivedHeartbeat);
+                } else {
+                    LOGGER.warn("Received unwanted message on heartbeat topic : " + message.getClass().toString());
                 }
             }
         };
