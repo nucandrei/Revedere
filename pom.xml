@@ -12,5 +12,6 @@
   	<module>MailService</module>
   	<module>RevedereClient</module>
   	<module>Integration</module>
+  	<module>ActiveMQBroker</module>
   </modules>
 </project>
