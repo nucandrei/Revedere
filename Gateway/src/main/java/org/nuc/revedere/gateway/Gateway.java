@@ -38,7 +38,7 @@ public class Gateway extends RevedereService {
                 }
                 session.write(response);
             }
-            
+
             @Override
             public void onAcknowledgement(Acknowledgement<LoginRequest> acknowledgement, IoSession session) {
                 sessionManager.markReceivedAcknowledgement(session);

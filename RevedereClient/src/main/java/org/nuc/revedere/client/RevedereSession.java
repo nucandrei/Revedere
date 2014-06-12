@@ -33,13 +33,13 @@ public class RevedereSession {
     public void logout() {
         this.minaClient.sendMessage(new LogoutRequest(username));
     }
-    
+
     public void close() {
         this.minaClient.close();
     }
 
     private void initialize() {
-        this.minaClient.setHandler(new IoHandlerAdapter() {
+        this.minaClient.addHandler(new IoHandlerAdapter() {
             @Override
             public void messageReceived(IoSession session, Object message) {
                 try {

@@ -29,7 +29,7 @@ public class MinaClient {
         connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(new ObjectSerializationCodecFactory()));
         connector.setHandler(handler);
 
-        final String ipAddress= NetworkUtils.extractIP(address);;
+        final String ipAddress = NetworkUtils.extractIP(address);
         final int port = NetworkUtils.extractPort(address);
 
         final InetSocketAddress remoteAddress = new InetSocketAddress(ipAddress, port);
@@ -44,8 +44,12 @@ public class MinaClient {
         session.getConfig().setUseReadOperation(true);
     }
 
-    public void setHandler(IoHandler handler) {
-        this.handler.setHandler(handler);
+    public void addHandler(IoHandler handler) {
+        this.handler.addHandler(handler);
+    }
+
+    public void removeHandler(IoHandler handler) {
+        this.handler.removeHandler(handler);
     }
 
     public void sendMessage(Serializable message) {
@@ -54,13 +58,5 @@ public class MinaClient {
 
     public void close() {
         session.close(false);
-    }
-
-    public void removeHandler() {
-        this.handler.removeHandler();
-    }
-
-    public MinaHandler getHandler() {
-        return this.handler;
     }
 }
