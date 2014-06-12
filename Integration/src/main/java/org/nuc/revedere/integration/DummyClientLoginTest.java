@@ -8,6 +8,7 @@ import org.nuc.revedere.client.RevedereConnector;
 import org.nuc.revedere.client.RevedereSession;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
+import org.nuc.revedere.shortmessage.MessageBox;
 import org.nuc.revedere.util.Collector;
 import org.nuc.revedere.util.Collector.CollectorListener;
 import org.nuc.revedere.util.Container;
@@ -20,7 +21,7 @@ public class DummyClientLoginTest {
     @Test
     public void testLogin() throws Exception {
         final RevedereConnector revedereConnector = new RevedereConnector("127.0.0.1:6045");
-        final RevedereSession session = revedereConnector.login("admin", "admin");
+        final RevedereSession session = revedereConnector.login("user", "user");
         try {
             final Container<UserListUpdate> expectedUpdateContainer = new Container<UserListUpdate>();
             final CountDownLatch latch = new CountDownLatch(2);
@@ -34,7 +35,11 @@ public class DummyClientLoginTest {
 
             latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
             assertNotNull(expectedUpdateContainer.getContent());
-            assertTrue(expectedUpdateContainer.getContent().getUsersWhoWentOnline().contains(new User("admin", "admin")));
+            assertTrue(expectedUpdateContainer.getContent().getUsersWhoWentOnline().contains(new User("user", "user")));
+
+            MessageBox myMessageBox = session.getMessageBox();
+            Thread.sleep(1000);
+            assertFalse(myMessageBox.getUnreadMessages().isEmpty());
         } finally {
             session.logout();
             session.close();

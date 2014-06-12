@@ -37,6 +37,9 @@ public class UserCollector extends Collector<UserListUpdate> {
         return disconnectedUsers;
     }
 
+    public boolean isConnected(User user) {
+        return connectedUsers.contains(user);
+    }
     @Override
     public UserListUpdate getCurrentState() {
         return new UserListUpdate(false, connectedUsers, disconnectedUsers);

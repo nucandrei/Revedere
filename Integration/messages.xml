@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <messagebox name="admin">
+    <message type="sent" timestamp="234">
+      <content>hai pe aici</content>
+      <from>admin</from>
+      <to>user</to>
+    </message>
+  </messagebox>
+  <messagebox name="user">
+    <message type="unread" timestamp="234">
+      <content>hai pe aici</content>
+      <from>admin</from>
+      <to>user</to>
+    </message>
+  </messagebox>
+</root>

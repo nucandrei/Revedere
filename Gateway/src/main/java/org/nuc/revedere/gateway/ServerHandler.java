@@ -8,6 +8,7 @@ import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 
 public class ServerHandler extends IoHandlerAdapter {
@@ -37,6 +38,10 @@ public class ServerHandler extends IoHandlerAdapter {
         if (message instanceof LogoutRequest) {
             listener.onLogoutRequest((LogoutRequest) message, session);
             return;
+        }
+
+        if (message instanceof ShortMessageSendRequest) {
+            listener.onShortMessageSendRequest((ShortMessageSendRequest) message, session);
         }
 
         if (message instanceof Ping) {

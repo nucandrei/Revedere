@@ -12,6 +12,11 @@ public class User implements Serializable {
         this.authInfo = authInfo;
     }
 
+    public User(String username) {
+        this.username = username;
+        this.authInfo = "";
+    }
+
     public String getUsername() {
         return this.username;
     }
@@ -32,7 +37,7 @@ public class User implements Serializable {
     public String toString() {
         return this.username;
     }
-    
+
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof User)) {

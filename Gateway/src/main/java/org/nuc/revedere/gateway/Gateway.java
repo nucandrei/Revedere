@@ -1,5 +1,7 @@
 package org.nuc.revedere.gateway;
 
+import java.io.Serializable;
+
 import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.core.messages.Ping;
 import org.nuc.revedere.core.messages.Response;
@@ -7,12 +9,18 @@ import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
+import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.gateway.connectors.UsersManagerConnector;
+import org.nuc.revedere.service.core.BrokerMessageListener;
+import org.nuc.revedere.service.core.JMSRequestor;
+import org.nuc.revedere.service.core.JMSShouter;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
+import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.util.Collector;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
@@ -81,9 +89,19 @@ public class Gateway extends RevedereService {
             }
 
             @Override
+            public void onShortMessageSendRequest(ShortMessageSendRequest request, IoSession session) {
+                final JMSRequestor<ShortMessageSendRequest> requestor = new JMSRequestor<ShortMessageSendRequest>(Gateway.this);
+                final Response<ShortMessageSendRequest> response = requestor.request(Topics.SHORT_MESSAGE_TOPIC, request);
+                final ShortMessageUpdate shortMessageUpdate = new ShortMessageUpdate(response.getRequest().getShortMessage().asList(), null);
+                session.write(shortMessageUpdate);
+                LOGGER.info("sent short message send request");
+            }
+
+            @Override
             public void onPing(IoSession session) {
                 sessionManager.notePing(session);
             }
+
         };
         new MinaServer(new ServerHandler(gatewayListener));
 
@@ -93,6 +111,17 @@ public class Gateway extends RevedereService {
                 final Response<UserListRequest> dummyResponse = new Response<UserListRequest>(null, true, "");
                 dummyResponse.attach(source.getCurrentState());
                 sessionManager.broadcastMessage(dummyResponse);
+            }
+        });
+
+        this.addMessageListener(Topics.SHORT_MESSAGE_TOPIC, new BrokerMessageListener() {
+            @Override
+            public void onMessage(Serializable message) {
+                if (message instanceof ShortMessageUpdate) {
+                    LOGGER.info("Received message update");
+                    final ShortMessageUpdate shortMessageUpdate = (ShortMessageUpdate) message;
+                    sessionManager.sendMessageIfOnline(shortMessageUpdate.getIntendedReceiver().getUsername(), shortMessageUpdate);
+                }
             }
         });
     }
