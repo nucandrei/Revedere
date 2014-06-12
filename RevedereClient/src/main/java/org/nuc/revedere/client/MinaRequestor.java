@@ -30,6 +30,10 @@ public class MinaRequestor<T extends Request> {
             public void messageReceived(IoSession session, Object message) {
                 try {
                     final Response<T> possibleResponse = (Response<T>) message;
+                    if (possibleResponse.getRequest() == null) {
+                        return;
+                    }
+                    
                     if (possibleResponse.getRequest().equals(request)) {
                         responseContainer.setContent(possibleResponse);
                         latch.countDown();

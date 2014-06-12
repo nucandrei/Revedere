@@ -8,6 +8,7 @@ import javax.jms.JMSException;
 
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
@@ -55,6 +56,12 @@ public class ShortMessageService extends RevedereService {
                         putInInbox(shortMessage);
                         sendResponse(shortMessageSendRequest);
                         forwardMessageIfReceiverIsOnline(shortMessage);
+                    }
+
+                    if (message instanceof ShortMessageEmptyBoxRequest) {
+                        final ShortMessageEmptyBoxRequest shortMessageEmptyBoxRequest = (ShortMessageEmptyBoxRequest) message;
+                        msgBoxes.get(shortMessageEmptyBoxRequest.getUser().getUsername()).removeAll();
+                        sendMessage(Topics.SHORT_MESSAGE_RESPONSE_TOPIC, new Response<ShortMessageEmptyBoxRequest>(shortMessageEmptyBoxRequest, true, ""));
                     }
                 } catch (Exception e) {
                     LOGGER.error("Caught exception while processing received message", e);

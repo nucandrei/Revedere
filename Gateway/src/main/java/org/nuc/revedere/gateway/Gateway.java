@@ -9,6 +9,7 @@ import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
@@ -17,7 +18,6 @@ import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.gateway.connectors.UsersManagerConnector;
 import org.nuc.revedere.service.core.BrokerMessageListener;
 import org.nuc.revedere.service.core.JMSRequestor;
-import org.nuc.revedere.service.core.JMSShouter;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.Topics;
@@ -98,10 +98,16 @@ public class Gateway extends RevedereService {
             }
 
             @Override
+            public void onShortMessageEmptyBoxRequest(ShortMessageEmptyBoxRequest request, IoSession session) {
+                final JMSRequestor<ShortMessageEmptyBoxRequest> requestor = new JMSRequestor<ShortMessageEmptyBoxRequest>(Gateway.this);
+                final Response<ShortMessageEmptyBoxRequest> response = requestor.request(Topics.SHORT_MESSAGE_TOPIC, request);
+                session.write(response);
+            }
+
+            @Override
             public void onPing(IoSession session) {
                 sessionManager.notePing(session);
             }
-
         };
         new MinaServer(new ServerHandler(gatewayListener));
 

@@ -3,9 +3,11 @@ package org.nuc.revedere.client;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.client.connector.MinaClient;
+import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.UserCollector;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
 import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
@@ -58,6 +60,14 @@ public class RevedereSession {
         this.minaClient.sendMessage(new ShortMessageSendRequest(shortMessage));
     }
 
+    public void emptyMessageBox() {
+        final MinaRequestor<ShortMessageEmptyBoxRequest> requestor = new MinaRequestor<ShortMessageEmptyBoxRequest>(minaClient);
+        final Response<ShortMessageEmptyBoxRequest> response = requestor.request(new ShortMessageEmptyBoxRequest(new User(username)));
+        if (response != null) {
+            clientMessageBox.removeAll();
+        }
+    }
+
     public void logout() {
         this.minaClient.sendMessage(new LogoutRequest(username));
     }
@@ -75,7 +85,7 @@ public class RevedereSession {
                     final Response<UserListRequest> userListResponse = (Response<UserListRequest>) message;
                     userCollector.agregate((UserListUpdate) userListResponse.getAttachment());
                     return;
-                } catch (ClassCastException e) {
+                } catch (Exception e) {
                     // ignore this exception
                 }
 
