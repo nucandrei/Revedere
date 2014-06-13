@@ -1,5 +1,8 @@
 package org.nuc.revedere.client;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.client.connector.MinaClient;
@@ -8,6 +11,7 @@ import org.nuc.revedere.core.UserCollector;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
 import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
@@ -65,6 +69,29 @@ public class RevedereSession {
         final Response<ShortMessageEmptyBoxRequest> response = requestor.request(new ShortMessageEmptyBoxRequest(new User(username)));
         if (response != null) {
             clientMessageBox.removeAll();
+        }
+    }
+
+    public List<ShortMessage> getUnreadMessages() {
+        return requestShortMessages(false, false, true);
+    }
+
+    public List<ShortMessage> getReadMessages() {
+        return requestShortMessages(true, false, false);
+    }
+
+    public List<ShortMessage> getSentMessages() {
+        return requestShortMessages(false, true, false);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<ShortMessage> requestShortMessages(boolean read, boolean sent, boolean unread) {
+        final MinaRequestor<ShortMessageHistoricalRequest> requestor = new MinaRequestor<ShortMessageHistoricalRequest>(minaClient);
+        final Response<ShortMessageHistoricalRequest> response = requestor.request(new ShortMessageHistoricalRequest(new User(username), read, sent, unread));
+        if (response != null) {
+            return (List<ShortMessage>) response.getAttachment();
+        } else {
+            return Collections.emptyList();
         }
     }
 

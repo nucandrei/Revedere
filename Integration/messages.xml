@@ -13,5 +13,25 @@
       <from>admin</from>
       <to>user</to>
     </message>
+    <message type="unread" timestamp="234">
+      <content>hai pe aici</content>
+      <from>admin</from>
+      <to>user</to>
+    </message>
+    <message type="unread" timestamp="234">
+      <content>hai pe aici</content>
+      <from>admin</from>
+      <to>user</to>
+    </message>
+    <message type="unread" timestamp="234">
+      <content>hai pe aici</content>
+      <from>admin</from>
+      <to>user</to>
+    </message>
+    <message type="unread" timestamp="234">
+      <content>hai pe aici</content>
+      <from>admin</from>
+      <to>user</to>
+    </message>
   </messagebox>
 </root>

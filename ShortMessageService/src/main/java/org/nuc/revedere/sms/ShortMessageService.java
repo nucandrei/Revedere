@@ -1,7 +1,9 @@
 package org.nuc.revedere.sms;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.jms.JMSException;
@@ -9,6 +11,7 @@ import javax.jms.JMSException;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
@@ -62,6 +65,32 @@ public class ShortMessageService extends RevedereService {
                         final ShortMessageEmptyBoxRequest shortMessageEmptyBoxRequest = (ShortMessageEmptyBoxRequest) message;
                         msgBoxes.get(shortMessageEmptyBoxRequest.getUser().getUsername()).removeAll();
                         sendMessage(Topics.SHORT_MESSAGE_RESPONSE_TOPIC, new Response<ShortMessageEmptyBoxRequest>(shortMessageEmptyBoxRequest, true, ""));
+                    }
+
+                    if (message instanceof ShortMessageHistoricalRequest) {
+                        final ShortMessageHistoricalRequest shortMessageHistoricalRequest = (ShortMessageHistoricalRequest) message;
+                        final List<ShortMessage> messagesToSend = new ArrayList<ShortMessage>();
+                        final MessageBox messageBox = msgBoxes.get(shortMessageHistoricalRequest.getUser().getUsername());
+                        if (shortMessageHistoricalRequest.isRequestReadMessages()) {
+                            for (ShortMessage shortMessage : messageBox.getReadMessages()) {
+                                messagesToSend.add(shortMessage);
+                            }
+                        }
+
+                        if (shortMessageHistoricalRequest.isRequestSentMessages()) {
+                            for (ShortMessage shortMessage : messageBox.getSentMessages()) {
+                                messagesToSend.add(shortMessage);
+                            }
+                        }
+
+                        if (shortMessageHistoricalRequest.isRequestUnreadMessages()) {
+                            for (ShortMessage shortMessage : messageBox.getUnreadMessages()) {
+                                messagesToSend.add(shortMessage);
+                            }
+                        }
+                        final Response<ShortMessageHistoricalRequest> response = new Response<ShortMessageHistoricalRequest>(shortMessageHistoricalRequest, true, "");
+                        response.attach((Serializable) messagesToSend);
+                        sendMessage(Topics.SHORT_MESSAGE_RESPONSE_TOPIC, response);
                     }
                 } catch (Exception e) {
                     LOGGER.error("Caught exception while processing received message", e);

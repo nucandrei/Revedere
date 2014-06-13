@@ -9,6 +9,7 @@ import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 
@@ -47,6 +48,10 @@ public class ServerHandler extends IoHandlerAdapter {
 
         if (message instanceof ShortMessageEmptyBoxRequest) {
             listener.onShortMessageEmptyBoxRequest((ShortMessageEmptyBoxRequest) message, session);
+        }
+
+        if (message instanceof ShortMessageHistoricalRequest) {
+            listener.onShortMessageHistoricalRequest((ShortMessageHistoricalRequest) message, session);
         }
 
         if (message instanceof Ping) {

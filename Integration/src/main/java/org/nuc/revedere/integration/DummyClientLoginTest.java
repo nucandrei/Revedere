@@ -41,8 +41,12 @@ public class DummyClientLoginTest {
             Thread.sleep(1000);
             assertFalse(myMessageBox.getUnreadMessages().isEmpty());
             
-            session.emptyMessageBox();
-            assertTrue(myMessageBox.getUnreadMessages().isEmpty());
+            assertFalse(session.getReadMessages().isEmpty());
+            assertFalse(session.getUnreadMessages().isEmpty());
+            assertFalse(session.getSentMessages().isEmpty());
+            
+            // session.emptyMessageBox();
+            // assertTrue(myMessageBox.getUnreadMessages().isEmpty());
         } finally {
             session.logout();
             session.close();

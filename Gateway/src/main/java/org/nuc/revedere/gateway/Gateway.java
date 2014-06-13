@@ -10,6 +10,7 @@ import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
@@ -101,6 +102,13 @@ public class Gateway extends RevedereService {
             public void onShortMessageEmptyBoxRequest(ShortMessageEmptyBoxRequest request, IoSession session) {
                 final JMSRequestor<ShortMessageEmptyBoxRequest> requestor = new JMSRequestor<ShortMessageEmptyBoxRequest>(Gateway.this);
                 final Response<ShortMessageEmptyBoxRequest> response = requestor.request(Topics.SHORT_MESSAGE_TOPIC, request);
+                session.write(response);
+            }
+            
+            @Override
+            public void onShortMessageHistoricalRequest(ShortMessageHistoricalRequest request, IoSession session) {
+                final JMSRequestor<ShortMessageHistoricalRequest> requestor = new JMSRequestor<ShortMessageHistoricalRequest>(Gateway.this);
+                final Response<ShortMessageHistoricalRequest> response = requestor.request(Topics.SHORT_MESSAGE_TOPIC, request);
                 session.write(response);
             }
 
