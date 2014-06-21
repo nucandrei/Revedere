@@ -15,5 +15,6 @@
   	<module>Integration</module>
   	<module>ActiveMQBroker</module>
   	<module>ShortMessageService</module>
+  	<module>ReviewService</module>
   </modules>
 </project>

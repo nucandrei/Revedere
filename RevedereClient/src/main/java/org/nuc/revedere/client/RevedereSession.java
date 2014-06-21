@@ -10,13 +10,20 @@ import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.UserCollector;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
+import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
+import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
+import org.nuc.revedere.core.messages.request.ReviewRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageMarkAsReadRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
+import org.nuc.revedere.core.messages.update.ReviewUpdate;
 import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
+import org.nuc.revedere.review.Review;
+import org.nuc.revedere.review.ReviewData;
+import org.nuc.revedere.review.ReviewState;
 import org.nuc.revedere.shortmessage.MessageBox;
 import org.nuc.revedere.shortmessage.MessageBoxPersistence;
 import org.nuc.revedere.shortmessage.MessageBoxXMLPersistence;
@@ -27,16 +34,18 @@ import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class RevedereSession {
     private final MinaClient minaClient;
-    private final String username;
+    private final User currentUser;
     private final UserCollector userCollector;
     private final ShortMessageCollector shortMessageCollector;
+    private final ReviewCollector reviewCollector;
     private final MessageBox clientMessageBox;
 
     public RevedereSession(MinaClient minaClient, String username) {
         this.minaClient = minaClient;
-        this.username = username;
+        this.currentUser = new User(username);
         this.userCollector = new UserCollector();
         this.shortMessageCollector = new ShortMessageCollector();
+        this.reviewCollector = new ReviewCollector();
         final MessageBoxPersistence persistence = new MessageBoxXMLPersistence("messages.xml");
         this.clientMessageBox = new MessageBox(username, persistence);
         this.shortMessageCollector.addListener(new CollectorListener<ShortMessageUpdate>() {
@@ -67,7 +76,7 @@ public class RevedereSession {
 
     public void emptyMessageBox() {
         final MinaRequestor<ShortMessageEmptyBoxRequest> requestor = new MinaRequestor<ShortMessageEmptyBoxRequest>(minaClient);
-        final Response<ShortMessageEmptyBoxRequest> response = requestor.request(new ShortMessageEmptyBoxRequest(new User(username)));
+        final Response<ShortMessageEmptyBoxRequest> response = requestor.request(new ShortMessageEmptyBoxRequest(currentUser));
         if (response != null) {
             clientMessageBox.removeAll();
         }
@@ -88,7 +97,7 @@ public class RevedereSession {
     @SuppressWarnings("unchecked")
     private List<ShortMessage> requestShortMessages(boolean read, boolean sent, boolean unread) {
         final MinaRequestor<ShortMessageHistoricalRequest> requestor = new MinaRequestor<ShortMessageHistoricalRequest>(minaClient);
-        final Response<ShortMessageHistoricalRequest> response = requestor.request(new ShortMessageHistoricalRequest(new User(username), read, sent, unread));
+        final Response<ShortMessageHistoricalRequest> response = requestor.request(new ShortMessageHistoricalRequest(currentUser, read, sent, unread));
         if (response != null) {
             return (List<ShortMessage>) response.getAttachment();
         } else {
@@ -97,15 +106,27 @@ public class RevedereSession {
     }
 
     public void markMessagesAsRead(List<ShortMessage> listToMark) {
-        this.minaClient.sendMessage(new ShortMessageMarkAsReadRequest(new User(username), listToMark));
+        this.minaClient.sendMessage(new ShortMessageMarkAsReadRequest(currentUser, listToMark));
     }
 
     public void logout() {
-        this.minaClient.sendMessage(new LogoutRequest(username));
+        this.minaClient.sendMessage(new LogoutRequest(currentUser.getUsername()));
     }
 
     public void close() {
         this.minaClient.close();
+    }
+
+    public void requestReview(User destinationUser, ReviewData reviewData) {
+        this.minaClient.sendMessage(new ReviewRequest(currentUser, destinationUser, reviewData));
+    }
+
+    public void markReviewAsSeen(Review review) {
+        this.minaClient.sendMessage(new ReviewMarkAsSeenRequest(review));
+    }
+
+    public void updateReview(Review review, ReviewState newState) {
+        this.minaClient.sendMessage(new ReviewUpdateRequest(review, newState));
     }
 
     private void initialize() {
@@ -123,6 +144,11 @@ public class RevedereSession {
 
                 if (message instanceof ShortMessageUpdate) {
                     shortMessageCollector.agregate((ShortMessageUpdate) message);
+                    return;
+                }
+
+                if (message instanceof ReviewUpdate) {
+                    reviewCollector.agregate((ReviewUpdate) message);
                     return;
                 }
             }

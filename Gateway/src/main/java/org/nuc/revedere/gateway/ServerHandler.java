@@ -8,8 +8,12 @@ import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
+import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
+import org.nuc.revedere.core.messages.request.ReviewRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageMarkAsReadRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 
@@ -52,6 +56,22 @@ public class ServerHandler extends IoHandlerAdapter {
 
         if (message instanceof ShortMessageHistoricalRequest) {
             listener.onShortMessageHistoricalRequest((ShortMessageHistoricalRequest) message, session);
+        }
+
+        if (message instanceof ShortMessageMarkAsReadRequest) {
+            listener.onShortMessageMarkAsRead((ShortMessageMarkAsReadRequest) message, session);
+        }
+
+        if (message instanceof ReviewRequest) {
+            listener.onRequestReview((ReviewRequest) message, session);
+        }
+
+        if (message instanceof ReviewMarkAsSeenRequest) {
+            listener.onReviewMarkAsSeen((ReviewMarkAsSeenRequest) message, session);
+        }
+        
+        if (message instanceof ReviewUpdateRequest) {
+            listener.onReviewUpdate((ReviewUpdateRequest) message, session);
         }
 
         if (message instanceof Ping) {

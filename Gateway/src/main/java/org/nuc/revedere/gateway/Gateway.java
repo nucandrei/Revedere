@@ -3,18 +3,23 @@ package org.nuc.revedere.gateway;
 import java.io.Serializable;
 
 import org.apache.mina.core.session.IoSession;
+import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Ping;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
+import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
+import org.nuc.revedere.core.messages.request.ReviewRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageMarkAsReadRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
+import org.nuc.revedere.core.messages.update.ReviewUpdate;
 import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.gateway.connectors.UsersManagerConnector;
@@ -106,7 +111,7 @@ public class Gateway extends RevedereService {
                 final Response<ShortMessageEmptyBoxRequest> response = requestor.request(Topics.SHORT_MESSAGE_TOPIC, request);
                 session.write(response);
             }
-            
+
             @Override
             public void onShortMessageHistoricalRequest(ShortMessageHistoricalRequest request, IoSession session) {
                 final JMSRequestor<ShortMessageHistoricalRequest> requestor = new JMSRequestor<ShortMessageHistoricalRequest>(Gateway.this);
@@ -118,6 +123,24 @@ public class Gateway extends RevedereService {
             public void onShortMessageMarkAsRead(ShortMessageMarkAsReadRequest request, IoSession session) {
                 final JMSShouter<ShortMessageMarkAsReadRequest> shouter = new JMSShouter<ShortMessageMarkAsReadRequest>(Gateway.this);
                 shouter.shout(Topics.SHORT_MESSAGE_TOPIC, request);
+            }
+
+            @Override
+            public void onRequestReview(ReviewRequest request, IoSession session) {
+                final JMSShouter<ReviewRequest> shouter = new JMSShouter<ReviewRequest>(Gateway.this);
+                shouter.shout(Topics.REVIEW_TOPIC, request);
+            }
+
+            @Override
+            public void onReviewMarkAsSeen(ReviewMarkAsSeenRequest request, IoSession session) {
+                final JMSShouter<ReviewMarkAsSeenRequest> shouter = new JMSShouter<ReviewMarkAsSeenRequest>(Gateway.this);
+                shouter.shout(Topics.REVIEW_TOPIC, request);
+            }
+
+            @Override
+            public void onReviewUpdate(ReviewUpdateRequest request, IoSession session) {
+                final JMSShouter<ReviewUpdateRequest> shouter = new JMSShouter<ReviewUpdateRequest>(Gateway.this);
+                shouter.shout(Topics.REVIEW_TOPIC, request);
             }
 
             @Override
@@ -143,6 +166,19 @@ public class Gateway extends RevedereService {
                     LOGGER.info("Received message update");
                     final ShortMessageUpdate shortMessageUpdate = (ShortMessageUpdate) message;
                     sessionManager.sendMessageIfOnline(shortMessageUpdate.getIntendedReceiver().getUsername(), shortMessageUpdate);
+                }
+            }
+        });
+
+        this.addMessageListener(Topics.REVIEW_TOPIC, new BrokerMessageListener() {
+            @Override
+            public void onMessage(Serializable message) {
+                if (message instanceof ReviewUpdate) {
+                    LOGGER.info("Received review update");
+                    final ReviewUpdate reviewUpdate = (ReviewUpdate) message;
+                    for (User intendedUser : reviewUpdate.getIntendedUsers()) {
+                        sessionManager.sendMessageIfOnline(intendedUser.getUsername(), reviewUpdate);
+                    }
                 }
             }
         });

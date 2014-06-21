@@ -5,6 +5,9 @@ import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
+import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
+import org.nuc.revedere.core.messages.request.ReviewRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageMarkAsReadRequest;
@@ -27,12 +30,18 @@ public interface GatewayListener {
     public void onClosedSession(IoSession session);
 
     public void onShortMessageSendRequest(ShortMessageSendRequest request, IoSession session);
-    
+
     public void onShortMessageEmptyBoxRequest(ShortMessageEmptyBoxRequest request, IoSession session);
-    
+
     public void onShortMessageHistoricalRequest(ShortMessageHistoricalRequest request, IoSession session);
 
     public void onShortMessageMarkAsRead(ShortMessageMarkAsReadRequest request, IoSession session);
+
+    public void onRequestReview(ReviewRequest request, IoSession session);
+
+    public void onReviewMarkAsSeen(ReviewMarkAsSeenRequest request, IoSession session);
     
+    public void onReviewUpdate(ReviewUpdateRequest request, IoSession session);
+
     public void onPing(IoSession session);
 }
