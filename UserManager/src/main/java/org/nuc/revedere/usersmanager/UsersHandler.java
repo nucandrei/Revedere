@@ -39,7 +39,7 @@ public class UsersHandler {
     private final Map<String, User> users = new HashMap<>();
     private final Set<User> connectedUsers = new HashSet<>();
     private final Set<User> disconnectedUsers = new HashSet<>();
-    private final Map<LoginRequest, User> usersWaitingAcknowledgement = new HashMap<LoginRequest, User>();
+    private final Map<LoginRequest, User> usersWaitingAcknowledgement = new HashMap<>();
 
     private final UsersManager parentManager;
 
@@ -54,17 +54,16 @@ public class UsersHandler {
         LOGGER.info(String.format("Received login request from \"%s\"", username));
         final User correspondingUser = users.get(username);
         if (correspondingUser == null) {
-            return new Response<LoginRequest>(request, false, USER_DOES_NOT_EXIST);
+            return new Response<>(request, false, USER_DOES_NOT_EXIST);
         }
 
         if (correspondingUser.matchesAuthInfo(authInfo)) {
             LOGGER.info(String.format("Authentification succedded for \"%s\"", username));
             usersWaitingAcknowledgement.put(request, correspondingUser);
-            return new Response<LoginRequest>(request, true, AUTH_SUCCESS);
-        } else {
-            LOGGER.info(String.format("Authentification failed for \"%s\"", username));
-            return new Response<LoginRequest>(request, false, AUTH_FAILED);
+            return new Response<>(request, true, AUTH_SUCCESS);
         }
+        LOGGER.info(String.format("Authentification failed for \"%s\"", username));
+        return new Response<>(request, false, AUTH_FAILED);
     }
 
     public void logout(LogoutRequest request) {
@@ -91,13 +90,13 @@ public class UsersHandler {
         LOGGER.info(String.format("Received register request from \"%s\"", username));
         if (users.containsKey(username)) {
             LOGGER.info(String.format("User \"%s\" is already taken", username));
-            return new Response<RegisterRequest>(request, false, USER_ALREADY_EXISTS);
+            return new Response<>(request, false, USER_ALREADY_EXISTS);
         }
 
         users.put(username, new User(username, authInfo));
         saveUsers();
         LOGGER.info(String.format("User \"%s\" registered succesfully", username));
-        return new Response<RegisterRequest>(request, true, REGISTER_SUCCEDDED);
+        return new Response<>(request, true, REGISTER_SUCCEDDED);
     }
 
     public Response<UnregisterRequest> unregister(UnregisterRequest request) {
@@ -106,15 +105,14 @@ public class UsersHandler {
         LOGGER.info(String.format("Received unregister request from \"%s\"", username));
         final User userToUnregister = users.get(username);
         if (userToUnregister == null) {
-            return new Response<UnregisterRequest>(request, false, USER_DOES_NOT_EXIST);
+            return new Response<>(request, false, USER_DOES_NOT_EXIST);
         }
         if (userToUnregister.matchesAuthInfo(authInfo)) {
             users.remove(username);
             saveUsers();
-            return new Response<UnregisterRequest>(request, true, UNREGISTER_SUCCEDDED);
-        } else {
-            return new Response<UnregisterRequest>(request, false, AUTH_FAILED);
+            return new Response<>(request, true, UNREGISTER_SUCCEDDED);
         }
+        return new Response<>(request, false, AUTH_FAILED);
     }
     
     public void ack(Acknowledgement<LoginRequest> possibleAcknowledgement) {
@@ -130,8 +128,8 @@ public class UsersHandler {
     }
 
     public Response<UserListRequest> listUsers(UserListRequest userListRequest) {
-        final Set<User> onlineUsers = new HashSet<User>();
-        final Set<User> offlineUsers = new HashSet<User>();
+        final Set<User> onlineUsers = new HashSet<>();
+        final Set<User> offlineUsers = new HashSet<>();
         for (User user : connectedUsers) {
             onlineUsers.add(user.getCleanInstance());
         }
@@ -141,7 +139,7 @@ public class UsersHandler {
         }
 
         final UserListUpdate userListUpdate = new UserListUpdate(false, onlineUsers, offlineUsers);
-        final Response<UserListRequest> response = new Response<UserListRequest>(userListRequest, true, "");
+        final Response<UserListRequest> response = new Response<>(userListRequest, true, "");
         response.attach(userListUpdate);
         return response;
     }

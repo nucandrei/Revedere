@@ -7,7 +7,7 @@ import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
 import org.nuc.revedere.util.Collector;
 
 public class ShortMessageCollector extends Collector<ShortMessageUpdate> {
-    private final List<ShortMessage> messagesList = new ArrayList<ShortMessage>();
+    private final List<ShortMessage> messagesList = new ArrayList<>();
 
     @Override
     public void agregate(ShortMessageUpdate update) {

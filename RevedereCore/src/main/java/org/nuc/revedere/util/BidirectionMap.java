@@ -9,8 +9,8 @@ public class BidirectionMap<K, V> {
     private Map<V, K> reverseMap;
 
     public BidirectionMap() {
-        directMap = new HashMap<K, V>();
-        reverseMap = new HashMap<V, K>();
+        directMap = new HashMap<>();
+        reverseMap = new HashMap<>();
     }
     
     public void put(K key, V value) {

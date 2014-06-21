@@ -98,7 +98,7 @@ public class Gateway extends RevedereService {
 
             @Override
             public void onShortMessageSendRequest(ShortMessageSendRequest request, IoSession session) {
-                final JMSRequestor<ShortMessageSendRequest> requestor = new JMSRequestor<ShortMessageSendRequest>(Gateway.this);
+                final JMSRequestor<ShortMessageSendRequest> requestor = new JMSRequestor<>(Gateway.this);
                 final Response<ShortMessageSendRequest> response = requestor.request(Topics.SHORT_MESSAGE_TOPIC, request);
                 final ShortMessageUpdate shortMessageUpdate = new ShortMessageUpdate(response.getRequest().getShortMessage().asList(), null);
                 session.write(shortMessageUpdate);
@@ -107,39 +107,39 @@ public class Gateway extends RevedereService {
 
             @Override
             public void onShortMessageEmptyBoxRequest(ShortMessageEmptyBoxRequest request, IoSession session) {
-                final JMSRequestor<ShortMessageEmptyBoxRequest> requestor = new JMSRequestor<ShortMessageEmptyBoxRequest>(Gateway.this);
+                final JMSRequestor<ShortMessageEmptyBoxRequest> requestor = new JMSRequestor<>(Gateway.this);
                 final Response<ShortMessageEmptyBoxRequest> response = requestor.request(Topics.SHORT_MESSAGE_TOPIC, request);
                 session.write(response);
             }
 
             @Override
             public void onShortMessageHistoricalRequest(ShortMessageHistoricalRequest request, IoSession session) {
-                final JMSRequestor<ShortMessageHistoricalRequest> requestor = new JMSRequestor<ShortMessageHistoricalRequest>(Gateway.this);
+                final JMSRequestor<ShortMessageHistoricalRequest> requestor = new JMSRequestor<>(Gateway.this);
                 final Response<ShortMessageHistoricalRequest> response = requestor.request(Topics.SHORT_MESSAGE_TOPIC, request);
                 session.write(response);
             }
 
             @Override
             public void onShortMessageMarkAsRead(ShortMessageMarkAsReadRequest request, IoSession session) {
-                final JMSShouter<ShortMessageMarkAsReadRequest> shouter = new JMSShouter<ShortMessageMarkAsReadRequest>(Gateway.this);
+                final JMSShouter<ShortMessageMarkAsReadRequest> shouter = new JMSShouter<>(Gateway.this);
                 shouter.shout(Topics.SHORT_MESSAGE_TOPIC, request);
             }
 
             @Override
             public void onRequestReview(ReviewRequest request, IoSession session) {
-                final JMSShouter<ReviewRequest> shouter = new JMSShouter<ReviewRequest>(Gateway.this);
+                final JMSShouter<ReviewRequest> shouter = new JMSShouter<>(Gateway.this);
                 shouter.shout(Topics.REVIEW_TOPIC, request);
             }
 
             @Override
             public void onReviewMarkAsSeen(ReviewMarkAsSeenRequest request, IoSession session) {
-                final JMSShouter<ReviewMarkAsSeenRequest> shouter = new JMSShouter<ReviewMarkAsSeenRequest>(Gateway.this);
+                final JMSShouter<ReviewMarkAsSeenRequest> shouter = new JMSShouter<>(Gateway.this);
                 shouter.shout(Topics.REVIEW_TOPIC, request);
             }
 
             @Override
             public void onReviewUpdate(ReviewUpdateRequest request, IoSession session) {
-                final JMSShouter<ReviewUpdateRequest> shouter = new JMSShouter<ReviewUpdateRequest>(Gateway.this);
+                final JMSShouter<ReviewUpdateRequest> shouter = new JMSShouter<>(Gateway.this);
                 shouter.shout(Topics.REVIEW_TOPIC, request);
             }
 
@@ -153,7 +153,7 @@ public class Gateway extends RevedereService {
         getUserCollector().addListener(new CollectorListener<UserListUpdate>() {
             @Override
             public void onUpdate(Collector<UserListUpdate> source, UserListUpdate update) {
-                final Response<UserListRequest> dummyResponse = new Response<UserListRequest>(null, true, "");
+                final Response<UserListRequest> dummyResponse = new Response<>(null, true, "");
                 dummyResponse.attach(source.getCurrentState());
                 sessionManager.broadcastMessage(dummyResponse);
             }

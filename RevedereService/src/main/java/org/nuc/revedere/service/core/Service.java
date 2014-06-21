@@ -60,7 +60,7 @@ public class Service {
     public Document loadXMLDocument(String documentName) throws JDOMException, IOException {
         final File file = new File(documentName);
         final SAXBuilder builder = new SAXBuilder();
-        return (Document) builder.build(file);
+        return builder.build(file);
     }
     
     public String loadTextFile(String filepath) throws IOException {
@@ -85,7 +85,7 @@ public class Service {
      * @throws Exception if the file could not be read or parsing problems ocurred
      */
     private Map<String, String> loadSettingsFromFile(String filename) throws JDOMException, IOException {
-        Map<String, String> loadedSettings = new HashMap<String, String>();
+        Map<String, String> loadedSettings = new HashMap<>();
         final Document settingsDocument = loadXMLDocument(filename);
         final Element rootNode = settingsDocument.getRootElement();
         for (Element e : rootNode.getChildren()) {

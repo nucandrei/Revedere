@@ -11,7 +11,7 @@ import org.nuc.revedere.util.BidirectionMap;
 
 public class SessionManager {
     private final BidirectionMap<String, IoSession> connectedUsers = new BidirectionMap<>();
-    private final Map<IoSession, String> awaitingAcknowledgement = new HashMap<IoSession, String>();
+    private final Map<IoSession, String> awaitingAcknowledgement = new HashMap<>();
     private final Set<IoSession> idleConnections = new HashSet<>();
 
     public void setOnline(String user, IoSession activeSession) {

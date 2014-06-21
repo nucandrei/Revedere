@@ -19,7 +19,7 @@ public class HeartMonitor extends RevedereService {
     private static HeartMonitor instance;
 
     private final static String HEARTMONITOR_SERVICE_NAME = "HeartMonitor";
-    private final Map<String, ServiceHeartbeatCollector> servicesStatus = new HashMap<String, ServiceHeartbeatCollector>();
+    private final Map<String, ServiceHeartbeatCollector> servicesStatus = new HashMap<>();
     private HeartbeatInfoListener heartbeatInfoListener;
 
     private HeartMonitor() throws Exception {

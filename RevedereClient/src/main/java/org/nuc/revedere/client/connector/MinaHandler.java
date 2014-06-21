@@ -9,13 +9,13 @@ import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.util.Tuple;
 
 public class MinaHandler extends IoHandlerAdapter {
-    private List<IoHandler> handlers = new ArrayList<IoHandler>();
-    private List<Tuple<IoSession, Object>> receivedButNotConsumedMessages = new ArrayList<Tuple<IoSession, Object>>();
+    private List<IoHandler> handlers = new ArrayList<>();
+    private List<Tuple<IoSession, Object>> receivedButNotConsumedMessages = new ArrayList<>();
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
         if (handlers.isEmpty()) {
-            receivedButNotConsumedMessages.add(new Tuple<IoSession, Object>(session, message));
+            receivedButNotConsumedMessages.add(new Tuple<>(session, message));
         } else {
             for (IoHandler handler : handlers) {
                 handler.messageReceived(session, message);

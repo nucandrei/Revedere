@@ -76,7 +76,7 @@ public class ShortMessage implements Serializable, Comparable<ShortMessage> {
     }
 
     public List<ShortMessage> asList() {
-        final List<ShortMessage> oneElementList = new ArrayList<ShortMessage>(1);
+        final List<ShortMessage> oneElementList = new ArrayList<>(1);
         oneElementList.add(this);
         return oneElementList;
     }

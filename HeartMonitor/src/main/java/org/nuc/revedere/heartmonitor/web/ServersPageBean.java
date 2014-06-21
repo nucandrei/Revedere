@@ -25,7 +25,7 @@ public class ServersPageBean implements Serializable, HeartbeatInfoListener {
     private static final String CSS_CLASS_OK_SERVICE = "okservice";
     private static final long serialVersionUID = 8388751329694282175L;
     private final HeartMonitor heartMonitor;
-    private Map<String, ServiceHeartbeatCollector> persistence = new HashMap<String, ServiceHeartbeatCollector>();
+    private Map<String, ServiceHeartbeatCollector> persistence = new HashMap<>();
 
     public ServersPageBean() {
         heartMonitor = HeartMonitor.getInstance();
@@ -33,7 +33,7 @@ public class ServersPageBean implements Serializable, HeartbeatInfoListener {
     }
 
     public ServiceHeartbeatCollector[] getServiceList(boolean configured) {
-        final List<ServiceHeartbeatCollector> serviceList = new ArrayList<ServiceHeartbeatCollector>();
+        final List<ServiceHeartbeatCollector> serviceList = new ArrayList<>();
         for (ServiceHeartbeatCollector collector : persistence.values()) {
             if (collector.isConfigured() == configured) {
                 serviceList.add(collector);

@@ -23,7 +23,7 @@ public class DummyClientLoginTest {
         final RevedereConnector revedereConnector = new RevedereConnector("127.0.0.1:6045");
         final RevedereSession session = revedereConnector.login("user", "user");
         try {
-            final Container<UserListUpdate> expectedUpdateContainer = new Container<UserListUpdate>();
+            final Container<UserListUpdate> expectedUpdateContainer = new Container<>();
             final CountDownLatch latch = new CountDownLatch(2);
 
             session.addListenerToUserCollector(new CollectorListener<UserListUpdate>() {

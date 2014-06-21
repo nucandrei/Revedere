@@ -19,27 +19,27 @@ public class UsersManagerConnector {
     }
 
     public Response<LoginRequest> login(LoginRequest request) {
-        final JMSRequestor<LoginRequest> requestor = new JMSRequestor<LoginRequest>(supportService);
+        final JMSRequestor<LoginRequest> requestor = new JMSRequestor<>(supportService);
         return requestor.request(Topics.USERS_TOPIC, request);
     }
 
     public Response<RegisterRequest> register(RegisterRequest request) {
-        final JMSRequestor<RegisterRequest> requestor = new JMSRequestor<RegisterRequest>(supportService);
+        final JMSRequestor<RegisterRequest> requestor = new JMSRequestor<>(supportService);
         return requestor.request(Topics.USERS_TOPIC, request);
     }
 
     public Response<UnregisterRequest> unregister(UnregisterRequest request) {
-        final JMSRequestor<UnregisterRequest> requestor = new JMSRequestor<UnregisterRequest>(supportService);
+        final JMSRequestor<UnregisterRequest> requestor = new JMSRequestor<>(supportService);
         return requestor.request(Topics.USERS_TOPIC, request);
     }
 
     public void logout(LogoutRequest request) {
-        final JMSShouter<LogoutRequest> shouter = new JMSShouter<LogoutRequest>(supportService);
+        final JMSShouter<LogoutRequest> shouter = new JMSShouter<>(supportService);
         shouter.shout(Topics.USERS_TOPIC, request);
     }
 
     public void acknowledgeLogin(Acknowledgement<LoginRequest> ack) {
-        final JMSShouter<Acknowledgement<LoginRequest>> shouter = new JMSShouter<Acknowledgement<LoginRequest>>(supportService);
+        final JMSShouter<Acknowledgement<LoginRequest>> shouter = new JMSShouter<>(supportService);
         shouter.shout(Topics.USERS_TOPIC, ack);
     }
 }

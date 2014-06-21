@@ -31,9 +31,9 @@ public class ActiveMQBrokerAdapter implements BrokerAdapter {
     private Session session;
 
     public ActiveMQBrokerAdapter(String brokerAddress) throws JMSException {
-        consumerMap = new HashMap<String, MessageConsumer>();
-        producerMap = new HashMap<String, MessageProducer>();
-        listenersForTopic = new HashMap<String, List<BrokerMessageListener>>();
+        consumerMap = new HashMap<>();
+        producerMap = new HashMap<>();
+        listenersForTopic = new HashMap<>();
         this.address = brokerAddress;
         connectToBroker();
     }
@@ -58,7 +58,7 @@ public class ActiveMQBrokerAdapter implements BrokerAdapter {
             Topic topic = session.createTopic(topicString);
             consumer = session.createConsumer(topic);
             consumerMap.put(topicString, consumer);
-            final List<BrokerMessageListener> brokerMessageListeners = new ArrayList<BrokerMessageListener>();
+            final List<BrokerMessageListener> brokerMessageListeners = new ArrayList<>();
             listenersForTopic.put(topicString, brokerMessageListeners);
             consumer.setMessageListener(new MessageListener() {
                 @Override

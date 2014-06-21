@@ -65,8 +65,8 @@ public class BidirectionalMapTest {
 
     @Test
     public void testGetKeysAndValues() {
-        final List<Integer> keys = new LinkedList<Integer>();
-        final List<String> values = new LinkedList<String>();
+        final List<Integer> keys = new LinkedList<>();
+        final List<String> values = new LinkedList<>();
         for (int i = 0; i < NO_KEYS; i++) {
             Integer key = new Integer(i);
             String value = i + "";

@@ -7,8 +7,8 @@ import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.util.Collector;
 
 public class UserCollector extends Collector<UserListUpdate> {
-    private Set<User> connectedUsers = new HashSet<User>();
-    private Set<User> disconnectedUsers = new HashSet<User>();
+    private Set<User> connectedUsers = new HashSet<>();
+    private Set<User> disconnectedUsers = new HashSet<>();
 
     @Override
     public void agregate(UserListUpdate update) {

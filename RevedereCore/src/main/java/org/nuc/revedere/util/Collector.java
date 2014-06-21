@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Collector<T> {
-    private final List<CollectorListener<T>> listenerList = new ArrayList<CollectorListener<T>>();
+    private final List<CollectorListener<T>> listenerList = new ArrayList<>();
 
     public void agregate(T update) {
         for (CollectorListener<T> listener : listenerList) {

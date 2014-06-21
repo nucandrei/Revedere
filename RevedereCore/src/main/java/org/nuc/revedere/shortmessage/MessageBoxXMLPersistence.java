@@ -23,9 +23,9 @@ import org.nuc.revedere.shortmessage.ShortMessage;
 public class MessageBoxXMLPersistence implements MessageBoxPersistence {
     private static final Logger LOGGER = Logger.getLogger(MessageBoxXMLPersistence.class);
     private final String messageBoxPath;
-    private final Map<String, List<ShortMessage>> unreadMessages = new HashMap<String, List<ShortMessage>>();
-    private final Map<String, List<ShortMessage>> readMessages = new HashMap<String, List<ShortMessage>>();
-    private final Map<String, List<ShortMessage>> sentMessages = new HashMap<String, List<ShortMessage>>();
+    private final Map<String, List<ShortMessage>> unreadMessages = new HashMap<>();
+    private final Map<String, List<ShortMessage>> readMessages = new HashMap<>();
+    private final Map<String, List<ShortMessage>> sentMessages = new HashMap<>();
 
     public MessageBoxXMLPersistence(String messageBoxPath) {
         this.messageBoxPath = messageBoxPath;
@@ -51,7 +51,7 @@ public class MessageBoxXMLPersistence implements MessageBoxPersistence {
     public List<ShortMessage> getReadMessages(String messageBoxName) {
         List<ShortMessage> readMessagesForMessageBoxName = readMessages.get(messageBoxName);
         if (readMessagesForMessageBoxName == null) {
-            readMessagesForMessageBoxName = new ArrayList<ShortMessage>();
+            readMessagesForMessageBoxName = new ArrayList<>();
             readMessages.put(messageBoxName, readMessagesForMessageBoxName);
             save();
         }
@@ -61,7 +61,7 @@ public class MessageBoxXMLPersistence implements MessageBoxPersistence {
     public List<ShortMessage> getUnreadMessages(String messageBoxName) {
         List<ShortMessage> unreadMessagesForMessageBoxName = unreadMessages.get(messageBoxName);
         if (unreadMessagesForMessageBoxName == null) {
-            unreadMessagesForMessageBoxName = new ArrayList<ShortMessage>();
+            unreadMessagesForMessageBoxName = new ArrayList<>();
             unreadMessages.put(messageBoxName, unreadMessagesForMessageBoxName);
             save();
         }
@@ -71,7 +71,7 @@ public class MessageBoxXMLPersistence implements MessageBoxPersistence {
     public List<ShortMessage> getSentMessages(String messageBoxName) {
         List<ShortMessage> sentMessagesForMessageBoxName = readMessages.get(messageBoxName);
         if (sentMessagesForMessageBoxName == null) {
-            sentMessagesForMessageBoxName = new ArrayList<ShortMessage>();
+            sentMessagesForMessageBoxName = new ArrayList<>();
             sentMessages.put(messageBoxName, sentMessagesForMessageBoxName);
             save();
         }
@@ -130,7 +130,7 @@ public class MessageBoxXMLPersistence implements MessageBoxPersistence {
     }
 
     private void save() {
-        final Set<String> messageBoxes = new HashSet<String>();
+        final Set<String> messageBoxes = new HashSet<>();
         messageBoxes.addAll(unreadMessages.keySet());
         messageBoxes.addAll(readMessages.keySet());
         messageBoxes.addAll(sentMessages.keySet());

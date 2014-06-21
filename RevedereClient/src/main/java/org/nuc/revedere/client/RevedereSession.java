@@ -75,7 +75,7 @@ public class RevedereSession {
     }
 
     public void emptyMessageBox() {
-        final MinaRequestor<ShortMessageEmptyBoxRequest> requestor = new MinaRequestor<ShortMessageEmptyBoxRequest>(minaClient);
+        final MinaRequestor<ShortMessageEmptyBoxRequest> requestor = new MinaRequestor<>(minaClient);
         final Response<ShortMessageEmptyBoxRequest> response = requestor.request(new ShortMessageEmptyBoxRequest(currentUser));
         if (response != null) {
             clientMessageBox.removeAll();
@@ -96,13 +96,12 @@ public class RevedereSession {
 
     @SuppressWarnings("unchecked")
     private List<ShortMessage> requestShortMessages(boolean read, boolean sent, boolean unread) {
-        final MinaRequestor<ShortMessageHistoricalRequest> requestor = new MinaRequestor<ShortMessageHistoricalRequest>(minaClient);
+        final MinaRequestor<ShortMessageHistoricalRequest> requestor = new MinaRequestor<>(minaClient);
         final Response<ShortMessageHistoricalRequest> response = requestor.request(new ShortMessageHistoricalRequest(currentUser, read, sent, unread));
         if (response != null) {
             return (List<ShortMessage>) response.getAttachment();
-        } else {
-            return Collections.emptyList();
         }
+        return Collections.emptyList();
     }
 
     public void markMessagesAsRead(List<ShortMessage> listToMark) {

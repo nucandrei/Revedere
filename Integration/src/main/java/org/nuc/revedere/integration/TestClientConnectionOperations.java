@@ -11,8 +11,6 @@ public class TestClientConnectionOperations {
     private final int TEST_PORT = 6045;
     private final String GENERATED_USERNAME = String.format("user_%d", System.currentTimeMillis());
     private final String PASSWORD = "p@ssW0rD";
-    private final String WRONG_PASSWORD = PASSWORD + "___";
-
     private RevedereConnector revedereConnector;
 
     @Before

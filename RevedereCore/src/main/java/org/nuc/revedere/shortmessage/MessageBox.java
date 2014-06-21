@@ -10,9 +10,9 @@ import org.nuc.revedere.shortmessage.ShortMessage;
 public class MessageBox {
     private final String msgBoxName;
     private final MessageBoxPersistence persistence;
-    private final List<ShortMessage> readMessages = new LinkedList<ShortMessage>();
-    private final List<ShortMessage> unreadMessages = new LinkedList<ShortMessage>();
-    private final List<ShortMessage> sentMessages = new LinkedList<ShortMessage>();
+    private final List<ShortMessage> readMessages = new LinkedList<>();
+    private final List<ShortMessage> unreadMessages = new LinkedList<>();
+    private final List<ShortMessage> sentMessages = new LinkedList<>();
 
     public MessageBox(String msgBoxName, MessageBoxPersistence persistence) {
         this.msgBoxName = msgBoxName;
@@ -62,7 +62,7 @@ public class MessageBox {
     }
 
     public List<ShortMessage> getUnreadMessages(long fromDate) {
-        final List<ShortMessage> fromDateUnreadMessages = new ArrayList<ShortMessage>();
+        final List<ShortMessage> fromDateUnreadMessages = new ArrayList<>();
         for (ShortMessage shortMessage : unreadMessages) {
             if (shortMessage.getTimestamp() > fromDate) {
                 fromDateUnreadMessages.add(shortMessage);
@@ -76,7 +76,7 @@ public class MessageBox {
     }
 
     public List<ShortMessage> getReadMessages(long fromDate) {
-        final List<ShortMessage> fromDateReadMessages = new ArrayList<ShortMessage>();
+        final List<ShortMessage> fromDateReadMessages = new ArrayList<>();
         for (ShortMessage shortMessage : unreadMessages) {
             if (shortMessage.getTimestamp() > fromDate) {
                 fromDateReadMessages.add(shortMessage);

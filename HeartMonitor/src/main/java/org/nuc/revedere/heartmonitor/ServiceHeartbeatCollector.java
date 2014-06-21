@@ -46,9 +46,8 @@ public class ServiceHeartbeatCollector extends Observable implements Comparable<
     public ServiceStatus getServiceStatus() {
         if (serviceStatus.equals(ServiceStatus.OK) || serviceStatus.equals(ServiceStatus.OKLATE)) {
             return ServiceStatus.OK;
-        } else {
-            return serviceStatus;
         }
+        return serviceStatus;
     }
 
     public boolean isConfigured() {
@@ -71,5 +70,11 @@ public class ServiceHeartbeatCollector extends Observable implements Comparable<
 
         final ServiceHeartbeatCollector that = (ServiceHeartbeatCollector) object;
         return this.serviceName.equals(that.serviceName);
+    }
+
+
+    @Override
+    public int hashCode() {
+        return serviceName.hashCode();
     }
 }

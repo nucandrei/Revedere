@@ -42,7 +42,7 @@ public class RevedereService extends Service {
 
     private void startListeningForUsers() throws JMSException, InterruptedException {
         LOGGER.info("Sending users list request");
-        final JMSRequestor<UserListRequest> requestor = new JMSRequestor<UserListRequest>(this);
+        final JMSRequestor<UserListRequest> requestor = new JMSRequestor<>(this);
         final Response<UserListRequest> receivedResponse = requestor.request(Topics.USERS_TOPIC, new UserListRequest());
         if (receivedResponse == null) {
             LOGGER.error("Did not receive response in timeout");

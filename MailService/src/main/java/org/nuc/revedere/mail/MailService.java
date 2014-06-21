@@ -98,7 +98,7 @@ public class MailService extends RevedereService {
         final String subject = request.getSubject();
         final String content = request.getContent();
         boolean mailSent = sendMail(to, subject, content);
-        return new Response<SimpleMailRequest>(request, mailSent, mailSent ? "Mail sent" : "Mail not sent");
+        return new Response<>(request, mailSent, mailSent ? "Mail sent" : "Mail not sent");
     }
 
     public static void main(String[] args) {

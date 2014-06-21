@@ -29,7 +29,7 @@ import org.nuc.revedere.util.Collector.CollectorListener;
 public class ShortMessageService extends RevedereService {
 
     private final static String SHORT_MESSAGE_SERVICE_NAME = "ShortMessageService";
-    private final Map<String, MessageBox> msgBoxes = new HashMap<String, MessageBox>();
+    private final Map<String, MessageBox> msgBoxes = new HashMap<>();
     private final MessageBoxPersistence persistence = new MessageBoxXMLPersistence("messages.xml");
 
     public ShortMessageService() throws Exception {
@@ -65,12 +65,12 @@ public class ShortMessageService extends RevedereService {
                     if (message instanceof ShortMessageEmptyBoxRequest) {
                         final ShortMessageEmptyBoxRequest shortMessageEmptyBoxRequest = (ShortMessageEmptyBoxRequest) message;
                         msgBoxes.get(shortMessageEmptyBoxRequest.getUser().getUsername()).removeAll();
-                        sendMessage(Topics.SHORT_MESSAGE_RESPONSE_TOPIC, new Response<ShortMessageEmptyBoxRequest>(shortMessageEmptyBoxRequest, true, ""));
+                        sendMessage(Topics.SHORT_MESSAGE_RESPONSE_TOPIC, new Response<>(shortMessageEmptyBoxRequest, true, ""));
                     }
 
                     if (message instanceof ShortMessageHistoricalRequest) {
                         final ShortMessageHistoricalRequest shortMessageHistoricalRequest = (ShortMessageHistoricalRequest) message;
-                        final List<ShortMessage> messagesToSend = new ArrayList<ShortMessage>();
+                        final List<ShortMessage> messagesToSend = new ArrayList<>();
                         final MessageBox messageBox = msgBoxes.get(shortMessageHistoricalRequest.getUser().getUsername());
                         if (shortMessageHistoricalRequest.isRequestReadMessages()) {
                             for (ShortMessage shortMessage : messageBox.getReadMessages()) {
@@ -89,11 +89,11 @@ public class ShortMessageService extends RevedereService {
                                 messagesToSend.add(shortMessage);
                             }
                         }
-                        final Response<ShortMessageHistoricalRequest> response = new Response<ShortMessageHistoricalRequest>(shortMessageHistoricalRequest, true, "");
+                        final Response<ShortMessageHistoricalRequest> response = new Response<>(shortMessageHistoricalRequest, true, "");
                         response.attach((Serializable) messagesToSend);
                         sendMessage(Topics.SHORT_MESSAGE_RESPONSE_TOPIC, response);
                     }
-                    
+
                     if (message instanceof ShortMessageMarkAsReadRequest) {
                         final ShortMessageMarkAsReadRequest shortMessageMarkAsReadRequest = (ShortMessageMarkAsReadRequest) message;
                         final List<ShortMessage> messagesToMarkAsRead = shortMessageMarkAsReadRequest.getMessages();
@@ -103,9 +103,9 @@ public class ShortMessageService extends RevedereService {
                             shortMessage.markAsRead();
                             correspondingMessageBox.add(shortMessage);
                         }
-                        sendMessage(Topics.SHORT_MESSAGE_TOPIC, new ShortMessageUpdate(messagesToMarkAsRead, correspondingUser)); 
-                        
-                     }
+                        sendMessage(Topics.SHORT_MESSAGE_TOPIC, new ShortMessageUpdate(messagesToMarkAsRead, correspondingUser));
+
+                    }
                 } catch (Exception e) {
                     LOGGER.error("Caught exception while processing received message", e);
                 }
@@ -132,7 +132,7 @@ public class ShortMessageService extends RevedereService {
     }
 
     private void sendResponse(ShortMessageSendRequest request) throws JMSException {
-        final Response<ShortMessageSendRequest> response = new Response<ShortMessageSendRequest>(request, true, "");
+        final Response<ShortMessageSendRequest> response = new Response<>(request, true, "");
         sendMessage(Topics.SHORT_MESSAGE_RESPONSE_TOPIC, response);
         LOGGER.info("send response back");
     }

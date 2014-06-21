@@ -16,31 +16,30 @@ public class RevedereConnector {
 
     public RevedereSession login(String username, String authInfo) throws Exception {
         final LoginRequest loginRequest = new LoginRequest(username, authInfo);
-        final MinaRequestor<LoginRequest> requestor = new MinaRequestor<LoginRequest>(minaClient);
+        final MinaRequestor<LoginRequest> requestor = new MinaRequestor<>(minaClient);
         final Response<LoginRequest> response = requestor.request(loginRequest);
         if (response.isSuccessfull()) {
             sendAck(response);
             return new RevedereSession(minaClient, username);
-        } else {
-            throw new Exception(response.getMessage());
         }
+        throw new Exception(response.getMessage());
     }
 
     public String register(String username, String authInfo) {
         final RegisterRequest registerRequest = new RegisterRequest(username, authInfo);
-        final MinaRequestor<RegisterRequest> requestor = new MinaRequestor<RegisterRequest>(minaClient);
+        final MinaRequestor<RegisterRequest> requestor = new MinaRequestor<>(minaClient);
         final Response<RegisterRequest> response = requestor.request(registerRequest);
         return response.getMessage();
     }
 
     public String unregister(String username, String authInfo) {
         final UnregisterRequest unregisterRequest = new UnregisterRequest(username, authInfo);
-        final MinaRequestor<UnregisterRequest> requestor = new MinaRequestor<UnregisterRequest>(minaClient);
+        final MinaRequestor<UnregisterRequest> requestor = new MinaRequestor<>(minaClient);
         final Response<UnregisterRequest> response = requestor.request(unregisterRequest);
         return response.getMessage();
     }
 
     private void sendAck(Response<LoginRequest> loginResponse) {
-        minaClient.sendMessage(new Acknowledgement<LoginRequest>(loginResponse));
+        minaClient.sendMessage(new Acknowledgement<>(loginResponse));
     }
 }

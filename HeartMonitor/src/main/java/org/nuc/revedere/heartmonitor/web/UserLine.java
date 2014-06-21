@@ -37,4 +37,9 @@ public class UserLine implements Comparable<UserLine>, Serializable {
         final UserLine that = (UserLine) object;
         return this.username.equals(that.username);
     }
+
+    @Override
+    public int hashCode() {
+        return username.hashCode();
+    }
 }

@@ -59,6 +59,6 @@ public class MinaRequestor<T extends Request> {
     }
 
     private Response<T> generateTimeoutResponse(final T request) {
-        return new Response<T>(request, false, TIMEOUT_EXCEPTION_MESSAGE);
+        return new Response<>(request, false, TIMEOUT_EXCEPTION_MESSAGE);
     }
 }
