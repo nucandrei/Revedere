@@ -12,6 +12,7 @@ import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageMarkAsReadRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
 import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
@@ -93,6 +94,10 @@ public class RevedereSession {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    public void markMessagesAsRead(List<ShortMessage> listToMark) {
+        this.minaClient.sendMessage(new ShortMessageMarkAsReadRequest(new User(username), listToMark));
     }
 
     public void logout() {

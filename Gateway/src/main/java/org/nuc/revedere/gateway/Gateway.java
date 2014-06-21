@@ -11,6 +11,7 @@ import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageMarkAsReadRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
@@ -19,6 +20,7 @@ import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.gateway.connectors.UsersManagerConnector;
 import org.nuc.revedere.service.core.BrokerMessageListener;
 import org.nuc.revedere.service.core.JMSRequestor;
+import org.nuc.revedere.service.core.JMSShouter;
 import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.Topics;
@@ -110,6 +112,12 @@ public class Gateway extends RevedereService {
                 final JMSRequestor<ShortMessageHistoricalRequest> requestor = new JMSRequestor<ShortMessageHistoricalRequest>(Gateway.this);
                 final Response<ShortMessageHistoricalRequest> response = requestor.request(Topics.SHORT_MESSAGE_TOPIC, request);
                 session.write(response);
+            }
+
+            @Override
+            public void onShortMessageMarkAsRead(ShortMessageMarkAsReadRequest request, IoSession session) {
+                final JMSShouter<ShortMessageMarkAsReadRequest> shouter = new JMSShouter<ShortMessageMarkAsReadRequest>(Gateway.this);
+                shouter.shout(Topics.SHORT_MESSAGE_TOPIC, request);
             }
 
             @Override

@@ -12,6 +12,7 @@ import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
+import org.nuc.revedere.core.messages.request.ShortMessageMarkAsReadRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
@@ -92,6 +93,19 @@ public class ShortMessageService extends RevedereService {
                         response.attach((Serializable) messagesToSend);
                         sendMessage(Topics.SHORT_MESSAGE_RESPONSE_TOPIC, response);
                     }
+                    
+                    if (message instanceof ShortMessageMarkAsReadRequest) {
+                        final ShortMessageMarkAsReadRequest shortMessageMarkAsReadRequest = (ShortMessageMarkAsReadRequest) message;
+                        final List<ShortMessage> messagesToMarkAsRead = shortMessageMarkAsReadRequest.getMessages();
+                        final User correspondingUser = shortMessageMarkAsReadRequest.getUser();
+                        final MessageBox correspondingMessageBox = msgBoxes.get(correspondingUser.getUsername());
+                        for (ShortMessage shortMessage : messagesToMarkAsRead) {
+                            shortMessage.markAsRead();
+                            correspondingMessageBox.add(shortMessage);
+                        }
+                        sendMessage(Topics.SHORT_MESSAGE_TOPIC, new ShortMessageUpdate(messagesToMarkAsRead, correspondingUser)); 
+                        
+                     }
                 } catch (Exception e) {
                     LOGGER.error("Caught exception while processing received message", e);
                 }

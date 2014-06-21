@@ -23,10 +23,13 @@ public class MessageBox {
     public void add(ShortMessage message) {
         if (message.getSender().getUsername().equals(msgBoxName)) {
             this.sentMessages.add(message);
-        } else if (message.isRead()) {
-            this.readMessages.add(message);
         } else {
-            this.unreadMessages.add(message);
+            clearOldInstances(message);
+            if (message.isRead()) {
+                this.readMessages.add(message);
+            } else {
+                this.unreadMessages.add(message);
+            }
         }
         persistence.save(message, msgBoxName);
     }
@@ -90,10 +93,19 @@ public class MessageBox {
         return msgBoxName;
     }
 
+    /**
+     * Clear all old instances of the short message
+     * 
+     * @param shortMessage the message that will be inserted or updated.
+     */
+    private void clearOldInstances(ShortMessage shortMessage) {
+        this.readMessages.remove(shortMessage);
+        this.unreadMessages.remove(shortMessage);
+    }
+
     private void loadMessages() {
         unreadMessages.addAll(persistence.getUnreadMessages(msgBoxName));
         readMessages.addAll(persistence.getReadMessages(msgBoxName));
         sentMessages.addAll(persistence.getSentMessages(msgBoxName));
     }
-
 }

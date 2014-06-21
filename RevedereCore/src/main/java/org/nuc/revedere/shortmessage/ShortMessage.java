@@ -57,6 +57,20 @@ public class ShortMessage implements Serializable, Comparable<ShortMessage> {
     }
 
     @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof ShortMessage)) {
+            return false;
+        }
+        final ShortMessage that = (ShortMessage) object;
+        return this.sender.equals(that.sender) && this.receiver.equals(that.receiver) && this.timestamp == that.timestamp;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (timestamp + this.receiver.hashCode() + this.sender.hashCode());
+    }
+
+    @Override
     public String toString() {
         return String.format("%s : %s", this.sender, this.content);
     }
