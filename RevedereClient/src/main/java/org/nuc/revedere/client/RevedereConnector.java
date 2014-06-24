@@ -39,6 +39,10 @@ public class RevedereConnector {
         return response.getMessage();
     }
 
+    public void disconnect() {
+        minaClient.close();
+    }
+
     private void sendAck(Response<LoginRequest> loginResponse) {
         minaClient.sendMessage(new Acknowledgement<>(loginResponse));
     }

@@ -17,6 +17,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
 
 import eclipseplugin.Activator;
+import eclipseplugin.revedere.RevedereManager;
 
 public class RevederePreferences extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
@@ -32,6 +33,8 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
 
     private Button registerButton;
     private Button login_logoutButton;
+
+    private RevedereManager revedereManager = RevedereManager.getInstance();
 
     public RevederePreferences() {
         super(GRID);
@@ -101,8 +104,16 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
         registerButton = addContributeButton(parent, PreferenceConstants.REGISTER_BUTTON_TEXT, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                usernameFieldEditor.getStringValue();
-                passwordFieldEditor.getStringValue();
+                final String username = usernameFieldEditor.getStringValue();
+                final String password = passwordFieldEditor.getStringValue();
+                final String gateway = gatewayFieldEditor.getStringValue();
+                try {
+                    establishConnectionIfMissing(gateway);
+                    final String response = register(username, password);
+                    setInfoMessage(response);
+                } catch (Exception exception) {
+                    setError(exception.getMessage());
+                }
             }
         });
 
@@ -112,14 +123,22 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (nextIsLogin) {
-                    usernameFieldEditor.getStringValue();
-                    passwordFieldEditor.getStringValue();
+                    final String username = usernameFieldEditor.getStringValue();
+                    final String password = passwordFieldEditor.getStringValue();
+                    final String gateway = gatewayFieldEditor.getStringValue();
+                    try {
+                        establishConnectionIfMissing(gateway);
+                        login(username, password);
+                        setInfoMessage("Logged in");
+                        nextIsLogin = false;
+                        changeText(PreferenceConstants.LOGOUT_BUTTON_TEXT);
+                        registerButton.setVisible(false);
+                    } catch (Exception exception) {
+                        setError(exception.getMessage());
+                    }
 
-                    setInfoMessage("Logged in");
-                    nextIsLogin = false;
-                    changeText(PreferenceConstants.LOGOUT_BUTTON_TEXT);
-                    registerButton.setVisible(false);
                 } else {
+                    revedereManager.getCurrentSession().logout();
                     setInfoMessage("Logged out");
                     nextIsLogin = true;
                     registerButton.setVisible(true);
@@ -175,5 +194,19 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
         if (registerButton != null) {
             registerButton.setEnabled(enabled);
         }
+    }
+
+    private void establishConnectionIfMissing(String address) throws Exception {
+        if (!revedereManager.hasConnector(address)) {
+            revedereManager.createConnector(address);
+        }
+    }
+
+    private void login(String username, String password) throws Exception {
+        revedereManager.login(username, password);
+    }
+
+    protected String register(String username, String password) throws Exception {
+        return revedereManager.register(username, password);
     }
 }
