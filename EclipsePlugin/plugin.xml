@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Revedere"
+            id="EclipsePlugin">
+      </category>
+      <view
+            name="Revedere View"
+            icon="icons/sample.gif"
+            category="EclipsePlugin"
+            class="eclipseplugin.views.RevedereView"
+            id="eclipseplugin.views.RevedereView">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <view
+               ratio="0.5"
+               relative="org.eclipse.ui.views.ProblemView"
+               relationship="right"
+               id="eclipseplugin.views.RevedereView">
+         </view>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts.xml">
+      </contexts>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="eclipseplugin.preferences.RevederePreferences"
+            id="eclipseplugin.preferences.RevederePreferences"
+            name="Revedere">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="eclipseplugin.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+
+</plugin>
