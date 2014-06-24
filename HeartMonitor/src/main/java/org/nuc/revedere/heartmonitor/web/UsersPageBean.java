@@ -3,6 +3,7 @@ package org.nuc.revedere.heartmonitor.web;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,8 +23,8 @@ public class UsersPageBean implements Serializable, CollectorListener<UserListUp
     private static final long serialVersionUID = 8388751329694282175L;
     private final HeartMonitor heartMonitor;
 
-    private Set<User> connectedUsers;
-    private Set<User> disconnectedUsers;
+    private Set<User> connectedUsers = new HashSet<>();
+    private Set<User> disconnectedUsers = new HashSet<>();
 
     public UsersPageBean() {
         heartMonitor = HeartMonitor.getInstance();
@@ -52,8 +53,10 @@ public class UsersPageBean implements Serializable, CollectorListener<UserListUp
     }
 
     public void onUpdate(Collector<UserListUpdate> source, UserListUpdate update) {
-        this.connectedUsers = source.getCurrentState().getUsersWhoWentOnline();
-        this.disconnectedUsers = source.getCurrentState().getUsersWhoWentOffline();
+        this.connectedUsers.removeAll(source.getCurrentState().getUsersWhoWentOffline());
+        this.connectedUsers.addAll(source.getCurrentState().getUsersWhoWentOnline());
 
+        this.disconnectedUsers.removeAll(source.getCurrentState().getUsersWhoWentOnline());
+        this.disconnectedUsers.addAll(source.getCurrentState().getUsersWhoWentOffline());
     }
 }

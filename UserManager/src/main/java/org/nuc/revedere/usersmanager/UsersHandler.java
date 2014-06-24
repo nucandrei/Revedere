@@ -76,12 +76,11 @@ public class UsersHandler {
         }
 
         if (connectedUsers.remove(user)) {
+            disconnectedUsers.add(user);
             notifySubscribers();
         } else {
             LOGGER.error(String.format("User \"%s\" was already disconnected", username));
-
         }
-        disconnectedUsers.add(user);
     }
 
     public Response<RegisterRequest> register(RegisterRequest request) {
@@ -114,7 +113,7 @@ public class UsersHandler {
         }
         return new Response<>(request, false, AUTH_FAILED);
     }
-    
+
     public void ack(Acknowledgement<LoginRequest> possibleAcknowledgement) {
         final User correspondingUser = usersWaitingAcknowledgement.remove(possibleAcknowledgement.getResponse().getRequest());
         if (correspondingUser == null) {
