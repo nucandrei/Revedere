@@ -101,6 +101,7 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
 
     @Override
     protected void contributeButtons(final Composite parent) {
+        final boolean activeSession = revedereManager.getCurrentSession() != null;
         registerButton = addContributeButton(parent, PreferenceConstants.REGISTER_BUTTON_TEXT, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -116,9 +117,11 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
                 }
             }
         });
+        registerButton.setVisible(!activeSession);
 
-        login_logoutButton = addContributeButton(parent, PreferenceConstants.LOGIN_BUTTON_TEXT, new SelectionAdapter() {
-            private boolean nextIsLogin = true;
+        final String login_logoutInitialText = (activeSession) ? PreferenceConstants.LOGOUT_BUTTON_TEXT : PreferenceConstants.LOGIN_BUTTON_TEXT;
+        login_logoutButton = addContributeButton(parent, login_logoutInitialText, new SelectionAdapter() {
+            private boolean nextIsLogin = !activeSession;
 
             @Override
             public void widgetSelected(SelectionEvent e) {
