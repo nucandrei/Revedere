@@ -136,13 +136,16 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
                     } catch (Exception exception) {
                         setError(exception.getMessage());
                     }
-
                 } else {
-                    revedereManager.getCurrentSession().logout();
-                    setInfoMessage("Logged out");
-                    nextIsLogin = true;
-                    registerButton.setVisible(true);
-                    changeText(PreferenceConstants.LOGIN_BUTTON_TEXT);
+                    try {
+                        revedereManager.logout();
+                        setInfoMessage("Logged out");
+                        nextIsLogin = true;
+                        registerButton.setVisible(true);
+                        changeText(PreferenceConstants.LOGIN_BUTTON_TEXT);
+                    } catch (Exception exception) {
+                        setError(exception.getMessage());
+                    }
                 }
             }
 

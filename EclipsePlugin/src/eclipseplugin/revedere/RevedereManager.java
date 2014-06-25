@@ -3,11 +3,15 @@ package eclipseplugin.revedere;
 import org.nuc.revedere.client.RevedereConnector;
 import org.nuc.revedere.client.RevedereSession;
 
+import eclipseplugin.views.EmptyViewStack;
+import eclipseplugin.views.ViewStack;
+
 public class RevedereManager {
     private static final RevedereManager instance = new RevedereManager();
     private RevedereConnector revedereConnector;
     private String connectorAddress;
     private RevedereSession revedereSession;
+    private ViewStack viewStack = EmptyViewStack.getInstance();
 
     public static RevedereManager getInstance() {
         return instance;
@@ -29,6 +33,16 @@ public class RevedereManager {
     public void login(String username, String password) throws Exception {
         verifyAPrioriConnector("No connection was established before login");
         this.revedereSession = revedereConnector.login(username, password);
+        viewStack.changeToUsersView();
+    }
+
+    public void logout() throws Exception {
+        verifyAPrioriConnector("No connection was established before logout");
+        if (revedereSession != null) {
+            revedereSession.logout();
+            revedereSession = null;
+            viewStack.changeToNoConnectionOrSession();
+        }
     }
 
     public String register(String username, String password) throws Exception {
@@ -48,6 +62,7 @@ public class RevedereManager {
     public void closeLastCreatedConnector() {
         if (revedereConnector != null) {
             revedereConnector.disconnect();
+            viewStack.changeToNoConnectionOrSession();
         }
     }
 
@@ -55,5 +70,9 @@ public class RevedereManager {
         if (revedereConnector == null) {
             throw new Exception(exceptionMessage);
         }
+    }
+
+    public void setViewStack(ViewStack viewStack) {
+        this.viewStack = viewStack;
     }
 }
