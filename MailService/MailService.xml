@@ -3,4 +3,5 @@
 	<port></port>
 	<from></from>
 	<password></password>
+	<log4jFile>mail-log4j.properties</log4jFile>
 </settings>

@@ -1,1 +1,3 @@
-<root></root>
+<root>
+	<log4jFile>gateway-log4j.properties</log4jFile>
+</root>

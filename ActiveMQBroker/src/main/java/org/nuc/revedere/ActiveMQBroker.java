@@ -7,7 +7,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.nuc.revedere.util.LoggerUtil;
 
 public class ActiveMQBroker {
-    private static final String LOG4J_PROPERTIES_PATH = "log4j.properties";
+    private static final String LOG4J_PROPERTIES_PATH = "activemq-log4j.properties";
     private final static Logger LOGGER = Logger.getLogger(ActiveMQBroker.class);
 
     public static void main(String[] args) {

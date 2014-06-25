@@ -1,4 +1,5 @@
 <root>
+	<log4jFile>heartmonitor-log4j.properties</log4jFile>
 	<service1>UsersManager</service1>
 	<service2>HeartMonitor</service2>
 </root>
