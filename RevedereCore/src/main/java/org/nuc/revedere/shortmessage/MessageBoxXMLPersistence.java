@@ -98,7 +98,7 @@ public class MessageBoxXMLPersistence implements MessageBoxPersistence {
 
                 for (Element message : messageBox.getChildren("message")) {
                     final String type = message.getAttributeValue("type");
-                    final int timestamp = Integer.parseInt(message.getAttributeValue("timestamp"));
+                    final long timestamp = Long.parseLong(message.getAttributeValue("timestamp"));
                     final String content = message.getChildText("content");
                     final String from = message.getChildText("from");
                     final String to = message.getChildText("to");
