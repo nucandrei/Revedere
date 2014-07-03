@@ -28,12 +28,13 @@ import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class ShortMessageService extends RevedereService {
 
+    private static final String SETTINGS_PATH = "ShortMessageService.xml";
     private final static String SHORT_MESSAGE_SERVICE_NAME = "ShortMessageService";
     private final Map<String, MessageBox> msgBoxes = new HashMap<>();
     private final MessageBoxPersistence persistence = new MessageBoxXMLPersistence("messages.xml");
 
     public ShortMessageService() throws Exception {
-        super(SHORT_MESSAGE_SERVICE_NAME);
+        super(SHORT_MESSAGE_SERVICE_NAME, SETTINGS_PATH);
         super.start(true, true, true);
         super.getUserCollector().addListener(new CollectorListener<UserListUpdate>() {
             public void onUpdate(Collector<UserListUpdate> source, UserListUpdate update) {

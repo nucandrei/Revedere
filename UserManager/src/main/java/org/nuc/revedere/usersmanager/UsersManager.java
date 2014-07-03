@@ -15,11 +15,12 @@ import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.Topics;
 
 public class UsersManager extends RevedereService {
+    private static final String SETTINGS_PATH = "UsersManager.xml";
     private final static String USERSMANAGER_SERVICE_NAME = "UsersManager";
     private final UsersHandler usersHandler = new UsersHandler(this);
 
     public UsersManager() throws Exception {
-        super(USERSMANAGER_SERVICE_NAME);
+        super(USERSMANAGER_SERVICE_NAME, SETTINGS_PATH);
         super.start(true, true, false);
 
         startListeningForUsersEvents();

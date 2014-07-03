@@ -34,9 +34,10 @@ import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class Gateway extends RevedereService {
     private final static String GATEWAY_SERVICE_NAME = "Gateway";
+    private final static String SETTINGS_PATH = "Gateway.xml";
 
     public Gateway() throws Exception {
-        super(GATEWAY_SERVICE_NAME);
+        super(GATEWAY_SERVICE_NAME, SETTINGS_PATH);
         start();
     }
 

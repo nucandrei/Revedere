@@ -6,6 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.jms.JMSException;
+
 import org.apache.log4j.LogManager;
 import org.jdom2.JDOMException;
 import org.nuc.revedere.core.UserCollector;
@@ -22,8 +23,8 @@ public class RevedereService extends Service {
     private final HeartbeatGenerator heartbeatGenerator = new HeartbeatGenerator(this.getServiceName());
     private final UserCollector userCollector = new UserCollector();
 
-    public RevedereService(String serviceName) throws JDOMException, IOException, JMSException {
-        super(serviceName);
+    public RevedereService(String serviceName, String settingsPath) throws JDOMException, IOException, JMSException {
+        super(serviceName, settingsPath);
     }
 
     public void start(boolean sendHeartbeats, boolean listenForCommands, boolean listenForUsers) throws Exception {
@@ -133,7 +134,7 @@ public class RevedereService extends Service {
 
     public static void main(String[] args) {
         try {
-            new RevedereService(args[0]);
+            new RevedereService(args[0], args[1]);
         } catch (JDOMException | IOException | JMSException e) {
             Service.BACKUP_LOGGER.error("Could not start service", e);
         }

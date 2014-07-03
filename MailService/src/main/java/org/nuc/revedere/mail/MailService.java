@@ -15,13 +15,14 @@ import org.nuc.revedere.service.core.hb.ServiceState;
 
 public class MailService extends RevedereService {
 
+    private static final String SETTINGS_PATH = "MailService.xml";
     private String hostName;
     private int port;
     private String from;
     private String password;
 
     public MailService() throws Exception {
-        super("MailService");
+        super("MailService", SETTINGS_PATH);
         super.start(true, true, false);
 
         loadSettings();

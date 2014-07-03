@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.jdom2.Document;
@@ -34,14 +35,15 @@ public class Service {
     /**
      * Create the underline service
      * @param serviceName the name of the service
+     * @param settingsPath the path of the settings file
      * @throws IOException 
      * @throws JDOMException 
      * @throws JMSException 
      * @throws Exception if something was not in its place
      */
-    public Service(final String serviceName) throws JDOMException, IOException, JMSException {
+    public Service(final String serviceName, String settingsPath) throws JDOMException, IOException, JMSException {
         this.serviceName = serviceName;
-        settings = loadSettingsFromFile(String.format("%s.xml", serviceName));
+        settings = loadSettingsFromFile(settingsPath);
         LOGGER = Logger.getLogger(serviceName);
         String log4jFile = settings.get("log4jFile");
         if (log4jFile == null) {

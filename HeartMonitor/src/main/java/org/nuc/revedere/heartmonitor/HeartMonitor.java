@@ -7,6 +7,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.jms.JMSException;
+
 import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.service.core.BrokerMessageListener;
 import org.nuc.revedere.service.core.Service;
@@ -16,14 +17,15 @@ import org.nuc.revedere.service.core.hb.Heartbeat;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class HeartMonitor extends RevedereService {
-    private static HeartMonitor instance;
-
+    private static final String SETTINGS_PATH = "HeartMonitor.xml";
     private final static String HEARTMONITOR_SERVICE_NAME = "HeartMonitor";
+    
+    private static HeartMonitor instance;
     private final Map<String, ServiceHeartbeatCollector> servicesStatus = new HashMap<>();
     private HeartbeatInfoListener heartbeatInfoListener;
 
     private HeartMonitor() throws Exception {
-        super(HEARTMONITOR_SERVICE_NAME);
+        super(HEARTMONITOR_SERVICE_NAME, SETTINGS_PATH);
         super.start(true, true, true);
 
         loadConfiguredServices();

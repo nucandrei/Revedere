@@ -17,11 +17,12 @@ import org.nuc.revedere.service.core.Topics;
 
 public class ReviewService extends RevedereService {
 
+    private static final String SETTINGS_PATH = "ReviewService.xml";
     private final static String REVIEW_SERVICE_NAME = "ReviewService";
     private final ReviewManager reviewManager = new ReviewManager();
 
     public ReviewService() throws Exception {
-        super(REVIEW_SERVICE_NAME);
+        super(REVIEW_SERVICE_NAME, SETTINGS_PATH);
         super.start(true, true, true);
         // TODO link to user collector and send updates when user connect
 
