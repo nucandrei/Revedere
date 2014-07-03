@@ -1,13 +1,17 @@
 package org.nuc.revedere.heartmonitor;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.jms.JMSException;
 
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.service.core.BrokerMessageListener;
 import org.nuc.revedere.service.core.Service;
@@ -19,7 +23,7 @@ import org.nuc.revedere.util.Collector.CollectorListener;
 public class HeartMonitor extends RevedereService {
     private static final String SETTINGS_PATH = "HeartMonitor.xml";
     private final static String HEARTMONITOR_SERVICE_NAME = "HeartMonitor";
-    
+
     private static HeartMonitor instance;
     private final Map<String, ServiceHeartbeatCollector> servicesStatus = new HashMap<>();
     private HeartbeatInfoListener heartbeatInfoListener;
@@ -45,8 +49,22 @@ public class HeartMonitor extends RevedereService {
     }
 
     private void loadConfiguredServices() {
-        final Map<String, String> services = getSettings();
-        for (String service : services.values()) {
+        final List<String> configuredServices = new ArrayList<>();
+        try {
+            final Document settings = loadXMLDocument(SETTINGS_PATH);
+            final Element servicesElement = settings.getRootElement().getChild("services");
+            if (servicesElement == null) {
+                throw new Exception("Services node not found");
+            }
+
+            for (Element serviceElement : servicesElement.getChildren("service")) {
+                configuredServices.add(serviceElement.getText());
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to load configured servers", e);
+        }
+        
+        for (String service : configuredServices) {
             servicesStatus.put(service, new ServiceHeartbeatCollector(service, true));
         }
     }
