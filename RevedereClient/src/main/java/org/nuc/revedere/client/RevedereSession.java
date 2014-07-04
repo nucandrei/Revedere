@@ -24,9 +24,9 @@ import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.review.Review;
 import org.nuc.revedere.review.ReviewData;
 import org.nuc.revedere.review.ReviewState;
+import org.nuc.revedere.shortmessage.DoNothingMessageBoxPersistence;
 import org.nuc.revedere.shortmessage.MessageBox;
 import org.nuc.revedere.shortmessage.MessageBoxPersistence;
-import org.nuc.revedere.shortmessage.MessageBoxXMLPersistence;
 import org.nuc.revedere.shortmessage.ShortMessage;
 import org.nuc.revedere.shortmessage.ShortMessageCollector;
 import org.nuc.revedere.util.Collector;
@@ -46,7 +46,7 @@ public class RevedereSession {
         this.userCollector = new UserCollector();
         this.shortMessageCollector = new ShortMessageCollector();
         this.reviewCollector = new ReviewCollector();
-        final MessageBoxPersistence persistence = new MessageBoxXMLPersistence("messages.xml");
+        final MessageBoxPersistence persistence = new DoNothingMessageBoxPersistence();
         this.clientMessageBox = new MessageBox(username, persistence);
         this.shortMessageCollector.addListener(new CollectorListener<ShortMessageUpdate>() {
             @Override
@@ -66,11 +66,21 @@ public class RevedereSession {
         this.userCollector.removeListener(listener);
     }
 
+    public void addListenerToShortMessageCollector(CollectorListener<ShortMessageUpdate> listener) {
+        this.shortMessageCollector.addListener(listener);
+    }
+
+    public void removeListenerFromShortMessageCollector(CollectorListener<ShortMessageUpdate> listener) {
+        this.shortMessageCollector.removeListener(listener);
+    }
+
     public MessageBox getMessageBox() {
         return clientMessageBox;
     }
 
-    public void sendMessage(ShortMessage shortMessage) {
+    public void sendMessage(User receiver, String content) {
+        final long timestamp = System.currentTimeMillis();
+        final ShortMessage shortMessage = new ShortMessage(currentUser, receiver, content, timestamp);
         this.minaClient.sendMessage(new ShortMessageSendRequest(shortMessage));
     }
 
@@ -127,6 +137,10 @@ public class RevedereSession {
     public void updateReview(Review review, ReviewState newState) {
         this.minaClient.sendMessage(new ReviewUpdateRequest(review, newState));
     }
+    
+    public User getCurrentUser () {
+        return this.currentUser;
+    }
 
     private void initialize() {
         this.minaClient.addHandler(new IoHandlerAdapter() {
@@ -152,5 +166,8 @@ public class RevedereSession {
                 }
             }
         });
+        this.clientMessageBox.addAll(this.getReadMessages());
+        this.clientMessageBox.addAll(this.getSentMessages());
+        this.clientMessageBox.addAll(this.getUnreadMessages());
     }
 }

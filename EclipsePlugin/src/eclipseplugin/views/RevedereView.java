@@ -3,8 +3,10 @@ package eclipseplugin.views;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
+import org.nuc.revedere.core.User;
 
 import eclipseplugin.revedere.RevedereManager;
+import eclipseplugin.views.composites.MessageComposite;
 import eclipseplugin.views.composites.NoSessionComposite;
 import eclipseplugin.views.composites.UsersComposite;
 
@@ -14,9 +16,7 @@ public class RevedereView extends ViewPart implements ViewStack {
     private final StackLayout stackLayout = new StackLayout();
     private Composite noSessionComposite;
     private UsersComposite usersComposite;
-    private Composite messageComposite;
-    private Composite reviewComposite;
-
+    private MessageComposite messageComposite;
     private Composite parent;
 
     public void createPartControl(Composite parent) {
@@ -24,10 +24,9 @@ public class RevedereView extends ViewPart implements ViewStack {
         this.parent.setLayout(stackLayout);
         noSessionComposite = new NoSessionComposite(parent);
         usersComposite = new UsersComposite(parent, this);
+        messageComposite = new MessageComposite(parent, this);
         revedereManager.setViewStack(this);
-        stackLayout.topControl = noSessionComposite;
-        this.parent.layout();
-        this.parent.pack();
+        changeToNoConnectionOrSession();
     }
 
     @Override
@@ -38,16 +37,27 @@ public class RevedereView extends ViewPart implements ViewStack {
     @Override
     public void changeToNoConnectionOrSession() {
         stackLayout.topControl = noSessionComposite;
-        this.parent.layout();
-        this.parent.pack();
+        layout();
     }
 
     @Override
     public void changeToUsersView() {
         usersComposite.setSession(revedereManager.getCurrentSession());
         stackLayout.topControl = usersComposite;
+        layout();
+    }
+
+    @Override
+    public void changeToMessageView(User user) {
+        messageComposite.update(user);
+        stackLayout.topControl = messageComposite;
+        layout();
+    }
+
+    @Override
+    public void layout() {
+        ((Composite) stackLayout.topControl).layout();
         this.parent.layout();
-        this.parent.pack();
     }
 
 }

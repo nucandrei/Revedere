@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
+import org.nuc.revedere.core.User;
 import org.nuc.revedere.shortmessage.ShortMessage;
 
 public class MessageBox {
@@ -87,6 +90,26 @@ public class MessageBox {
 
     public List<ShortMessage> getSentMessages() {
         return sentMessages;
+    }
+
+    public Set<ShortMessage> getMessages(User otherUser) {
+        final Set<ShortMessage> messages = new TreeSet<>();
+        for (ShortMessage shortMessage : unreadMessages) {
+            if (shortMessage.getSender().equals(otherUser)) {
+                messages.add(shortMessage);
+            }
+        }
+        for (ShortMessage shortMessage : readMessages) {
+            if (shortMessage.getSender().equals(otherUser)) {
+                messages.add(shortMessage);
+            }
+        }
+        for (ShortMessage shortMessage : sentMessages) {
+            if (shortMessage.getReceiver().equals(otherUser)) {
+                messages.add(shortMessage);
+            }
+        }
+        return messages;
     }
 
     public String getName() {

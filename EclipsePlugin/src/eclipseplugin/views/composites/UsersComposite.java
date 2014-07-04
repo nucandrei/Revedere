@@ -1,12 +1,11 @@
 package eclipseplugin.views.composites;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -18,21 +17,24 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.nuc.revedere.client.RevedereSession;
 import org.nuc.revedere.core.User;
+import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
+import org.nuc.revedere.shortmessage.ShortMessage;
+import org.nuc.revedere.util.BidirectionMap;
 import org.nuc.revedere.util.Collector;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
 import eclipseplugin.views.ViewStack;
 
 public class UsersComposite extends Composite {
-    private final Map<User, TableItem> itemsByUser = new HashMap<>();
+    private final BidirectionMap<User, TableItem> itemsByUser = new BidirectionMap<>();
+    private final int MESSAGE_TABLE_ROW = 2;
     private RevedereSession revedereSession;
     private final Image onlineImage;
     private final Image offlineImage;
     private final Image messages;
     private final Image newMessages;
     private final Image reviews;
-    private final Image newReviews;
     private final Table table;
     private final ViewStack viewStack;
 
@@ -46,7 +48,7 @@ public class UsersComposite extends Composite {
         this.newMessages = AbstractUIPlugin.imageDescriptorFromPlugin("EclipsePlugin", "/icons/messages-new.png").createImage();
 
         this.reviews = AbstractUIPlugin.imageDescriptorFromPlugin("EclipsePlugin", "/icons/reviews.png").createImage();
-        this.newReviews = AbstractUIPlugin.imageDescriptorFromPlugin("EclipsePlugin", "/icons/reviews-new.png").createImage();
+        AbstractUIPlugin.imageDescriptorFromPlugin("EclipsePlugin", "/icons/reviews-new.png").createImage();
 
         this.table = new Table(this, SWT.FULL_SELECTION);
         initialize();
@@ -63,7 +65,7 @@ public class UsersComposite extends Composite {
                         @Override
                         public void run() {
                             for (User onlineUser : collector.getCurrentState().getUsersWhoWentOnline()) {
-                                TableItem tableItem = itemsByUser.get(onlineUser);
+                                TableItem tableItem = itemsByUser.getValue(onlineUser);
                                 if (tableItem == null) {
                                     tableItem = createTableItem(table, onlineUser.getUsername());
                                     itemsByUser.put(onlineUser, tableItem);
@@ -72,12 +74,30 @@ public class UsersComposite extends Composite {
                             }
 
                             for (User offlineUser : collector.getCurrentState().getUsersWhoWentOffline()) {
-                                TableItem tableItem = itemsByUser.get(offlineUser);
+                                TableItem tableItem = itemsByUser.getValue(offlineUser);
                                 if (tableItem == null) {
                                     tableItem = createTableItem(table, offlineUser.getUsername());
                                     itemsByUser.put(offlineUser, tableItem);
                                 }
                                 tableItem.setImage(0, offlineImage);
+                            }
+                        }
+                    });
+                }
+            });
+
+            revedereSession.addListenerToShortMessageCollector(new CollectorListener<ShortMessageUpdate>() {
+
+                @Override
+                public void onUpdate(Collector<ShortMessageUpdate> source, ShortMessageUpdate update) {
+                    Display.getDefault().syncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            resetAllIconsToDefault(MESSAGE_TABLE_ROW, messages);
+                            for (ShortMessage shortMessage : update.getUpdate()) {
+                                if (!shortMessage.isRead()) {
+                                    itemsByUser.getValue(shortMessage.getSender()).setImage(MESSAGE_TABLE_ROW, newMessages);
+                                }
                             }
                         }
                     });
@@ -132,6 +152,28 @@ public class UsersComposite extends Composite {
             }
         });
 
+        table.addListener(SWT.MouseDown, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                final Point clickPoint = new Point(event.x, event.y);
+                TableItem selectedItem = table.getItem(clickPoint);
+                if (selectedItem != null) {
+                    final User selectedUser = itemsByUser.getKey(selectedItem);
+                    final Rectangle messageRectangle = selectedItem.getBounds(MESSAGE_TABLE_ROW);
+                    if (messageRectangle.contains(clickPoint)) {
+                        // message button was pressed
+                        viewStack.changeToMessageView(selectedUser);
+                        return;
+                    }
+                }
+            }
+        });
+    }
+
+    private void resetAllIconsToDefault(int index, Image defaultImage) {
+        for (TableItem item : itemsByUser.values()) {
+            item.setImage(index, defaultImage);
+        }
     }
 
     private TableItem createTableItem(Table parentTable, String username) {
