@@ -44,7 +44,7 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
     }
 
     public void init(IWorkbench workbench) {
-
+        // Do nothing
     }
 
     public void createFieldEditors() {

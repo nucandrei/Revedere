@@ -132,7 +132,7 @@ public class UsersComposite extends Composite {
 
             @Override
             public void controlMoved(ControlEvent e) {
-
+                // Do nothing
             }
         });
         table.setVisible(true);

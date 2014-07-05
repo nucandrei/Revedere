@@ -78,7 +78,7 @@ public class ReviewsComposite extends Composite {
 
             @Override
             public void controlMoved(ControlEvent e) {
-
+                // Do nothing
             }
         });
 

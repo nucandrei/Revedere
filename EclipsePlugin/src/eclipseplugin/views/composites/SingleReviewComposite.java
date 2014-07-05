@@ -71,7 +71,7 @@ public class SingleReviewComposite extends Composite {
         openDocButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
-                
+                // Do nothing
             }
         });
         openDocButton.setText("Open Document");

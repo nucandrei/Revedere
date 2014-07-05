@@ -38,7 +38,7 @@ public class RevedereView extends ViewPart implements ViewStack {
 
     @Override
     public void setFocus() {
-
+        // Do nothing
     }
 
     @Override
