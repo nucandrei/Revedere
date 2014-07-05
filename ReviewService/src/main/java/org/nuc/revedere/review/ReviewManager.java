@@ -12,6 +12,7 @@ public class ReviewManager {
     public Review createReview(User sourceUser, User destinationUser, ReviewData reviewData, ReviewDocument reviewDocument) {
         final Review review = new Review(sourceUser, destinationUser, reviewData, reviewDocument, reviewIndex + "");
         reviews.add(review);
+        reviewIndex++;
         return review;
     }
 
