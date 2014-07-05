@@ -1,0 +1,3 @@
+<settings>
+	<log4jFile>reviews-log4j.properties</log4jFile>
+</settings>

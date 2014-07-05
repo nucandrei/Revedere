@@ -27,8 +27,10 @@ import org.nuc.revedere.util.Collector.CollectorListener;
 import eclipseplugin.views.ViewStack;
 
 public class UsersComposite extends Composite {
+    protected static final int R_TABLE_ROW = 0;
     private final BidirectionMap<User, TableItem> itemsByUser = new BidirectionMap<>();
     private final int MESSAGE_TABLE_ROW = 2;
+    private final int REVIEW_TABLE_ROW = 3;
     private RevedereSession revedereSession;
     private final Image onlineImage;
     private final Image offlineImage;
@@ -163,6 +165,13 @@ public class UsersComposite extends Composite {
                     if (messageRectangle.contains(clickPoint)) {
                         // message button was pressed
                         viewStack.changeToMessageView(selectedUser);
+                        return;
+                    }
+                    
+                    final Rectangle reviewRectangle = selectedItem.getBounds(REVIEW_TABLE_ROW);
+                    if (reviewRectangle.contains(clickPoint)) {
+                        // message button was pressed
+                        viewStack.changeToReviewView(selectedUser);
                         return;
                     }
                 }

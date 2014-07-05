@@ -10,6 +10,7 @@ import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
 import org.nuc.revedere.core.messages.request.ReviewRequest;
@@ -147,6 +148,13 @@ public class Gateway extends RevedereService {
             @Override
             public void onPing(IoSession session) {
                 sessionManager.notePing(session);
+            }
+
+            @Override
+            public void onReviewHistoricalRequest(ReviewHistoricalRequest request, IoSession session) {
+                final JMSRequestor<ReviewHistoricalRequest> requestor = new JMSRequestor<>(Gateway.this);
+                final Response<ReviewHistoricalRequest> response = requestor.request(Topics.REVIEW_TOPIC, request);
+                session.write(response);
             }
         };
         new MinaServer(new ServerHandler(gatewayListener));

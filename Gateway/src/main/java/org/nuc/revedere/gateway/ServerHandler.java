@@ -8,6 +8,7 @@ import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
 import org.nuc.revedere.core.messages.request.ReviewRequest;
@@ -72,6 +73,10 @@ public class ServerHandler extends IoHandlerAdapter {
         
         if (message instanceof ReviewUpdateRequest) {
             listener.onReviewUpdate((ReviewUpdateRequest) message, session);
+        }
+        
+        if (message instanceof ReviewHistoricalRequest) {
+            listener.onReviewHistoricalRequest((ReviewHistoricalRequest) message, session);
         }
 
         if (message instanceof Ping) {

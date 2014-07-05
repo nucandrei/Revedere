@@ -61,4 +61,9 @@ public class BidirectionMap<K, V> {
     public Collection<K> keys() {
         return reverseMap.values();
     }
+    
+    public void clear() {
+        directMap.clear();
+        reverseMap.clear();
+    }
 }

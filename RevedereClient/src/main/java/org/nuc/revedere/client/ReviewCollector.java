@@ -24,6 +24,17 @@ public class ReviewCollector extends Collector<ReviewUpdate> {
         return null;
     }
 
+    public void addReviews(List<Review> reviews) {
+        for (Review review : reviews) {
+            reviewList.remove(review);
+            reviewList.add(review);
+        }
+    }
+
+    public List<Review> getReviews() {
+        return reviewList;
+    }
+
     public List<Review> getReviews(User user) {
         final List<Review> response = new ArrayList<>();
         for (Review review : reviewList) {
@@ -34,7 +45,7 @@ public class ReviewCollector extends Collector<ReviewUpdate> {
         return response;
     }
 
-    public int getUnseenReviews(User user) {
+    public int getUnseenReviews() {
         int noUnseenReviews = 0;
         for (Review review : reviewList) {
             if (!review.isSeen()) {

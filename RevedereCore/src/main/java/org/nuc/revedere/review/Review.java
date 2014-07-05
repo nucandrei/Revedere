@@ -74,4 +74,19 @@ public class Review implements Serializable {
     public boolean isSeen() {
         return this.lastChangeSeen;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Review)) {
+            return false;
+        }
+
+        Review that = (Review) object;
+        return this.reviewID.equals(that.reviewID);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.reviewID.hashCode();
+    }
 }

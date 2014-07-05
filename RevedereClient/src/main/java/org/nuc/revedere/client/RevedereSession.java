@@ -10,6 +10,7 @@ import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.UserCollector;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
+import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
 import org.nuc.revedere.core.messages.request.ReviewRequest;
@@ -78,6 +79,18 @@ public class RevedereSession {
         return clientMessageBox;
     }
 
+    public void addListenerToReviewCollector(CollectorListener<ReviewUpdate> listener) {
+        this.reviewCollector.addListener(listener);
+    }
+
+    public void removeListenerFromReviewCollector(CollectorListener<ReviewUpdate> listener) {
+        this.reviewCollector.removeListener(listener);
+    }
+
+    public ReviewCollector getReviewCollector() {
+        return this.reviewCollector;
+    }
+
     public void sendMessage(User receiver, String content) {
         final long timestamp = System.currentTimeMillis();
         final ShortMessage shortMessage = new ShortMessage(currentUser, receiver, content, timestamp);
@@ -114,6 +127,16 @@ public class RevedereSession {
         return Collections.emptyList();
     }
 
+    @SuppressWarnings("unchecked")
+    private List<Review> getReviews() {
+        final MinaRequestor<ReviewHistoricalRequest> requestor = new MinaRequestor<>(minaClient);
+        final Response<ReviewHistoricalRequest> response = requestor.request(new ReviewHistoricalRequest(currentUser));
+        if (response != null) {
+            return (List<Review>) response.getAttachment();
+        }
+        return Collections.emptyList();
+    }
+
     public void markMessagesAsRead(List<ShortMessage> listToMark) {
         this.minaClient.sendMessage(new ShortMessageMarkAsReadRequest(currentUser, listToMark));
     }
@@ -137,8 +160,8 @@ public class RevedereSession {
     public void updateReview(Review review, ReviewState newState) {
         this.minaClient.sendMessage(new ReviewUpdateRequest(review, newState));
     }
-    
-    public User getCurrentUser () {
+
+    public User getCurrentUser() {
         return this.currentUser;
     }
 
@@ -169,5 +192,7 @@ public class RevedereSession {
         this.clientMessageBox.addAll(this.getReadMessages());
         this.clientMessageBox.addAll(this.getSentMessages());
         this.clientMessageBox.addAll(this.getUnreadMessages());
+
+        reviewCollector.addReviews(this.getReviews());
     }
 }

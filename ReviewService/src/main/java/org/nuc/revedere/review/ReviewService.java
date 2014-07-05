@@ -7,6 +7,8 @@ import java.util.List;
 import javax.jms.JMSException;
 
 import org.nuc.revedere.core.User;
+import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
 import org.nuc.revedere.core.messages.request.ReviewRequest;
@@ -24,7 +26,6 @@ public class ReviewService extends RevedereService {
     public ReviewService() throws Exception {
         super(REVIEW_SERVICE_NAME, SETTINGS_PATH);
         super.start(true, true, true);
-        // TODO link to user collector and send updates when user connect
 
         addMessageListener(Topics.REVIEW_REQUEST_TOPIC, new BrokerMessageListener() {
             public void onMessage(Serializable message) {
@@ -33,9 +34,11 @@ public class ReviewService extends RevedereService {
                         final ReviewRequest reviewRequest = (ReviewRequest) message;
                         final User sourceUser = reviewRequest.getSourceUser();
                         final User destinationUser = reviewRequest.getDestinationUser();
+                        LOGGER.info(String.format("Received new review request from %s to %s", sourceUser, destinationUser));
                         final ReviewData reviewData = reviewRequest.getReviewData();
                         final Review review = reviewManager.createReview(sourceUser, destinationUser, reviewData);
                         notifyActors(review);
+                        LOGGER.info(String.format("Created new review request with ID %s and notified actors", review.getID()));
                         return;
                     }
 
@@ -45,6 +48,7 @@ public class ReviewService extends RevedereService {
                         reviewToUpdate.markLastChangeSeen();
                         reviewManager.update(reviewToUpdate);
                         notifyActors(reviewToUpdate);
+                        return;
                     }
 
                     if (message instanceof ReviewUpdateRequest) {
@@ -68,7 +72,19 @@ public class ReviewService extends RevedereService {
                         }
                         reviewManager.update(reviewToUpdate);
                         notifyActors(reviewToUpdate);
+                        LOGGER.info(String.format("Changed state for review with ID %s to %s", reviewToUpdate.getID(), reviewToUpdate.getState()));
+                        return;
                     }
+
+                    if (message instanceof ReviewHistoricalRequest) {
+                        final ReviewHistoricalRequest request = (ReviewHistoricalRequest) message;
+                        final Response<ReviewHistoricalRequest> response = new Response<>(request, true, "");
+                        response.attach((Serializable) reviewManager.getReviews(request.getUser()));
+                        sendMessage(Topics.REVIEW_RESPONSE_TOPIC, response);
+                        LOGGER.info(String.format("Sent all reviews for user %s", request.getUser()));
+                        return;
+                    }
+
                 } catch (Exception e) {
                     LOGGER.error("Caught exception while processing received message", e);
                 }

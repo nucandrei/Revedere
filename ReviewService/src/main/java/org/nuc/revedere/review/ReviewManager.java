@@ -19,5 +19,15 @@ public class ReviewManager {
         reviews.remove(reviewToUpdate);
         reviews.add(reviewToUpdate);
     }
+   
+    public List<Review> getReviews(User user) {
+        final List<Review> reviewsForUser = new ArrayList<>();
+        for (Review review: reviews) {
+            if (review.getSourceUser().equals(user) || review.getDestinationUser().equals(user)) {
+                reviewsForUser.add(review);
+            }
+        }
+        return reviewsForUser;
+    }
 
 }

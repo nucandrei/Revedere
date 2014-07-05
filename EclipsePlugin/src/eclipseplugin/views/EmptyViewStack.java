@@ -1,6 +1,7 @@
 package eclipseplugin.views;
 
 import org.nuc.revedere.core.User;
+import org.nuc.revedere.review.Review;
 
 public class EmptyViewStack implements ViewStack {
     private static final EmptyViewStack instance = new EmptyViewStack();
@@ -25,8 +26,17 @@ public class EmptyViewStack implements ViewStack {
     }
 
     @Override
+    public void changeToReviewView(User selectedUser) {
+        // Do nothing
+    }
+    
+    @Override
+    public void changeToSingleReviewView(Review selectedReview) {
+        // Do nothing  
+    }
+
+    @Override
     public void layout() {
-        // TODO Auto-generated method stub
-        
+        // Do nothing
     }
 }
