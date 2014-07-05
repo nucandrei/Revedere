@@ -24,6 +24,7 @@ import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.review.Review;
 import org.nuc.revedere.review.ReviewData;
+import org.nuc.revedere.review.ReviewDocument;
 import org.nuc.revedere.review.ReviewState;
 import org.nuc.revedere.shortmessage.DoNothingMessageBoxPersistence;
 import org.nuc.revedere.shortmessage.MessageBox;
@@ -149,8 +150,8 @@ public class RevedereSession {
         this.minaClient.close();
     }
 
-    public void requestReview(User destinationUser, ReviewData reviewData) {
-        this.minaClient.sendMessage(new ReviewRequest(currentUser, destinationUser, reviewData));
+    public void requestReview(User destinationUser, ReviewData reviewData, ReviewDocument reviewDocument) {
+        this.minaClient.sendMessage(new ReviewRequest(currentUser, destinationUser, reviewData, reviewDocument));
     }
 
     public void markReviewAsSeen(Review review) {

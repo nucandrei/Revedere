@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: eclipseplugin.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- EclipsePlugin.Dependencies;bundle-version="1.0.0"
+ EclipsePlugin.Dependencies;bundle-version="1.0.0",
+ org.eclipse.core.resources;bundle-version="3.9.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
+
 <plugin>
 
    <extension
@@ -48,5 +49,13 @@
             class="eclipseplugin.preferences.PreferenceInitializer">
       </initializer>
    </extension>
-
+   
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+         <command commandId="requestReview" label="Request review" />
+      </menuContribution>
+   </extension>
+   <extension point="org.eclipse.ui.commands">
+      <command id="requestReview" defaultHandler="eclipseplugin.contextmenu.RequestReviewHandler" name="Request review" />
+   </extension>
 </plugin>

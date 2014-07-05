@@ -9,8 +9,8 @@ public class ReviewManager {
     private int reviewIndex = 0;
     private final List<Review> reviews = new ArrayList<>();
 
-    public Review createReview(User sourceUser, User destinationUser, ReviewData reviewData) {
-        final Review review = new Review(sourceUser, destinationUser, reviewData, reviewIndex + "");
+    public Review createReview(User sourceUser, User destinationUser, ReviewData reviewData, ReviewDocument reviewDocument) {
+        final Review review = new Review(sourceUser, destinationUser, reviewData, reviewDocument, reviewIndex + "");
         reviews.add(review);
         return review;
     }
@@ -19,10 +19,10 @@ public class ReviewManager {
         reviews.remove(reviewToUpdate);
         reviews.add(reviewToUpdate);
     }
-   
+
     public List<Review> getReviews(User user) {
         final List<Review> reviewsForUser = new ArrayList<>();
-        for (Review review: reviews) {
+        for (Review review : reviews) {
             if (review.getSourceUser().equals(user) || review.getDestinationUser().equals(user)) {
                 reviewsForUser.add(review);
             }

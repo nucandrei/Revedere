@@ -12,13 +12,15 @@ public class Review implements Serializable {
     private boolean lastChangeSeen = false;
     private final String reviewID;
     private final ReviewData reviewData;
+    private final ReviewDocument reviewDocument;
 
-    public Review(User sourceUser, User destinationUser, ReviewData reviewData, String reviewID) {
+    public Review(User sourceUser, User destinationUser, ReviewData reviewData, ReviewDocument reviewDocument, String reviewID) {
         this.sourceUser = sourceUser;
         this.destinationUser = destinationUser;
         this.reviewData = reviewData;
         this.reviewID = reviewID;
         this.reviewState = ReviewState.REQUEST;
+        this.reviewDocument = reviewDocument;
     }
 
     public User getSourceUser() {
@@ -39,6 +41,10 @@ public class Review implements Serializable {
 
     public String getID() {
         return this.reviewID;
+    }
+
+    public ReviewDocument getReviewDocument() {
+        return this.reviewDocument;
     }
 
     public void markLastChangeSeen() {

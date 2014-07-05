@@ -36,7 +36,8 @@ public class ReviewService extends RevedereService {
                         final User destinationUser = reviewRequest.getDestinationUser();
                         LOGGER.info(String.format("Received new review request from %s to %s", sourceUser, destinationUser));
                         final ReviewData reviewData = reviewRequest.getReviewData();
-                        final Review review = reviewManager.createReview(sourceUser, destinationUser, reviewData);
+                        final ReviewDocument reviewDocument = reviewRequest.getReviewDocument();
+                        final Review review = reviewManager.createReview(sourceUser, destinationUser, reviewData, reviewDocument);
                         notifyActors(review);
                         LOGGER.info(String.format("Created new review request with ID %s and notified actors", review.getID()));
                         return;
