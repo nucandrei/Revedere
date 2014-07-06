@@ -39,9 +39,9 @@ public class RequestReviewHandler extends AbstractHandler {
             MessageDialog.openInformation(window.getShell(), "Revederé", "The Revederé plugin is not connected.");
             return null;
         }
-
-        final ReviewData reviewData = createReviewData(getSelectedProject());
-        ReviewDocumentDialog dialog = new ReviewDocumentDialog(window.getShell(), reviewData);
+        final IProject selectedProject = getSelectedProject();
+        final ReviewData reviewData = createReviewData(selectedProject);
+        final ReviewDocumentDialog dialog = new ReviewDocumentDialog(window.getShell(), reviewData, selectedProject.getName());
         dialog.open();
         return null;
     }
@@ -58,7 +58,7 @@ public class RequestReviewHandler extends AbstractHandler {
                 reviewFiles.add(reviewFile);
             }
         }
-        
+
         return new ReviewData(reviewFiles, folders);
     }
 

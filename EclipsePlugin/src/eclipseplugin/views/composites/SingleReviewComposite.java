@@ -1,5 +1,8 @@
 package eclipseplugin.views.composites;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
@@ -9,6 +12,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -16,10 +23,13 @@ import org.nuc.revedere.client.RevedereSession;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.update.ReviewUpdate;
 import org.nuc.revedere.review.Review;
+import org.nuc.revedere.review.ReviewData;
+import org.nuc.revedere.review.ReviewFile;
 import org.nuc.revedere.review.ReviewState;
 import org.nuc.revedere.util.Collector;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
+import eclipseplugin.dialogs.ReviewDocumentDialog;
 import eclipseplugin.revedere.RevedereManager;
 import eclipseplugin.views.ViewStack;
 
@@ -39,6 +49,12 @@ public class SingleReviewComposite extends Composite {
     private final MouseAdapter denyReviewMouseAdapter;
     private final MouseAdapter doneReviewMouseAdapter;
     private final ViewStack viewStack;
+    private final Image folderImage;
+    private final Image fileImage;
+
+    private final Map<String, TreeItem> treeItems = new HashMap<>();
+
+    final Tree tree;
 
     public SingleReviewComposite(Composite parent, ViewStack viewStack) {
         super(parent, SWT.NONE);
@@ -64,14 +80,15 @@ public class SingleReviewComposite extends Composite {
             }
         });
 
-        final Tree tree = new Tree(this, SWT.BORDER);
+        tree = new Tree(this, SWT.BORDER);
         tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
 
         Button openDocButton = new Button(this, SWT.NONE);
         openDocButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
-                // Do nothing
+                final ReviewDocumentDialog reviewDocumentDialog = new ReviewDocumentDialog(parent.getShell(), currentReview);
+                reviewDocumentDialog.open();
             }
         });
         openDocButton.setText("Open Document");
@@ -120,6 +137,11 @@ public class SingleReviewComposite extends Composite {
                 revedereManager.getCurrentSession().updateReview(currentReview, ReviewState.DONE);
             }
         };
+
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        ISharedImages images = workbench.getSharedImages();
+        folderImage = images.getImage(ISharedImages.IMG_OBJ_FOLDER);
+        fileImage = images.getImage(ISharedImages.IMG_OBJ_FILE);
     }
 
     public void update(Review review) {
@@ -130,6 +152,7 @@ public class SingleReviewComposite extends Composite {
                     hasFocus = true;
                     addListenerOnReviewUpdateIfMissing();
                     currentReview = review;
+                    redrawTree(currentReview.getData());
                     reviewNameLabel.setText(review.getID());
                     drawContextualButtons(review.getState(), review.getSourceUser().equals(revedereManager.getCurrentSession().getCurrentUser()));
                     viewStack.layout();
@@ -188,6 +211,60 @@ public class SingleReviewComposite extends Composite {
                 break;
             }
         }
+    }
+
+    private void redrawTree(ReviewData reviewData) {
+        for (TreeItem existingTreeItem : treeItems.values()) {
+            existingTreeItem.dispose();
+        }
+        treeItems.clear();
+
+        for (String folder : reviewData.getFolders()) {
+            constructTree(folder, folderImage);
+        }
+
+        for (ReviewFile reviewFile : reviewData.getReviewFiles()) {
+            constructTree(reviewFile.getFileRelativePath(), fileImage);
+        }
+    }
+
+    private boolean isRootFolder(String folder) {
+        return !folder.contains("/");
+    }
+
+    private Object constructTree(String folder, Image image) {
+        final TreeItem newTreeItem;
+        if (treeItems.containsKey(folder)) {
+            return treeItems.get(folder);
+        }
+
+        if (isRootFolder(folder)) {
+            newTreeItem = new TreeItem(tree, SWT.NONE);
+
+        } else {
+            final Object parent = constructTree(getParentFolder(folder), image);
+            if (parent instanceof Tree) {
+                newTreeItem = new TreeItem((Tree) parent, SWT.NONE);
+            } else {
+                newTreeItem = new TreeItem((TreeItem) parent, SWT.NONE);
+            }
+        }
+
+        newTreeItem.setText(getCurrentFolderShortName(folder));
+        newTreeItem.setImage(image);
+        treeItems.put(folder, newTreeItem);
+        return newTreeItem;
+    }
+
+    private String getParentFolder(String folder) {
+        return folder.substring(0, folder.lastIndexOf('/'));
+    }
+
+    private String getCurrentFolderShortName(String folder) {
+        if (isRootFolder(folder)) {
+            return folder;
+        }
+        return folder.substring(folder.lastIndexOf('/') + 1);
     }
 
     private void setNextStateAsClosed() {
