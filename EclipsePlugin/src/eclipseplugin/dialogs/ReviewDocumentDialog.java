@@ -179,6 +179,7 @@ public class ReviewDocumentDialog extends Dialog {
                     file.create(stream, false, nullProgressMonitor);
                 }
             }
+            RevedereManager.getInstance().getReviewBox().add(project, currentReview);
         } catch (CoreException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -187,7 +188,7 @@ public class ReviewDocumentDialog extends Dialog {
     }
 
     public void prepareFolder(IFolder folder) throws CoreException {
-        IContainer parent = folder.getParent();
+        final IContainer parent = folder.getParent();
         if (parent instanceof IFolder) {
             prepareFolder((IFolder) parent);
         }

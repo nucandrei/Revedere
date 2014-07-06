@@ -58,4 +58,17 @@
    <extension point="org.eclipse.ui.commands">
       <command id="requestReview" defaultHandler="eclipseplugin.contextmenu.RequestReviewHandler" name="Request review" />
    </extension>
+   
+   
+	<extension point="org.eclipse.ui.popupMenus"> 
+	<viewerContribution id="org.eclipse.ui.articles.action.contribution.popup.editor" 
+						targetID="#CompilationUnitEditorContext"> 
+   	<action id="addComments" 
+   			label="Add comment" 
+   			menubarPath="additions" 
+   			class="eclipseplugin.contextmenu.AddCommentDelegate"> 
+    </action> 
+   	</viewerContribution> 
+	</extension>
+   
 </plugin>

@@ -2,6 +2,9 @@ package eclipseplugin.revedere;
 
 import org.nuc.revedere.client.RevedereConnector;
 import org.nuc.revedere.client.RevedereSession;
+import org.nuc.revedere.core.messages.update.ReviewUpdate;
+import org.nuc.revedere.util.Collector;
+import org.nuc.revedere.util.Collector.CollectorListener;
 
 import eclipseplugin.views.EmptyViewStack;
 import eclipseplugin.views.ViewStack;
@@ -12,6 +15,7 @@ public class RevedereManager {
     private String connectorAddress;
     private RevedereSession revedereSession;
     private ViewStack viewStack = EmptyViewStack.getInstance();
+    private final ReviewBox reviewBox = new ReviewBox();
 
     public static RevedereManager getInstance() {
         return instance;
@@ -33,6 +37,13 @@ public class RevedereManager {
     public void login(String username, String password) throws Exception {
         verifyAPrioriConnector("No connection was established before login");
         this.revedereSession = revedereConnector.login(username, password);
+        this.revedereSession.addListenerToReviewCollector(new CollectorListener<ReviewUpdate>() {
+
+            @Override
+            public void onUpdate(Collector<ReviewUpdate> collector, ReviewUpdate reviewUpdate) {
+                reviewBox.refreshReview(reviewUpdate.getReview());
+            }
+        });
         viewStack.changeToUsersView();
     }
 
@@ -74,5 +85,9 @@ public class RevedereManager {
 
     public void setViewStack(ViewStack viewStack) {
         this.viewStack = viewStack;
+    }
+
+    public ReviewBox getReviewBox() {
+        return this.reviewBox;
     }
 }

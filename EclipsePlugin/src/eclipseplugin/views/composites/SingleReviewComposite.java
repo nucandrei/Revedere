@@ -3,6 +3,9 @@ package eclipseplugin.views.composites;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
@@ -135,6 +138,10 @@ public class SingleReviewComposite extends Composite {
             @Override
             public void mouseDown(MouseEvent e) {
                 revedereManager.getCurrentSession().updateReview(currentReview, ReviewState.DONE);
+                final IProject correspondingProject = revedereManager.getReviewBox().removeReview(currentReview);
+                if (correspondingProject != null) {
+                    deleteProject(correspondingProject);
+                }
             }
         };
 
@@ -142,6 +149,14 @@ public class SingleReviewComposite extends Composite {
         ISharedImages images = workbench.getSharedImages();
         folderImage = images.getImage(ISharedImages.IMG_OBJ_FOLDER);
         fileImage = images.getImage(ISharedImages.IMG_OBJ_FILE);
+    }
+
+    private void deleteProject(IProject correspondingProject) {
+        try {
+            correspondingProject.delete(IResource.ALWAYS_DELETE_PROJECT_CONTENT, null);
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
     }
 
     public void update(Review review) {
