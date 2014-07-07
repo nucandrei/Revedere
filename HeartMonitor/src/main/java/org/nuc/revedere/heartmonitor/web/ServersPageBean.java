@@ -9,11 +9,15 @@ import java.util.Map;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.jms.JMSException;
 
 import org.nuc.revedere.heartmonitor.HeartMonitor;
 import org.nuc.revedere.heartmonitor.HeartbeatInfoListener;
 import org.nuc.revedere.heartmonitor.ServiceHeartbeatCollector;
 import org.nuc.revedere.heartmonitor.ServiceStatus;
+import org.nuc.revedere.service.core.Service;
+import org.nuc.revedere.service.core.SupervisorTopics;
+import org.nuc.revedere.service.core.cmd.Command;
 import org.nuc.revedere.service.core.hb.ServiceState;
 
 @ManagedBean(name = "page")
@@ -82,5 +86,13 @@ public class ServersPageBean implements Serializable, HeartbeatInfoListener {
 
     public void onHeartbeatInfoUpdate(Map<String, ServiceHeartbeatCollector> servicesStatus) {
         this.persistence = servicesStatus;
+    }
+
+    public void killServer(String serviceName) {
+        try {
+            this.heartMonitor.sendMessage(SupervisorTopics.COMMAND_TOPIC, new Command(serviceName));
+        } catch (JMSException e) {
+            Service.LOGGER.error("Could not send kill message", e);
+        }
     }
 }
