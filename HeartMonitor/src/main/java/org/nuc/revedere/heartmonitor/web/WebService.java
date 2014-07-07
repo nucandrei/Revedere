@@ -36,7 +36,7 @@ public class WebService {
         final ScatteredArchive archive = new ScatteredArchive("heartmonitor", Type.WAR, rootDir);
         archive.addClassPath(new File("target", "classes"));
 
-        deployer.deploy(archive.toURI(), "--contextroot=hello");
+        deployer.deploy(archive.toURI(), "--contextroot=heart");
     }
 
     public void stop() throws GlassFishException {

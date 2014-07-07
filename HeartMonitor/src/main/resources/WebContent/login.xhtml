@@ -18,17 +18,19 @@
 			<h:panelGrid columns="2" class="centeredlogin">
 				<h:panelGroup>Username</h:panelGroup>
 				<h:panelGroup>
-					<h:inputText />
+					<h:inputText value="#{login.username}" />
 				</h:panelGroup>
 				<h:panelGroup>Password</h:panelGroup>
 				<h:panelGroup>
-					<h:inputSecret />
+					<h:inputSecret value="#{login.password}" />
 				</h:panelGroup>
 				<h:panelGroup />
 				<h:panelGroup>
 					<h:commandButton styleClass="button grey" value="Login" type="submit"
-						action="#{page.refresh}" />
+						action="#{login.login}" />
 				</h:panelGroup>
+				<h:panelGroup />
+				<h:outputLabel value="#{login.error}"/>
 			</h:panelGrid>
 		</h:panelGroup>
 	</h:form>

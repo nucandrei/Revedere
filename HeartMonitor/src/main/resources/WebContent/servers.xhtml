@@ -11,13 +11,17 @@
 	<meta http-equiv="refresh" content="5" />
 </h:head>
 <h:body>
-	<h:form>
+	<h:form rendered="#{login.connected}">
 		<h:panelGroup styleClass="left" layout="block">
 			<h:panelGroup layout="block" styleClass="box">
 				<h:panelGroup layout="block" styleClass="logo">
 					Menu
 				</h:panelGroup>
-				<h:link value="Users" outcome="login"/>
+				<h:link value="Users" outcome="users"/>
+				<br />
+				<h:link value="Servers" outcome="servers"/>
+				<br />
+				<h:commandLink id="Link3" value="Logout" action="#{login.logout()}" />
 			</h:panelGroup>
 		</h:panelGroup>
 		<h:panelGroup layout="block" styleClass="center">
