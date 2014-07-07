@@ -5,6 +5,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.FileEditorInput;
@@ -13,7 +14,9 @@ import org.nuc.revedere.review.Review;
 import org.nuc.revedere.review.ReviewComment;
 import org.nuc.revedere.review.ReviewFile;
 import org.nuc.revedere.review.ReviewState;
+import org.nuc.revedere.util.Container;
 
+import eclipseplugin.dialogs.NewCommentDialog;
 import eclipseplugin.revedere.RevedereManager;
 
 public class AddCommentDelegate implements IEditorActionDelegate {
@@ -28,14 +31,19 @@ public class AddCommentDelegate implements IEditorActionDelegate {
         if (RevedereManager.getInstance().getReviewBox().isReviewProject(project)) {
             final Review correspondingReview = RevedereManager.getInstance().getReviewBox().getReview(project);
             if (!correspondingReview.getState().equals(ReviewState.ACCEPT)) {
-                MessageDialog.openInformation(editorPart.getSite().getShell(), "Revederé", "The corresponding review was not acceped");
+                MessageDialog.openInformation(editorPart.getSite().getShell(), "Revederé", "The corresponding review was not accepted");
                 return;
             }
             final String editorFilePath = fileInput.getFile().getProjectRelativePath().toString();
-            for (ReviewFile reviewFile : correspondingReview.getData().getReviewFiles()) {
-                if (reviewFile.getFileRelativePath().equals(editorFilePath)) {
-                    reviewFile.addComment(new ReviewComment(selection.getStartLine(), selection.getEndLine(), selection.getText()));
-                    return;
+            final Container<String> commentContainer = new Container<>();
+            NewCommentDialog newCommentDialog = new NewCommentDialog(editorPart.getSite().getShell(), commentContainer);
+            int result = newCommentDialog.open();
+            if (result == Window.OK) {
+                for (ReviewFile reviewFile : correspondingReview.getData().getReviewFiles()) {
+                    if (reviewFile.getFileRelativePath().equals(editorFilePath)) {
+                        reviewFile.addComment(new ReviewComment(selection.getOffset(), selection.getLength(), commentContainer.getContent()));
+                        return;
+                    }
                 }
             }
 

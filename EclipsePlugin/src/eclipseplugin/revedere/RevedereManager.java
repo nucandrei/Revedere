@@ -41,7 +41,9 @@ public class RevedereManager {
 
             @Override
             public void onUpdate(Collector<ReviewUpdate> collector, ReviewUpdate reviewUpdate) {
-                reviewBox.refreshReview(reviewUpdate.getReview());
+                if (reviewUpdate != null) {
+                    reviewBox.refreshReview(reviewUpdate.getReview());
+                }
             }
         });
         viewStack.changeToUsersView();

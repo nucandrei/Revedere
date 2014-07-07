@@ -26,6 +26,7 @@ import org.nuc.revedere.client.RevedereSession;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.update.ReviewUpdate;
 import org.nuc.revedere.review.Review;
+import org.nuc.revedere.review.ReviewDocumentSection;
 import org.nuc.revedere.util.BidirectionMap;
 import org.nuc.revedere.util.Collector;
 import org.nuc.revedere.util.Collector.CollectorListener;
@@ -139,7 +140,7 @@ public class ReviewsComposite extends Composite {
                 reviewItems.clear();
 
                 for (Review review : revedereManager.getCurrentSession().getReviewCollector().getReviews(currentUser)) {
-                    reviewItems.put(createTableItem(review.getState().toString(), review.getID()), review);
+                    reviewItems.put(createTableItem(review.getState().toString(), review.getReviewDocument().getSectionText(ReviewDocumentSection.NAME)), review);
                 }
                 viewStack.layout();
             }
