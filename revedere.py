@@ -66,7 +66,12 @@ def startProcess(processName):
     else:
         print("Unknown process. Valid process names: " + ', '.join("{!s}".format(k) for k in args.keys()))
 
-args['activemq'] = ['activemq.jar', 'org.nuc.revedere.ActiveMQBroker', 'tcp://localhost:61616']
+args['activemq'] = ['ActiveMQBroker-0.1.jar', 'org.nuc.revedere.ActiveMQBroker', 'tcp://localhost:61616']
+args['gateway'] = ['Gateway-0.1.jar', 'org.nuc.revedere.gateway.Gateway', '']
+args['heartmonitor'] = ['HeartMonitor-0.1.jar', 'org.nuc.revedere.heartmonitor.web.WebService', '']
+args['reviewservice'] = ['ReviewService-0.1.jar', 'org.nuc.revedere.review.ReviewService', '']
+args['sms'] = ['ShortMessageService-0.1.jar', 'org.nuc.revedere.sms.ShortMessageService', '']
+args['users'] = ['UsersManager-0.1.jar', 'org.nuc.revedere.usersmanager.UsersManager', '']
 
 # start of script
 operation = sys.argv[1]
