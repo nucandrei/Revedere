@@ -1,5 +1,6 @@
 package org.nuc.revedere.gateway.connectors;
 
+import org.nuc.distry.service.Service;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
@@ -8,7 +9,6 @@ import org.nuc.revedere.core.messages.request.RegisterRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 import org.nuc.revedere.service.core.JMSRequestor;
 import org.nuc.revedere.service.core.JMSShouter;
-import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.Topics;
 
 public class UsersManagerConnector {

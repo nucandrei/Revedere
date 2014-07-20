@@ -2,48 +2,50 @@ package org.nuc.revedere.service.core;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.apache.log4j.LogManager;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.Options;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.nuc.distry.service.DistryListener;
+import org.nuc.distry.service.DistryService;
+import org.nuc.distry.service.Service;
+import org.nuc.distry.service.ServiceConfiguration;
+import org.nuc.distry.service.messaging.ActiveMQAdapter;
 import org.nuc.revedere.core.UserCollector;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.UserListRequest;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
-import org.nuc.revedere.service.core.cmd.Command;
-import org.nuc.revedere.service.core.hb.Heartbeat;
-import org.nuc.revedere.service.core.hb.HeartbeatGenerator;
-import org.nuc.revedere.service.core.hb.ServiceState;
 
-public class RevedereService extends Service {
-    public final static int HEARTBEAT_INTERVAL = 10000;
-    private final HeartbeatGenerator heartbeatGenerator = new HeartbeatGenerator(this.getServiceName());
+public class RevedereService extends DistryService {
+    private static final Logger LOGGER = Logger.getLogger(RevedereService.class);
+    private static final String SERVER_ADDRESS = "serverAddress";
+    private static final String LOG4J = "log4j";
     private final UserCollector userCollector = new UserCollector();
 
-    public RevedereService(String serviceName, String settingsPath) throws JDOMException, IOException, JMSException {
-        super(serviceName, settingsPath);
+    public RevedereService(String serviceName, ServiceConfiguration serviceConfiguration) throws Exception {
+        super(serviceName, serviceConfiguration);
     }
 
-    public void start(boolean sendHeartbeats, boolean listenForCommands, boolean listenForUsers) throws Exception {
-        if (sendHeartbeats) {
-            startHeartbeatGenerator();
-        }
-
-        if (listenForCommands) {
-            startListeningForCommands();
-        }
-
+    public void start(boolean listenForUsers) throws Exception {
+        start();
         if (listenForUsers) {
-            startListeningForUsers();
+            startListeningForUsers(this, userCollector);
         }
     }
 
-    private void startListeningForUsers() throws JMSException, InterruptedException {
+    public static void startListeningForUsers(Service supportService, final UserCollector userCollector) throws JMSException, InterruptedException {
         LOGGER.info("Sending users list request");
-        final JMSRequestor<UserListRequest> requestor = new JMSRequestor<>(this);
+        final JMSRequestor<UserListRequest> requestor = new JMSRequestor<>(supportService);
         final Response<UserListRequest> receivedResponse = requestor.request(Topics.USERS_TOPIC, new UserListRequest());
         if (receivedResponse == null) {
             LOGGER.error("Did not receive response in timeout");
@@ -57,7 +59,7 @@ public class RevedereService extends Service {
             return;
         }
 
-        this.addMessageListener(Topics.USERS_TOPIC, new BrokerMessageListener() {
+        supportService.addMessageListener(Topics.USERS_TOPIC, new DistryListener() {
             public void onMessage(Serializable message) {
                 try {
                     @SuppressWarnings("unchecked")
@@ -75,68 +77,53 @@ public class RevedereService extends Service {
         });
     }
 
-    private void startHeartbeatGenerator() {
-        Timer timer = new Timer();
-        final TimerTask heartbeatTask = new TimerTask() {
-            @Override
-            public void run() {
-                sendHeartbeat();
-            }
-        };
-        timer.scheduleAtFixedRate(heartbeatTask, 0, HEARTBEAT_INTERVAL);
-    }
-
-    private void sendHeartbeat() {
-        Heartbeat heartbeat = heartbeatGenerator.generateHeartbeat();
-        try {
-            RevedereService.this.sendMessage(SupervisorTopics.HEARTBEAT_TOPIC, heartbeat);
-            LOGGER.info("Sent heartbeat");
-        } catch (Exception e) {
-            LOGGER.error("Could not send heartbeat.", e);
-        }
-    }
-
-    private void startListeningForCommands() throws JMSException {
-        final BrokerMessageListener commandListener = new BrokerMessageListener() {
-            public void onMessage(Serializable message) {
-                if (message instanceof Command) {
-                    Command command = (Command) message;
-                    if (RevedereService.this.getServiceName().equals(command.getServiceName())) {
-                        LOGGER.info("Received command");
-                        shutdownGracefully();
-                    }
-                } else {
-                    LOGGER.warn("Received unwanted message on command topic : " + message.getClass().toString());
-                }
-            }
-        };
-        addMessageListener(SupervisorTopics.COMMAND_TOPIC, commandListener);
-    }
-
-    public void setServiceState(ServiceState state) {
-        this.heartbeatGenerator.setServiceState(state);
-    }
-
-    public void setServiceComment(String comment) {
-        this.heartbeatGenerator.setComment(comment);
-    }
-
     public UserCollector getUserCollector() {
         return userCollector;
     }
+    
+    public Map<String, String> getSettings(String filepath) throws JDOMException, IOException {
+        Map<String, String> loadedSettings = new HashMap<>();
+        final Document settingsDocument = loadXMLDocument(filepath);
+        final Element rootNode = settingsDocument.getRootElement();
+        for (Element e : rootNode.getChildren()) {
+            final String propertyName = e.getName();
+            final String propertyValue = e.getValue();
+            loadedSettings.put(propertyName, propertyValue);
+        }
+        return loadedSettings;
+    }
 
-    public void shutdownGracefully() {
-        sendHeartbeat();
-        LOGGER.info("Sent last heartbeat");
-        LogManager.shutdown();
-        System.exit(0);
+    public static String parseArguments(String[] args) throws Exception {
+        final Options options = new Options();
+        options.addOption(LOG4J, true, "Log4j configuration file");
+        options.addOption(SERVER_ADDRESS, true, "Server address");
+
+        final CommandLineParser parser = new BasicParser();
+        final CommandLine commandLine = parser.parse(options, args);
+
+        if (commandLine.hasOption(LOG4J)) {
+            PropertyConfigurator.configure(commandLine.getOptionValue(LOG4J));
+
+        } else {
+            throw new IllegalArgumentException("log4j argument is missing");
+        }
+
+        if (commandLine.hasOption(SERVER_ADDRESS)) {
+            return commandLine.getOptionValue(SERVER_ADDRESS);
+
+        } else {
+            throw new IllegalArgumentException("serverAddress argument is missing");
+        }
     }
 
     public static void main(String[] args) {
         try {
-            new RevedereService(args[0], args[1]);
-        } catch (JDOMException | IOException | JMSException e) {
-            Service.BACKUP_LOGGER.error("Could not start service", e);
+            final String serverAddress = parseArguments(args);
+            final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(new ActiveMQAdapter(serverAddress), true, 10000, SupervisorTopics.HEARTBEAT_TOPIC, true, SupervisorTopics.COMMAND_TOPIC, SupervisorTopics.PUBLISH_TOPIC);
+            new RevedereService("Service", serviceConfiguration);
+            
+        } catch (Exception e) {
+            LOGGER.error("Failed to start service", e);
         }
     }
 }

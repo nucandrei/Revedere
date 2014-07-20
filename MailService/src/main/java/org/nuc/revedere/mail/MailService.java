@@ -1,36 +1,41 @@
 package org.nuc.revedere.mail;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
 import org.apache.commons.mail.Email;
 import org.apache.commons.mail.SimpleEmail;
+import org.apache.log4j.Logger;
+import org.jdom2.JDOMException;
+import org.nuc.distry.service.DistryListener;
+import org.nuc.distry.service.ServiceConfiguration;
+import org.nuc.distry.service.hb.ServiceState;
+import org.nuc.distry.service.messaging.ActiveMQAdapter;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.SimpleMailRequest;
-import org.nuc.revedere.service.core.BrokerMessageListener;
-import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
+import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.Topics;
-import org.nuc.revedere.service.core.hb.ServiceState;
 
 public class MailService extends RevedereService {
-
+    private static final Logger LOGGER = Logger.getLogger(MailService.class);
     private static final String SETTINGS_PATH = "MailService.xml";
     private String hostName;
     private int port;
     private String from;
     private String password;
 
-    public MailService() throws Exception {
-        super("MailService", SETTINGS_PATH);
-        super.start(true, true, false);
+    public MailService(ServiceConfiguration serviceConfiguration) throws Exception {
+        super("MailService", serviceConfiguration);
+        super.start(false);
 
         loadSettings();
         startListeningForMailRequests();
     }
 
-    private void loadSettings() {
-        final Map<String, String> settings = getSettings();
+    private void loadSettings() throws JDOMException, IOException {
+        final Map<String, String> settings = getSettings(SETTINGS_PATH);
         hostName = settings.get("hostname");
         port = Integer.parseInt(settings.get("port"));
         from = settings.get("from");
@@ -38,8 +43,8 @@ public class MailService extends RevedereService {
 
         if (hostName == null || from == null || password == null) {
             LOGGER.error("A field was not found in config file");
-            setServiceState(ServiceState.FATAL);
-            setServiceComment("Invalid config");
+            setServiceState(ServiceState.FATAL, false);
+            setServiceComment("Invalid config", true);
             shutdownGracefully();
         } else {
             LOGGER.info("Loaded mail service settings");
@@ -57,8 +62,8 @@ public class MailService extends RevedereService {
             return true;
         } catch (Exception e) {
             LOGGER.error("Could not send e-mail", e);
-            setServiceState(ServiceState.ERROR);
-            setServiceComment("Could not send e-mail");
+            setServiceState(ServiceState.ERROR, false);
+            setServiceComment("Could not send e-mail", true);
             return false;
         }
     }
@@ -74,7 +79,7 @@ public class MailService extends RevedereService {
 
     private void startListeningForMailRequests() {
         try {
-            this.addMessageListener(Topics.MAIL_REQUEST_TOPIC, new BrokerMessageListener() {
+            this.addMessageListener(Topics.MAIL_REQUEST_TOPIC, new DistryListener() {
                 public void onMessage(Serializable message) {
                     try {
                         if (message instanceof SimpleMailRequest) {
@@ -89,8 +94,8 @@ public class MailService extends RevedereService {
             });
         } catch (Exception e) {
             LOGGER.error("Could not set message listener on topic " + Topics.MAIL_REQUEST_TOPIC, e);
-            setServiceState(ServiceState.ERROR);
-            setServiceComment("Could not listen to mail requests");
+            setServiceState(ServiceState.ERROR, false);
+            setServiceComment("Could not listen to mail requests", true);
         }
     }
 
@@ -104,9 +109,12 @@ public class MailService extends RevedereService {
 
     public static void main(String[] args) {
         try {
-            new MailService();
+            final String serverAddress = parseArguments(args);
+            final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(new ActiveMQAdapter(serverAddress), true, 10000, SupervisorTopics.HEARTBEAT_TOPIC, true, SupervisorTopics.COMMAND_TOPIC, SupervisorTopics.PUBLISH_TOPIC);
+            new MailService(serviceConfiguration);
+
         } catch (Exception e) {
-            Service.BACKUP_LOGGER.error("Could not start mail service", e);
+            LOGGER.error("Failed to start mail service", e);
         }
     }
 }

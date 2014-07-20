@@ -11,40 +11,39 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.jms.JMSException;
 
+import org.apache.log4j.Logger;
+import org.nuc.distry.monitor.ServiceHeartInfo;
+import org.nuc.distry.monitor.ServiceStatus;
+import org.nuc.distry.service.cmd.StopCommand;
+import org.nuc.distry.service.hb.ServiceState;
 import org.nuc.revedere.heartmonitor.HeartMonitor;
-import org.nuc.revedere.heartmonitor.HeartbeatInfoListener;
-import org.nuc.revedere.heartmonitor.ServiceHeartbeatCollector;
-import org.nuc.revedere.heartmonitor.ServiceStatus;
-import org.nuc.revedere.service.core.Service;
-import org.nuc.revedere.service.core.SupervisorTopics;
-import org.nuc.revedere.service.core.cmd.Command;
-import org.nuc.revedere.service.core.hb.ServiceState;
+import org.nuc.revedere.heartmonitor.ServiceHeartInfoListener;
 
 @ManagedBean(name = "page")
 @SessionScoped
-public class ServersPageBean implements Serializable, HeartbeatInfoListener {
-
+public class ServersPageBean implements Serializable, ServiceHeartInfoListener{
+    private static final Logger LOGGER = Logger.getLogger(ServersPageBean.class);
     private static final String CSS_CLASS_WARNING_SERVICE = "warningservice";
     private static final String CSS_CLASS_ERROR_SERVICE = "errorservice";
     private static final String CSS_CLASS_OK_SERVICE = "okservice";
     private static final long serialVersionUID = 8388751329694282175L;
     private final HeartMonitor heartMonitor;
-    private Map<String, ServiceHeartbeatCollector> persistence = new HashMap<>();
+    private Map<String, ServiceHeartInfo> persistence = new HashMap<>();
 
     public ServersPageBean() {
         heartMonitor = HeartMonitor.getInstance();
-        heartMonitor.setHeartbeatInfoListener(this);
+        heartMonitor.addServiceHeartInfoListener(this);
     }
 
-    public ServiceHeartbeatCollector[] getServiceList(boolean configured) {
-        final List<ServiceHeartbeatCollector> serviceList = new ArrayList<>();
-        for (ServiceHeartbeatCollector collector : persistence.values()) {
-            if (collector.isConfigured() == configured) {
-                serviceList.add(collector);
+    public ServiceHeartInfo[] getServiceList(boolean configured) {
+        final List<ServiceHeartInfo> serviceList = new ArrayList<>();
+        for (ServiceHeartInfo info : persistence.values()) {
+            if (info.isConfiguredService() == configured) {
+                serviceList.add(info);
             }
         }
         Collections.sort(serviceList);
-        return serviceList.toArray(new ServiceHeartbeatCollector[serviceList.size()]);
+        return serviceList.toArray(new ServiceHeartInfo[serviceList.size()]);
     }
 
     public boolean hasServices(boolean configured) {
@@ -53,7 +52,7 @@ public class ServersPageBean implements Serializable, HeartbeatInfoListener {
 
     public String getRowClasses(boolean configured) {
         StringBuilder sBuilder = new StringBuilder();
-        for (ServiceHeartbeatCollector collector : getServiceList(configured)) {
+        for (ServiceHeartInfo collector : getServiceList(configured)) {
             sBuilder.append(getRowClass(collector));
             sBuilder.append(",");
         }
@@ -64,35 +63,37 @@ public class ServersPageBean implements Serializable, HeartbeatInfoListener {
         return rowClasses.substring(0, rowClasses.length() - 1);
     }
 
-    private String getRowClass(ServiceHeartbeatCollector collector) {
-        if (collector.getServiceStatus().equals(ServiceStatus.UNKNOWN)) {
+    private String getRowClass(ServiceHeartInfo serviceInfo) {
+        if (serviceInfo.getServiceStatus().equals(ServiceStatus.UNKNOWN)) {
             return CSS_CLASS_OK_SERVICE;
         }
 
-        if (collector.getServiceStatus().equals(ServiceStatus.LOST)) {
+        if (serviceInfo.getServiceStatus().equals(ServiceStatus.LOST)) {
             return CSS_CLASS_ERROR_SERVICE;
         }
 
-        if (collector.getLastHeartbeat().equals(ServiceState.ERROR) || collector.getLastHeartbeat().equals(ServiceState.FATAL)) {
+        if (serviceInfo.getHeartbeat().equals(ServiceState.ERROR) || serviceInfo.getHeartbeat().equals(ServiceState.FATAL)) {
             return CSS_CLASS_ERROR_SERVICE;
         }
 
-        if (collector.getServiceStatus().equals(ServiceStatus.LATE) || collector.getLastHeartbeat().equals(ServiceState.WARNING)) {
+        if (serviceInfo.getServiceStatus().equals(ServiceStatus.LATE) || serviceInfo.getHeartbeat().equals(ServiceState.WARNING)) {
             return CSS_CLASS_WARNING_SERVICE;
         }
 
         return CSS_CLASS_OK_SERVICE;
     }
 
-    public void onHeartbeatInfoUpdate(Map<String, ServiceHeartbeatCollector> servicesStatus) {
-        this.persistence = servicesStatus;
-    }
-
     public void killServer(String serviceName) {
         try {
-            this.heartMonitor.sendMessage(SupervisorTopics.COMMAND_TOPIC, new Command(serviceName));
+            this.heartMonitor.sendCommand(new StopCommand(serviceName));
+
         } catch (JMSException e) {
-            Service.LOGGER.error("Could not send kill message", e);
+            LOGGER.error("Could not send kill message", e);
         }
+    }
+
+    @Override
+    public void onUpdate(Map<String, ServiceHeartInfo> update) {
+        persistence = update;
     }
 }

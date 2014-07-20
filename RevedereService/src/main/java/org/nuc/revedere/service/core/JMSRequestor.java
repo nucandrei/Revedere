@@ -4,7 +4,11 @@ import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.jms.JMSException;
+
 import org.apache.log4j.Logger;
+import org.nuc.distry.service.DistryListener;
+import org.nuc.distry.service.Service;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.Request;
 import org.nuc.revedere.util.Container;
@@ -22,7 +26,7 @@ public class JMSRequestor<T extends Request> {
         final String responseTopic = String.format("%s.Response", topic);
         final Container<Response<T>> responseContainer = new Container<>();
         final CountDownLatch latch = new CountDownLatch(1);
-        final BrokerMessageListener responseListener = new BrokerMessageListener() {
+        final DistryListener responseListener = new DistryListener() {
             @SuppressWarnings("unchecked")
             public void onMessage(Serializable message) {
                 try {
@@ -40,7 +44,11 @@ public class JMSRequestor<T extends Request> {
             supportService.addMessageListener(responseTopic, responseListener);
         } catch (Exception e) {
             LOGGER.error("Could not set listener for request on topic: " + responseTopic, e);
-            supportService.removeMessageListener(responseTopic, responseListener);
+            try {
+                supportService.removeMessageListener(responseTopic, responseListener);
+            } catch (JMSException exception) {
+                LOGGER.error("Failed to remove message listener");
+            }
             return null;
         }
 
@@ -51,7 +59,11 @@ public class JMSRequestor<T extends Request> {
             LOGGER.error("Could not send request on topic: " + requestTopic, e);
         }
 
-        supportService.removeMessageListener(responseTopic, responseListener);
+        try {
+            supportService.removeMessageListener(responseTopic, responseListener);
+        } catch (JMSException e) {
+            LOGGER.error("Failed to remove message listener");
+        }
         return responseContainer.getContent();
     }
 }

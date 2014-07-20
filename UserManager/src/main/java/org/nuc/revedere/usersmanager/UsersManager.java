@@ -2,6 +2,10 @@ package org.nuc.revedere.usersmanager;
 
 import java.io.Serializable;
 
+import org.apache.log4j.Logger;
+import org.nuc.distry.service.DistryListener;
+import org.nuc.distry.service.ServiceConfiguration;
+import org.nuc.distry.service.messaging.ActiveMQAdapter;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
@@ -9,25 +13,23 @@ import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
-import org.nuc.revedere.service.core.BrokerMessageListener;
-import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
+import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.Topics;
 
 public class UsersManager extends RevedereService {
-    private static final String SETTINGS_PATH = "UsersManager.xml";
+    private static final Logger LOGGER = Logger.getLogger(UsersManager.class);
     private final static String USERSMANAGER_SERVICE_NAME = "UsersManager";
     private final UsersHandler usersHandler = new UsersHandler(this);
 
-    public UsersManager() throws Exception {
-        super(USERSMANAGER_SERVICE_NAME, SETTINGS_PATH);
-        super.start(true, true, false);
-
+    public UsersManager(ServiceConfiguration serviceConfiguration) throws Exception {
+        super(USERSMANAGER_SERVICE_NAME, serviceConfiguration);
+        super.start(false);
         startListeningForUsersEvents();
     }
 
     private void startListeningForUsersEvents() throws Exception {
-        super.addMessageListener(Topics.USERS_REQUEST_TOPIC, new BrokerMessageListener() {
+        super.addMessageListener(Topics.USERS_REQUEST_TOPIC, new DistryListener() {
             @Override
             public void onMessage(Serializable message) {
                 try {
@@ -89,9 +91,12 @@ public class UsersManager extends RevedereService {
 
     public static void main(String[] args) {
         try {
-            new UsersManager();
+            final String serverAddress = parseArguments(args);
+            final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(new ActiveMQAdapter(serverAddress), true, 10000, SupervisorTopics.HEARTBEAT_TOPIC, true, SupervisorTopics.COMMAND_TOPIC, SupervisorTopics.PUBLISH_TOPIC);
+            new UsersManager(serviceConfiguration);
+
         } catch (Exception e) {
-            Service.BACKUP_LOGGER.error("Could not start users manager", e);
+            LOGGER.error("Failed to start users manager", e);
         }
     }
 }

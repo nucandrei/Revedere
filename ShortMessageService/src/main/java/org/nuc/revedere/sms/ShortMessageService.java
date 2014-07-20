@@ -8,6 +8,10 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
+import org.apache.log4j.Logger;
+import org.nuc.distry.service.DistryListener;
+import org.nuc.distry.service.ServiceConfiguration;
+import org.nuc.distry.service.messaging.ActiveMQAdapter;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
@@ -16,8 +20,8 @@ import org.nuc.revedere.core.messages.request.ShortMessageMarkAsReadRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
-import org.nuc.revedere.service.core.BrokerMessageListener;
 import org.nuc.revedere.service.core.RevedereService;
+import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.shortmessage.MessageBox;
 import org.nuc.revedere.shortmessage.MessageBoxPersistence;
@@ -27,15 +31,14 @@ import org.nuc.revedere.util.Collector;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class ShortMessageService extends RevedereService {
-
-    private static final String SETTINGS_PATH = "ShortMessageService.xml";
+    private static final Logger LOGGER = Logger.getLogger(ShortMessageService.class);
     private final static String SHORT_MESSAGE_SERVICE_NAME = "ShortMessageService";
     private final Map<String, MessageBox> msgBoxes = new HashMap<>();
     private final MessageBoxPersistence persistence = new MessageBoxXMLPersistence("messages.xml");
 
-    public ShortMessageService() throws Exception {
-        super(SHORT_MESSAGE_SERVICE_NAME, SETTINGS_PATH);
-        super.start(true, true, true);
+    public ShortMessageService(ServiceConfiguration serviceConfiguration) throws Exception {
+        super(SHORT_MESSAGE_SERVICE_NAME, serviceConfiguration);
+        super.start(true);
         super.getUserCollector().addListener(new CollectorListener<UserListUpdate>() {
             public void onUpdate(Collector<UserListUpdate> source, UserListUpdate update) {
                 for (User newOnlineUser : update.getUsersWhoWentOnline()) {
@@ -52,7 +55,7 @@ public class ShortMessageService extends RevedereService {
             }
         });
 
-        addMessageListener(Topics.SHORT_MESSAGE_REQUEST_TOPIC, new BrokerMessageListener() {
+        addMessageListener(Topics.SHORT_MESSAGE_REQUEST_TOPIC, new DistryListener() {
             public void onMessage(Serializable message) {
                 try {
                     if (message instanceof ShortMessageSendRequest) {
@@ -147,9 +150,11 @@ public class ShortMessageService extends RevedereService {
 
     public static void main(String[] args) {
         try {
-            new ShortMessageService();
+            final String serverAddress = parseArguments(args);
+            final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(new ActiveMQAdapter(serverAddress), true, 10000, SupervisorTopics.HEARTBEAT_TOPIC, true, SupervisorTopics.COMMAND_TOPIC, SupervisorTopics.PUBLISH_TOPIC);
+            new ShortMessageService(serviceConfiguration);
         } catch (Exception e) {
-            BACKUP_LOGGER.error("Failed to start short message service", e);
+            LOGGER.error("Failed to start short message service", e);
         }
     }
 }

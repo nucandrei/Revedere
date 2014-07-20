@@ -43,11 +43,11 @@
 			</h:column>
 					<h:column>
 						<f:facet name="header">State</f:facet>
-				#{service.getLastHeartbeat().getServiceState()}
+				#{service.getHeartbeat().getServiceState()}
 			</h:column>
 					<h:column>
 						<f:facet name="header">Last heartbeat</f:facet>
-				#{service.getLastHeartbeat().getTimeAsString()}
+				#{service.getHeartbeat().getTimeAsString()}
 			</h:column>
 					<h:column>
 						<f:facet name="header">Actions</f:facet>
@@ -75,11 +75,11 @@
 			</h:column>
 					<h:column>
 						<f:facet name="header">State</f:facet>
-				#{service.getLastHeartbeat().getServiceState()}
+				#{service.getHeartbeat().getServiceState()}
 			</h:column>
 					<h:column>
 						<f:facet name="header">Last heartbeat</f:facet>
-				#{service.getLastHeartbeat().getTimeAsString()}
+				#{service.getHeartbeat().getTimeAsString()}
 			</h:column>
 					<h:column>
 						<f:facet name="header">Actions</f:facet>

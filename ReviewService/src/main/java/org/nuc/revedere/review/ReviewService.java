@@ -6,6 +6,10 @@ import java.util.List;
 
 import javax.jms.JMSException;
 
+import org.apache.log4j.Logger;
+import org.nuc.distry.service.DistryListener;
+import org.nuc.distry.service.ServiceConfiguration;
+import org.nuc.distry.service.messaging.ActiveMQAdapter;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
@@ -13,21 +17,20 @@ import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
 import org.nuc.revedere.core.messages.request.ReviewRequest;
 import org.nuc.revedere.core.messages.update.ReviewUpdate;
-import org.nuc.revedere.service.core.BrokerMessageListener;
 import org.nuc.revedere.service.core.RevedereService;
+import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.Topics;
 
 public class ReviewService extends RevedereService {
-
-    private static final String SETTINGS_PATH = "ReviewService.xml";
+    private static final Logger LOGGER = Logger.getLogger(ReviewService.class);
     private final static String REVIEW_SERVICE_NAME = "ReviewService";
     private final ReviewManager reviewManager = new ReviewManager();
 
-    public ReviewService() throws Exception {
-        super(REVIEW_SERVICE_NAME, SETTINGS_PATH);
-        super.start(true, true, true);
+    public ReviewService(ServiceConfiguration serviceConfiguration) throws Exception {
+        super(REVIEW_SERVICE_NAME, serviceConfiguration);
+        super.start(true);
 
-        addMessageListener(Topics.REVIEW_REQUEST_TOPIC, new BrokerMessageListener() {
+        addMessageListener(Topics.REVIEW_REQUEST_TOPIC, new DistryListener() {
             public void onMessage(Serializable message) {
                 try {
                     if (message instanceof ReviewRequest) {
@@ -106,9 +109,12 @@ public class ReviewService extends RevedereService {
 
     public static void main(String[] args) {
         try {
-            new ReviewService();
+            final String serverAddress = parseArguments(args);
+            final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(new ActiveMQAdapter(serverAddress), true, 10000, SupervisorTopics.HEARTBEAT_TOPIC, true, SupervisorTopics.COMMAND_TOPIC, SupervisorTopics.PUBLISH_TOPIC);
+            new ReviewService(serviceConfiguration);
+            
         } catch (Exception e) {
-            BACKUP_LOGGER.error("Failed to start review service", e);
+            LOGGER.error("Failed to start review service", e);
         }
     }
 

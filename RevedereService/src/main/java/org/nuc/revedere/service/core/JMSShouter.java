@@ -3,6 +3,7 @@ package org.nuc.revedere.service.core;
 import java.io.Serializable;
 
 import org.apache.log4j.Logger;
+import org.nuc.distry.service.Service;
 
 public class JMSShouter<T extends Serializable> {
     private static final Logger LOGGER = Logger.getLogger(JMSShouter.class);

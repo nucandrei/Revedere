@@ -1,24 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
   <messagebox name="admin">
-    <message type="unread" timestamp="234">
+    <message type="unread" timestamp="1405853474965">
+      <content>hello mondo</content>
+      <from>user</from>
+      <to>admin</to>
+    </message>
+    <message type="sent" timestamp="234">
       <content>hai pe aici</content>
       <from>admin</from>
       <to>user</to>
     </message>
   </messagebox>
   <messagebox name="user">
+    <message type="read" timestamp="235">
+      <content>hai pe aici</content>
+      <from>admin</from>
+      <to>user</to>
+    </message>
     <message type="unread" timestamp="234">
       <content>hai pe aici</content>
       <from>admin</from>
       <to>user</to>
     </message>
-	<message type="read" timestamp="235">
-      <content>hai pe aici</content>
-      <from>admin</from>
-      <to>user</to>
+    <message type="unread" timestamp="1405853474965">
+      <content>hello mondo</content>
+      <from>user</from>
+      <to>admin</to>
     </message>
-	<message type="read" timestamp="236">
+    <message type="sent" timestamp="236">
       <content>hai pe aici</content>
       <from>user</from>
       <to>admin</to>

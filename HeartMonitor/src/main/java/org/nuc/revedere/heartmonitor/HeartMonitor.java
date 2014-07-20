@@ -1,48 +1,61 @@
 package org.nuc.revedere.heartmonitor;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
-import javax.jms.JMSException;
-
+import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.nuc.distry.monitor.DistryMonitor;
+import org.nuc.distry.monitor.ServiceHeartInfo;
+import org.nuc.distry.service.ServiceConfiguration;
+import org.nuc.distry.service.messaging.ActiveMQAdapter;
+import org.nuc.distry.util.Observable;
+import org.nuc.distry.util.Observer;
+import org.nuc.revedere.core.UserCollector;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
-import org.nuc.revedere.service.core.BrokerMessageListener;
-import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.SupervisorTopics;
-import org.nuc.revedere.service.core.hb.Heartbeat;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
-public class HeartMonitor extends RevedereService {
+public class HeartMonitor extends DistryMonitor {
+    private static final Logger LOGGER = Logger.getLogger(HeartMonitor.class);
     private static final String SETTINGS_PATH = "HeartMonitor.xml";
     private final static String HEARTMONITOR_SERVICE_NAME = "HeartMonitor";
+    private final UserCollector userCollector = new UserCollector();
+    private final Map<String, ServiceHeartInfo> persistence = new HashMap<>();
+    private List<ServiceHeartInfoListener> listeners = new ArrayList<>();
 
     private static HeartMonitor instance;
-    private final Map<String, ServiceHeartbeatCollector> servicesStatus = new HashMap<>();
-    private HeartbeatInfoListener heartbeatInfoListener;
 
-    private HeartMonitor() throws Exception {
-        super(HEARTMONITOR_SERVICE_NAME, SETTINGS_PATH);
-        super.start(true, true, true);
-
+    private HeartMonitor(ServiceConfiguration serviceConfiguration) throws Exception {
+        super(HEARTMONITOR_SERVICE_NAME, serviceConfiguration);
         loadConfiguredServices();
-        startListeningForHeartbeats();
-        startTick();
+        RevedereService.startListeningForUsers(this, userCollector);
+        serviceInfo.addObserver(new Observer<ServiceHeartInfo>() {
+            @Override
+            public void update(Observable<ServiceHeartInfo> observable, ServiceHeartInfo update) {
+                persistence.put(update.getServiceName(), update);
+                notifyAllServiceHeartInfoListeners();
+            }
+
+            @Override
+            public void update(Observable<ServiceHeartInfo> observable) {
+                // Do nothing.
+            }
+        });
     }
 
     public static HeartMonitor getInstance() {
         if (instance == null) {
             try {
-                instance = new HeartMonitor();
+                final String serverAddress = RevedereService.parseArguments(new String[] { "-log4j", "heartmonitor-log4j.properties", "-serverAddress", "failover://(tcp://localhost:61616)?initialReconnectDelay=2000&maxReconnectAttempts=2" });
+                final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(new ActiveMQAdapter(serverAddress), true, 10000, SupervisorTopics.HEARTBEAT_TOPIC, true, SupervisorTopics.COMMAND_TOPIC, SupervisorTopics.PUBLISH_TOPIC);
+                instance = new HeartMonitor(serviceConfiguration);
             } catch (Exception e) {
-                Service.BACKUP_LOGGER.error("Could not start heartMonitor instance", e);
+                LOGGER.error("Failed to start heartMonitor instance", e);
             }
         }
         return instance;
@@ -63,62 +76,7 @@ public class HeartMonitor extends RevedereService {
         } catch (Exception e) {
             LOGGER.error("Failed to load configured servers", e);
         }
-        
-        for (String service : configuredServices) {
-            servicesStatus.put(service, new ServiceHeartbeatCollector(service, true));
-        }
-    }
-
-    private void startListeningForHeartbeats() throws JMSException {
-        final BrokerMessageListener heartbeatListener = new BrokerMessageListener() {
-            public void onMessage(Serializable message) {
-                if (message instanceof Heartbeat) {
-                    final Heartbeat receivedHeartbeat = (Heartbeat) message;
-                    addHeartbeatToServicesStatus(receivedHeartbeat);
-                } else {
-                    LOGGER.warn("Received unwanted message on heartbeat topic : " + message.getClass().toString());
-                }
-            }
-        };
-        addMessageListener(SupervisorTopics.HEARTBEAT_TOPIC, heartbeatListener);
-    }
-
-    private void addHeartbeatToServicesStatus(Heartbeat receivedHeartbeat) {
-        final String serviceName = receivedHeartbeat.getServiceName();
-        ServiceHeartbeatCollector serviceStatus = servicesStatus.get(serviceName);
-
-        if (serviceStatus == null) {
-            serviceStatus = new ServiceHeartbeatCollector(serviceName, false);
-            servicesStatus.put(serviceName, serviceStatus);
-        }
-
-        LOGGER.info("Received heartbeat for service " + serviceName);
-        serviceStatus.updateHeartbeat(receivedHeartbeat);
-    }
-
-    private void startTick() {
-        final Timer timer = new Timer();
-        final TimerTask tickTask = new TimerTask() {
-            @Override
-            public void run() {
-                for (ServiceHeartbeatCollector serviceStatus : servicesStatus.values()) {
-                    serviceStatus.tick();
-                }
-                notifyHeartbeatInfoListener();
-            }
-        };
-        timer.scheduleAtFixedRate(tickTask, 0, RevedereService.HEARTBEAT_INTERVAL);
-    }
-
-    public void notifyHeartbeatInfoListener() {
-        if (this.heartbeatInfoListener != null) {
-            this.heartbeatInfoListener.onHeartbeatInfoUpdate(servicesStatus);
-        }
-    }
-
-    public void setHeartbeatInfoListener(HeartbeatInfoListener listener) {
-        this.heartbeatInfoListener = listener;
-        listener.onHeartbeatInfoUpdate(servicesStatus);
+        initConfiguredServices(configuredServices);
     }
 
     public void addUserCollectorListener(CollectorListener<UserListUpdate> listener) {
@@ -127,5 +85,20 @@ public class HeartMonitor extends RevedereService {
 
     public void removeUserCollectorListener(CollectorListener<UserListUpdate> listener) {
         getUserCollector().removeListener(listener);
+    }
+
+    public UserCollector getUserCollector() {
+        return userCollector;
+    }
+
+    public void addServiceHeartInfoListener(ServiceHeartInfoListener listener) {
+        listeners.add(listener);
+        listener.onUpdate(persistence);
+    }
+
+    public void notifyAllServiceHeartInfoListeners() {
+        for (ServiceHeartInfoListener listener : listeners) {
+            listener.onUpdate(persistence);
+        }
     }
 }

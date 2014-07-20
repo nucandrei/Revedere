@@ -7,6 +7,8 @@ public class SupervisorTopics {
     
     public static final String COMMAND_TOPIC = "Revedere.Supervisor.Command";
     
+    public static final String PUBLISH_TOPIC = "Revedere.Supervisor.Publish";
+    
     private SupervisorTopics() {
      // empty constructor. It protects from creating instances of SupervisorTopics
     }

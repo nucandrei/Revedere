@@ -2,7 +2,11 @@ package org.nuc.revedere.gateway;
 
 import java.io.Serializable;
 
+import org.apache.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
+import org.nuc.distry.service.DistryListener;
+import org.nuc.distry.service.ServiceConfiguration;
+import org.nuc.distry.service.messaging.ActiveMQAdapter;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Ping;
 import org.nuc.revedere.core.messages.Response;
@@ -24,26 +28,25 @@ import org.nuc.revedere.core.messages.update.ReviewUpdate;
 import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.gateway.connectors.UsersManagerConnector;
-import org.nuc.revedere.service.core.BrokerMessageListener;
 import org.nuc.revedere.service.core.JMSRequestor;
 import org.nuc.revedere.service.core.JMSShouter;
-import org.nuc.revedere.service.core.Service;
 import org.nuc.revedere.service.core.RevedereService;
+import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.Topics;
 import org.nuc.revedere.util.Collector;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class Gateway extends RevedereService {
+    private static final Logger LOGGER = Logger.getLogger(Gateway.class);
     private final static String GATEWAY_SERVICE_NAME = "Gateway";
-    private final static String SETTINGS_PATH = "Gateway.xml";
 
-    public Gateway() throws Exception {
-        super(GATEWAY_SERVICE_NAME, SETTINGS_PATH);
-        start();
+    public Gateway(ServiceConfiguration serviceConfiguration) throws Exception {
+        super(GATEWAY_SERVICE_NAME, serviceConfiguration);
+        startGateway();
     }
 
-    public void start() throws Exception {
-        super.start(true, true, true);
+    public void startGateway() throws Exception {
+        super.start(true);
         final UsersManagerConnector usersManagerConnector = new UsersManagerConnector(this);
         final SessionManager sessionManager = new SessionManager();
 
@@ -168,7 +171,7 @@ public class Gateway extends RevedereService {
             }
         });
 
-        this.addMessageListener(Topics.SHORT_MESSAGE_TOPIC, new BrokerMessageListener() {
+        this.addMessageListener(Topics.SHORT_MESSAGE_TOPIC, new DistryListener() {
             @Override
             public void onMessage(Serializable message) {
                 if (message instanceof ShortMessageUpdate) {
@@ -179,7 +182,7 @@ public class Gateway extends RevedereService {
             }
         });
 
-        this.addMessageListener(Topics.REVIEW_TOPIC, new BrokerMessageListener() {
+        this.addMessageListener(Topics.REVIEW_TOPIC, new DistryListener() {
             @Override
             public void onMessage(Serializable message) {
                 if (message instanceof ReviewUpdate) {
@@ -195,9 +198,11 @@ public class Gateway extends RevedereService {
 
     public static void main(String[] args) {
         try {
-            new Gateway();
+            final String serverAddress = parseArguments(args);
+            final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(new ActiveMQAdapter(serverAddress), true, 10000, SupervisorTopics.HEARTBEAT_TOPIC, true, SupervisorTopics.COMMAND_TOPIC, SupervisorTopics.PUBLISH_TOPIC);
+            new Gateway(serviceConfiguration);
         } catch (Exception e) {
-            Service.BACKUP_LOGGER.error("Could not start gateway", e);
+            LOGGER.error("Failed to start gateway", e);
         }
     }
 }

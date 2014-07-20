@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
@@ -11,7 +13,6 @@ import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.embeddable.archive.ScatteredArchive;
 import org.glassfish.embeddable.archive.ScatteredArchive.Type;
-import org.nuc.revedere.service.core.Service;
 
 /**
  * See implementation <a
@@ -21,6 +22,7 @@ import org.nuc.revedere.service.core.Service;
  *
  */
 public class WebService {
+    private static final Logger LOGGER = Logger.getLogger(WebService.class);
     final GlassFishProperties glassFishProperties;
     final GlassFish glassFish;
     final Deployer deployer;
@@ -45,9 +47,10 @@ public class WebService {
 
     public static void main(String[] args) {
         try {
+            BasicConfigurator.configure();
             new WebService(8080);
         } catch (Exception e) {
-            Service.BACKUP_LOGGER.error("Could not start web service", e);
+            LOGGER.error("Failed to start web service", e);
         }
     }
 }
