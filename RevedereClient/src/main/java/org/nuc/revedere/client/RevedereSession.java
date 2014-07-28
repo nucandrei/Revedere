@@ -173,7 +173,9 @@ public class RevedereSession {
                 try {
                     @SuppressWarnings("unchecked")
                     final Response<UserListRequest> userListResponse = (Response<UserListRequest>) message;
-                    userCollector.agregate((UserListUpdate) userListResponse.getAttachment());
+                    final UserListUpdate userListUpdate = (UserListUpdate) userListResponse.getAttachment();
+                    userListUpdate.getUsersWhoWentOnline().remove(currentUser);
+                    userCollector.agregate(userListUpdate);
                     return;
                 } catch (Exception e) {
                     // ignore this exception
