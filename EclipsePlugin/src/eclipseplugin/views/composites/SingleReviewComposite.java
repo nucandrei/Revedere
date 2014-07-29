@@ -37,7 +37,7 @@ import org.nuc.revedere.core.messages.update.ReviewUpdate;
 import org.nuc.revedere.review.Review;
 import org.nuc.revedere.review.ReviewComment;
 import org.nuc.revedere.review.ReviewData;
-import org.nuc.revedere.review.ReviewDocumentSection;
+import org.nuc.revedere.review.ReviewDocument;
 import org.nuc.revedere.review.ReviewFile;
 import org.nuc.revedere.review.ReviewState;
 import org.nuc.revedere.util.Collector;
@@ -102,11 +102,11 @@ public class SingleReviewComposite extends Composite {
 
         tree.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
-                
+
                 final TreeItem selected = tree.getSelection()[0];
                 if (comments.containsKey(selected)) {
                     final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-                    final String projectName = currentReview.getReviewDocument().getSectionText(ReviewDocumentSection.PROJECT_NAME);
+                    final String projectName = currentReview.getReviewDocument().getSectionText(ReviewDocument.PROJECT_NAME_SECTION);
                     final IProject project = root.getProject(projectName);
                     if (!project.exists()) {
                         MessageDialog.openInformation(parent.getShell(), "Revederé", String.format("The project: %s does not exists", projectName));
@@ -209,7 +209,7 @@ public class SingleReviewComposite extends Composite {
                     addListenerOnReviewUpdateIfMissing();
                     currentReview = review;
                     redrawTree(currentReview.getData(), currentReview.getState());
-                    reviewNameLabel.setText(review.getReviewDocument().getSectionText(ReviewDocumentSection.NAME));
+                    reviewNameLabel.setText(review.getReviewDocument().getSectionText(ReviewDocument.PROJECT_NAME_SECTION));
                     drawContextualButtons(review.getState(), review.getSourceUser().equals(revedereManager.getCurrentSession().getCurrentUser()));
                     viewStack.layout();
                 }

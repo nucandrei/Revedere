@@ -1,0 +1,19 @@
+<review>
+	<fields>
+		<field>
+			<name>Task</name>
+			<mandatory>true</mandatory>
+			<initialValue></initialValue>
+		</field>
+		<field>
+			<name>Changes</name>
+			<mandatory>true</mandatory>
+			<initialValue></initialValue>
+		</field>
+		<field>
+			<name>Motivation</name>
+			<mandatory>false</mandatory>
+			<initialValue></initialValue>
+		</field>
+	</fields>
+</review>
