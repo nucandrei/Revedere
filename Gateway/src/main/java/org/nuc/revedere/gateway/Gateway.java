@@ -14,6 +14,7 @@ import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.Request;
 import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
@@ -114,14 +115,14 @@ public class Gateway extends RevedereService {
             public void onShortMessageEmptyBoxRequest(ShortMessageEmptyBoxRequest request, IoSession session) {
                 final JMSRequestor<ShortMessageEmptyBoxRequest> requestor = new JMSRequestor<>(Gateway.this);
                 final Response<ShortMessageEmptyBoxRequest> response = requestor.request(Topics.SHORT_MESSAGE_TOPIC, request);
-                session.write(response);
+                writeResponse(session, request, response);
             }
 
             @Override
             public void onShortMessageHistoricalRequest(ShortMessageHistoricalRequest request, IoSession session) {
                 final JMSRequestor<ShortMessageHistoricalRequest> requestor = new JMSRequestor<>(Gateway.this);
                 final Response<ShortMessageHistoricalRequest> response = requestor.request(Topics.SHORT_MESSAGE_TOPIC, request);
-                session.write(response);
+                writeResponse(session, request, response);
             }
 
             @Override
@@ -157,7 +158,8 @@ public class Gateway extends RevedereService {
             public void onReviewHistoricalRequest(ReviewHistoricalRequest request, IoSession session) {
                 final JMSRequestor<ReviewHistoricalRequest> requestor = new JMSRequestor<>(Gateway.this);
                 final Response<ReviewHistoricalRequest> response = requestor.request(Topics.REVIEW_TOPIC, request);
-                session.write(response);
+                writeResponse(session, request, response);
+
             }
         };
         new MinaServer(new ServerHandler(gatewayListener));
@@ -194,6 +196,15 @@ public class Gateway extends RevedereService {
                 }
             }
         });
+    }
+
+    private void writeResponse(IoSession session, Request request, Response<? extends Request> response) {
+        if (response != null) {
+            session.write(response);
+            
+        } else {
+            session.write(new Response<>(request, false, "Did not receive a response in timeout"));
+        }
     }
 
     public static void main(String[] args) {
