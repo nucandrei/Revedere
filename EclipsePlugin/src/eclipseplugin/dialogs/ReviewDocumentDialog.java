@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -36,7 +37,6 @@ import org.nuc.revedere.review.ReviewData;
 import org.nuc.revedere.review.ReviewDocument;
 import org.nuc.revedere.review.ReviewDocumentSection;
 import org.nuc.revedere.review.ReviewFile;
-
 import eclipseplugin.revedere.RevedereManager;
 
 public class ReviewDocumentDialog extends Dialog {
@@ -46,12 +46,12 @@ public class ReviewDocumentDialog extends Dialog {
     private final String projectName;
     private final Set<ReviewDocumentSection> reviewDocumentSections;
     private final Map<ReviewDocumentSection, Text> correspondingTexts = new HashMap<>();
+    private Combo usersCombo;
 
     public ReviewDocumentDialog(Shell parentShell, ReviewData reviewData, Set<ReviewDocumentSection> reviewDocumentSections, String projectName) {
         super(parentShell);
         this.currentReviewData = reviewData;
         this.reviewDocumentSections = reviewDocumentSections;
-        reviewDocumentSections.add(ReviewDocument.USER_SECTION);
         this.currentReview = null;
         this.sourceSide = true;
         this.projectName = projectName;
@@ -70,6 +70,21 @@ public class ReviewDocumentDialog extends Dialog {
     protected Control createDialogArea(Composite parent) {
         final Composite container = (Composite) super.createDialogArea(parent);
         container.setLayout(new GridLayout(2, false));
+
+        if (sourceSide) {
+            final Label userLabel = new Label(container, SWT.NONE);
+            userLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+            userLabel.setText("User*");
+
+            usersCombo = new Combo(container, SWT.NONE);
+            usersCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+            final String[] users = RevedereManager.getInstance().getCurrentSession().getUsers();
+            usersCombo.setItems(users);
+            if (users.length == 1) {
+                usersCombo.select(0);
+                usersCombo.setEnabled(false);
+            }
+        }
 
         for (ReviewDocumentSection reviewDocumentSection : reviewDocumentSections) {
             final Label label = new Label(container, SWT.NONE);
@@ -102,15 +117,19 @@ public class ReviewDocumentDialog extends Dialog {
                 if (sourceSide) {
                     try {
                         final ReviewDocument reviewDocument = getReviewDocument();
-                        final User intendedUser = new User(correspondingTexts.get(ReviewDocument.USER_SECTION).getText());
+                        int selectedIndex = usersCombo.getSelectionIndex();
+                        if (selectedIndex == -1) {
+                            throw new Exception("No user is selected");
+                        }
+                        final User intendedUser = new User(usersCombo.getItem(selectedIndex));
                         RevedereManager.getInstance().getCurrentSession().requestReview(intendedUser, currentReviewData, reviewDocument);
                         ReviewDocumentDialog.this.close();
-                        
+
                     } catch (Exception ex) {
                         MessageDialog.openInformation(ReviewDocumentDialog.this.getShell(), "Revederé", ex.getMessage());
                         return;
                     }
-                    
+
                 } else {
                     downloadReview();
                     System.out.println("Downloaded changes");
@@ -175,7 +194,7 @@ public class ReviewDocumentDialog extends Dialog {
         for (ReviewDocumentSection reviewDocumentSection : reviewDocumentSections) {
             final Text correspondingText = correspondingTexts.get(reviewDocumentSection);
             if (reviewDocumentSection.isMandatory() && correspondingText.getText().isEmpty()) {
-                throw new Exception(reviewDocumentSection.getSectionName() + " is mandatory");
+                throw new Exception(reviewDocumentSection.getSectionName() + " field is mandatory");
             }
             reviewDocument.addSection(reviewDocumentSection, correspondingTexts.get(reviewDocumentSection).getText());
         }

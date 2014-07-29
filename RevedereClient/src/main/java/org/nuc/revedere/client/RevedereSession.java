@@ -1,5 +1,6 @@
 package org.nuc.revedere.client;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -66,6 +67,21 @@ public class RevedereSession {
 
     public void removeListenerFromUserCollector(CollectorListener<UserListUpdate> listener) {
         this.userCollector.removeListener(listener);
+    }
+
+    public String[] getUsers() {
+        final int noUsers = userCollector.getConnectedUsers().size() + userCollector.getDisconnectedUsers().size();
+        final List<String> users = new ArrayList<>(noUsers);
+        
+        for (User connectedUser : userCollector.getConnectedUsers()) {
+            users.add(connectedUser.getUsername());
+        }
+
+        for (User disconnectedUser : userCollector.getDisconnectedUsers()) {
+            users.add(disconnectedUser.getUsername());
+        }
+        
+        return users.toArray(new String[noUsers]);
     }
 
     public void addListenerToShortMessageCollector(CollectorListener<ShortMessageUpdate> listener) {
