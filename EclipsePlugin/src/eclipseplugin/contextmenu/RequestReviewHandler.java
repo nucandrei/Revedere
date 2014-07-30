@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -40,6 +41,7 @@ import org.nuc.revedere.review.ReviewFile;
 import org.osgi.framework.Bundle;
 
 import eclipseplugin.dialogs.ReviewDocumentDialog;
+import eclipseplugin.dialogs.ReviewFilesDialog;
 import eclipseplugin.revedere.RevedereManager;
 
 public class RequestReviewHandler extends AbstractHandler {
@@ -74,17 +76,23 @@ public class RequestReviewHandler extends AbstractHandler {
             return null;
         }
         final IProject selectedProject = getSelectedProject();
-        final ReviewData reviewData = createReviewData(selectedProject);
+        final IPath projectPath = selectedProject.getLocation();
+        final ReviewFilesDialog reviewFilesDialog = new ReviewFilesDialog(window.getShell(), getAllResources(projectPath));
+        final int dialogResult = reviewFilesDialog.open();
+        if (dialogResult == Window.CANCEL) {
+            return null;
+        }
+
+        final ReviewData reviewData = createReviewData(reviewFilesDialog.getSelectedResources());
         final ReviewDocumentDialog dialog = new ReviewDocumentDialog(window.getShell(), reviewData, sections, selectedProject.getName());
         dialog.open();
         return null;
     }
 
-    private ReviewData createReviewData(IProject selectedProject) {
-        final IPath projectPath = selectedProject.getLocation();
+    private ReviewData createReviewData(List<IResource> resources) {
         final List<String> folders = new ArrayList<>();
         final List<ReviewFile> reviewFiles = new ArrayList<>();
-        for (IResource resource : getAllResources(projectPath)) {
+        for (IResource resource : resources) {
             if (resource.getType() == IResource.FOLDER) {
                 folders.add(resource.getProjectRelativePath().toString());
             } else {

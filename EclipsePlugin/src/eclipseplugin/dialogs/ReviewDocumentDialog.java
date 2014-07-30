@@ -142,22 +142,25 @@ public class ReviewDocumentDialog extends Dialog {
         final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
         final String projectName = currentReview.getReviewDocument().getSectionText(ReviewDocument.PROJECT_NAME_SECTION);
         final IProject project = root.getProject(projectName);
-        if (project.exists()) {
-            MessageDialog.openInformation(super.getShell(), "Revederé", String.format("The project: %s already exists", projectName));
-            return;
-        }
+
         try {
             final NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
-            project.create(nullProgressMonitor);
-            project.open(nullProgressMonitor);
+            if (!project.exists()) {
+                project.create(nullProgressMonitor);
+                project.open(nullProgressMonitor);
+            }
+
             for (ReviewFile reviewFile : currentReview.getData().getReviewFiles()) {
                 final IFile file = project.getFile(reviewFile.getFileRelativePath());
+                final InputStream stream = new ByteArrayInputStream(reviewFile.getFileContent().getBytes(StandardCharsets.UTF_8));
                 if (!file.exists()) {
-                    final InputStream stream = new ByteArrayInputStream(reviewFile.getFileContent().getBytes(StandardCharsets.UTF_8));
                     if (file.getParent() instanceof IFolder) {
                         prepareFolder((IFolder) file.getParent());
                     }
                     file.create(stream, false, nullProgressMonitor);
+                    
+                } else {
+                    file.setContents(stream, true, true, nullProgressMonitor);
                 }
             }
             RevedereManager.getInstance().getReviewBox().add(project, currentReview);

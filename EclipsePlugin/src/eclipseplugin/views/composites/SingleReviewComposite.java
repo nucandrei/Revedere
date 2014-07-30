@@ -46,6 +46,7 @@ import org.nuc.revedere.util.Tuple;
 
 import eclipseplugin.dialogs.ReviewDocumentDialog;
 import eclipseplugin.revedere.RevedereManager;
+import eclipseplugin.util.TreeBuilder;
 import eclipseplugin.views.ViewStack;
 
 public class SingleReviewComposite extends Composite {
@@ -68,10 +69,10 @@ public class SingleReviewComposite extends Composite {
     private final Image fileImage;
     private final Image commentImage;
 
-    private final Map<String, TreeItem> treeItems = new HashMap<>();
     private final Map<TreeItem, Tuple<ReviewFile, ReviewComment>> comments = new HashMap<>();
-
-    final Tree tree;
+    private final Tree tree;
+    private final TreeBuilder treeBuilder;
+    private final Map<String, TreeItem> treeItems;
 
     public SingleReviewComposite(Composite parent, ViewStack viewStack) {
         super(parent, SWT.NONE);
@@ -99,6 +100,9 @@ public class SingleReviewComposite extends Composite {
 
         tree = new Tree(this, SWT.BORDER);
         tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
+
+        treeBuilder = new TreeBuilder(tree, SWT.NONE);
+        treeItems = treeBuilder.getTreeItems();
 
         tree.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
@@ -179,7 +183,12 @@ public class SingleReviewComposite extends Composite {
             public void mouseDown(MouseEvent e) {
                 revedereManager.getCurrentSession().updateReview(currentReview, ReviewState.DONE);
                 final IProject correspondingProject = revedereManager.getReviewBox().removeReview(currentReview);
-                if (correspondingProject != null) {
+                if (correspondingProject == null) {
+                    return;
+                }
+                final MessageDialog messageDialog = new MessageDialog(SingleReviewComposite.this.getShell(), "Revedere", null, "Do you want to remove project?", MessageDialog.QUESTION, new String[] { "YES", "NO" }, 1);
+                final int response = messageDialog.open();
+                if (response == 0) {
                     deleteProject(correspondingProject);
                 }
             }
@@ -277,11 +286,11 @@ public class SingleReviewComposite extends Composite {
         comments.clear();
 
         for (String folder : reviewData.getFolders()) {
-            constructTree(folder, folderImage);
+            treeBuilder.constructTree(folder, folderImage);
         }
 
         for (ReviewFile reviewFile : reviewData.getReviewFiles()) {
-            final TreeItem treeItem = (TreeItem) constructTree(reviewFile.getFileRelativePath(), fileImage);
+            final TreeItem treeItem = (TreeItem) treeBuilder.constructTree(reviewFile.getFileRelativePath(), fileImage);
             if (reviewState.equals(ReviewState.DONE) || reviewState.equals(ReviewState.CLOSED)) {
                 int currentComment = 0;
                 for (ReviewComment reviewComment : reviewFile.getComments()) {
@@ -294,45 +303,6 @@ public class SingleReviewComposite extends Composite {
                 }
             }
         }
-    }
-
-    private boolean isRootFolder(String folder) {
-        return !folder.contains("/");
-    }
-
-    private Object constructTree(String folder, Image image) {
-        final TreeItem newTreeItem;
-        if (treeItems.containsKey(folder)) {
-            return treeItems.get(folder);
-        }
-
-        if (isRootFolder(folder)) {
-            newTreeItem = new TreeItem(tree, SWT.NONE);
-
-        } else {
-            final Object parent = constructTree(getParentFolder(folder), image);
-            if (parent instanceof Tree) {
-                newTreeItem = new TreeItem((Tree) parent, SWT.NONE);
-            } else {
-                newTreeItem = new TreeItem((TreeItem) parent, SWT.NONE);
-            }
-        }
-
-        newTreeItem.setText(getCurrentFolderShortName(folder));
-        newTreeItem.setImage(image);
-        treeItems.put(folder, newTreeItem);
-        return newTreeItem;
-    }
-
-    private String getParentFolder(String folder) {
-        return folder.substring(0, folder.lastIndexOf('/'));
-    }
-
-    private String getCurrentFolderShortName(String folder) {
-        if (isRootFolder(folder)) {
-            return folder;
-        }
-        return folder.substring(folder.lastIndexOf('/') + 1);
     }
 
     private void setNextStateAsClosed() {
@@ -356,5 +326,4 @@ public class SingleReviewComposite extends Composite {
             currentRevedereSession.addListenerToReviewCollector(collectorListener);
         }
     }
-
 }
