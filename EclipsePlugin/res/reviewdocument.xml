@@ -4,16 +4,19 @@
 			<name>Task</name>
 			<mandatory>true</mandatory>
 			<initialValue></initialValue>
+			<noLines>1</noLines>
 		</field>
 		<field>
 			<name>Changes</name>
 			<mandatory>true</mandatory>
 			<initialValue></initialValue>
+			<noLines>3</noLines>
 		</field>
 		<field>
 			<name>Motivation</name>
 			<mandatory>false</mandatory>
 			<initialValue></initialValue>
+			<noLines>8</noLines>
 		</field>
 	</fields>
 </review>

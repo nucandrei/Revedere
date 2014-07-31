@@ -92,14 +92,16 @@ public class ReviewDocumentDialog extends Dialog {
             final String isMandatoryMark = reviewDocumentSection.isMandatory() ? "*" : "";
             label.setText(reviewDocumentSection.getSectionName() + isMandatoryMark);
 
-            final Text text = new Text(container, SWT.BORDER);
+            final Text text = new Text(container, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
             if (sourceSide) {
                 text.setText(reviewDocumentSection.getDefaultValue());
 
             } else {
                 text.setText(currentReview.getReviewDocument().getSectionText(reviewDocumentSection));
             }
-            text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+            final GridData sectionGridData = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+            sectionGridData.heightHint = reviewDocumentSection.getNoLines() * text.getLineHeight();
+            text.setLayoutData(sectionGridData);
             text.setEnabled(sourceSide);
             correspondingTexts.put(reviewDocumentSection, text);
         }
@@ -158,7 +160,7 @@ public class ReviewDocumentDialog extends Dialog {
                         prepareFolder((IFolder) file.getParent());
                     }
                     file.create(stream, false, nullProgressMonitor);
-                    
+
                 } else {
                     file.setContents(stream, true, true, nullProgressMonitor);
                 }
@@ -189,7 +191,12 @@ public class ReviewDocumentDialog extends Dialog {
 
     @Override
     protected Point getInitialSize() {
-        return new Point(500, 300);
+        return new Point(400, 600);
+    }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
     }
 
     private ReviewDocument getReviewDocument() throws Exception {

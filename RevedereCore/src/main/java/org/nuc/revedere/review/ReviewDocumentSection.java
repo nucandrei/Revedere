@@ -7,11 +7,13 @@ public class ReviewDocumentSection implements Serializable {
     private final String sectionName;
     private final boolean isMandatory;
     private final String defaultValue;
+    private final int noLines;
 
-    public ReviewDocumentSection(String sectionName, boolean isMandatory, String defaultValue) {
+    public ReviewDocumentSection(String sectionName, boolean isMandatory, String defaultValue, int noLines) {
         this.sectionName = sectionName;
         this.isMandatory = isMandatory;
         this.defaultValue = defaultValue;
+        this.noLines = noLines;
     }
 
     public String getSectionName() {
@@ -24,6 +26,10 @@ public class ReviewDocumentSection implements Serializable {
 
     public String getDefaultValue() {
         return defaultValue;
+    }
+
+    public int getNoLines() {
+        return noLines;
     }
 
     @Override

@@ -59,7 +59,8 @@ public class RequestReviewHandler extends AbstractHandler {
                 final String name = fieldElement.getChildText("name");
                 final boolean mandatory = Boolean.valueOf(fieldElement.getChildText("mandatory"));
                 final String initialValue = fieldElement.getChildText("initialValue");
-                sections.add(new ReviewDocumentSection(name, mandatory, initialValue));
+                final int noLines = Integer.parseInt(fieldElement.getChildText("noLines"));
+                sections.add(new ReviewDocumentSection(name, mandatory, initialValue, noLines));
             }
 
         } catch (IOException | JDOMException e) {
