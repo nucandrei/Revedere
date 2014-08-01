@@ -12,7 +12,6 @@
 		<module>Gateway</module>
 		<module>MailService</module>
 		<module>RevedereClient</module>
-		<module>UserManager</module>
 		<module>Integration</module>
 		<module>ShortMessageService</module>
 		<module>ReviewService</module>

@@ -24,18 +24,14 @@ import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageMarkAsReadRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
-import org.nuc.revedere.core.messages.request.UserListRequest;
 import org.nuc.revedere.core.messages.update.ReviewUpdate;
 import org.nuc.revedere.core.messages.update.ShortMessageUpdate;
-import org.nuc.revedere.core.messages.update.UserListUpdate;
-import org.nuc.revedere.gateway.connectors.UsersManagerConnector;
+import org.nuc.revedere.gateway.usersmanager.UsersManager;
 import org.nuc.revedere.service.core.JMSRequestor;
 import org.nuc.revedere.service.core.JMSShouter;
 import org.nuc.revedere.service.core.RevedereService;
 import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.Topics;
-import org.nuc.revedere.util.Collector;
-import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class Gateway extends RevedereService {
     private static final Logger LOGGER = Logger.getLogger(Gateway.class);
@@ -47,14 +43,14 @@ public class Gateway extends RevedereService {
     }
 
     public void startGateway() throws Exception {
-        super.start(true);
-        final UsersManagerConnector usersManagerConnector = new UsersManagerConnector(this);
+        super.start(false);
         final SessionManager sessionManager = new SessionManager();
+        final UsersManager usersManager = new UsersManager(this, sessionManager);
 
         final GatewayListener gatewayListener = new GatewayListener() {
             @Override
             public void onLoginRequest(LoginRequest request, IoSession session) {
-                final Response<LoginRequest> response = usersManagerConnector.login(request);
+                final Response<LoginRequest> response = usersManager.login(request);
                 if (response.isSuccessfull()) {
                     sessionManager.setAwaitingAcknowledgement(request.getUsername(), session);
                 }
@@ -64,24 +60,24 @@ public class Gateway extends RevedereService {
             @Override
             public void onAcknowledgement(Acknowledgement<LoginRequest> acknowledgement, IoSession session) {
                 sessionManager.markReceivedAcknowledgement(session);
-                usersManagerConnector.acknowledgeLogin(acknowledgement);
+                usersManager.acknowledgeLogin(acknowledgement);
             }
 
             @Override
             public void onLogoutRequest(LogoutRequest request, IoSession session) {
-                usersManagerConnector.logout(request);
+                usersManager.logout(request);
                 sessionManager.setOffine(session);
             }
 
             @Override
             public void onRegisterRequest(RegisterRequest request, IoSession session) {
-                final Response<RegisterRequest> response = usersManagerConnector.register(request);
+                final Response<RegisterRequest> response = usersManager.register(request);
                 session.write(response);
             }
 
             @Override
             public void onUnregisterRequest(UnregisterRequest request, IoSession session) {
-                final Response<UnregisterRequest> response = usersManagerConnector.unregister(request);
+                final Response<UnregisterRequest> response = usersManager.unregister(request);
                 session.write(response);
 
             }
@@ -97,7 +93,7 @@ public class Gateway extends RevedereService {
             public void onClosedSession(IoSession session) {
                 final String connectedUser = sessionManager.getUserFromSession(session);
                 if (connectedUser != null) {
-                    usersManagerConnector.logout(new LogoutRequest(connectedUser));
+                    usersManager.logout(new LogoutRequest(connectedUser));
                     sessionManager.setOffine(session);
                 }
             }
@@ -163,15 +159,6 @@ public class Gateway extends RevedereService {
             }
         };
         new MinaServer(new ServerHandler(gatewayListener));
-
-        getUserCollector().addListener(new CollectorListener<UserListUpdate>() {
-            @Override
-            public void onUpdate(Collector<UserListUpdate> source, UserListUpdate update) {
-                final Response<UserListRequest> dummyResponse = new Response<>(null, true, "");
-                dummyResponse.attach(source.getCurrentState());
-                sessionManager.broadcastMessage(dummyResponse);
-            }
-        });
 
         this.addMessageListener(Topics.SHORT_MESSAGE_TOPIC, new DistryListener() {
             @Override

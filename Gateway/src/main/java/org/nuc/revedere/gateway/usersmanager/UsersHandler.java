@@ -1,4 +1,4 @@
-package org.nuc.revedere.usersmanager;
+package org.nuc.revedere.gateway.usersmanager;
 
 import java.io.File;
 import java.io.FileWriter;

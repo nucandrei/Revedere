@@ -1,11 +1,10 @@
-package org.nuc.revedere.usersmanager;
+package org.nuc.revedere.gateway.usersmanager;
 
 import java.io.Serializable;
 
 import org.apache.log4j.Logger;
 import org.nuc.distry.service.DistryListener;
-import org.nuc.distry.service.ServiceConfiguration;
-import org.nuc.distry.service.messaging.ActiveMQAdapter;
+import org.nuc.distry.service.Service;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.ack.Acknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
@@ -13,44 +12,73 @@ import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 import org.nuc.revedere.core.messages.request.UserListRequest;
-import org.nuc.revedere.service.core.RevedereService;
-import org.nuc.revedere.service.core.SupervisorTopics;
+import org.nuc.revedere.gateway.SessionManager;
 import org.nuc.revedere.service.core.Topics;
 
-public class UsersManager extends RevedereService {
+public class UsersManager {
     private static final Logger LOGGER = Logger.getLogger(UsersManager.class);
-    private final static String USERSMANAGER_SERVICE_NAME = "UsersManager";
+    private final Service supportService;
     private final UsersHandler usersHandler = new UsersHandler(this);
+    private SessionManager sessionManager;
 
-    public UsersManager(ServiceConfiguration serviceConfiguration) throws Exception {
-        super(USERSMANAGER_SERVICE_NAME, serviceConfiguration);
-        super.start(false);
+    public UsersManager(Service supportService, SessionManager sessionManager) throws Exception {
+        this.supportService = supportService;
+        this.sessionManager = sessionManager;
         startListeningForUsersEvents();
     }
 
+    public Response<LoginRequest> login(LoginRequest request) {
+        return usersHandler.login(request);
+    }
+
+    public Response<RegisterRequest> register(RegisterRequest request) {
+        return usersHandler.register(request);
+    }
+
+    public Response<UnregisterRequest> unregister(UnregisterRequest request) {
+        return usersHandler.unregister(request);
+    }
+
+    public void logout(LogoutRequest request) {
+        usersHandler.logout(request);
+    }
+
+    public void acknowledgeLogin(Acknowledgement<LoginRequest> ack) {
+        usersHandler.ack(ack);
+    }
+
+    public void sendUpdateToSubscribers(Serializable update) {
+        try {
+            supportService.sendMessage(Topics.USERS_TOPIC, update);
+            sessionManager.broadcastMessage(update);
+        } catch (Exception e) {
+            LOGGER.error("Could not send update", e);
+        }
+    }
+
     private void startListeningForUsersEvents() throws Exception {
-        super.addMessageListener(Topics.USERS_REQUEST_TOPIC, new DistryListener() {
+        supportService.addMessageListener(Topics.USERS_REQUEST_TOPIC, new DistryListener() {
             @Override
             public void onMessage(Serializable message) {
                 try {
                     if (message instanceof LoginRequest) {
                         final LoginRequest loginRequest = (LoginRequest) message;
                         final Response<LoginRequest> response = usersHandler.login(loginRequest);
-                        sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
+                        supportService.sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
                         return;
                     }
 
                     if (message instanceof RegisterRequest) {
                         final RegisterRequest registerRequest = (RegisterRequest) message;
                         final Response<RegisterRequest> response = usersHandler.register(registerRequest);
-                        sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
+                        supportService.sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
                         return;
                     }
 
                     if (message instanceof UnregisterRequest) {
                         final UnregisterRequest unregisterRequest = (UnregisterRequest) message;
                         final Response<UnregisterRequest> response = usersHandler.unregister(unregisterRequest);
-                        sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
+                        supportService.sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
                         return;
                     }
 
@@ -63,7 +91,7 @@ public class UsersManager extends RevedereService {
                     if (message instanceof UserListRequest) {
                         final UserListRequest userListRequest = (UserListRequest) message;
                         final Response<UserListRequest> response = usersHandler.listUsers(userListRequest);
-                        sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
+                        supportService.sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
                     }
 
                     try {
@@ -79,24 +107,5 @@ public class UsersManager extends RevedereService {
                 }
             }
         });
-    }
-
-    public void sendUpdateToSubscribers(Serializable update) {
-        try {
-            sendMessage(Topics.USERS_TOPIC, update);
-        } catch (Exception e) {
-            LOGGER.error("Could not send update", e);
-        }
-    }
-
-    public static void main(String[] args) {
-        try {
-            final String serverAddress = parseArguments(args);
-            final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(new ActiveMQAdapter(serverAddress), true, 10000, SupervisorTopics.HEARTBEAT_TOPIC, true, SupervisorTopics.COMMAND_TOPIC, SupervisorTopics.PUBLISH_TOPIC);
-            new UsersManager(serviceConfiguration);
-
-        } catch (Exception e) {
-            LOGGER.error("Failed to start users manager", e);
-        }
     }
 }
