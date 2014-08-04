@@ -1,0 +1,31 @@
+﻿# do not show eclipse garbage
+*/.settings/*
+.settings/*
+*.project
+*.classpath
+
+# do not show ignore file
+*/.gitignore
+
+# do not show compiled files
+*.class
+
+# do not show log files
+*.log
+
+# do not show target files
+*/target/*
+target/*
+
+# do not show sonar files
+.sonar/*
+sonar-project.properties
+
+# do not show snippets
+snippets.txt
+
+# ignore created and downloaded libs
+Revedere/prod
+
+# ignore .ignore directory
+.ignore/*

@@ -7,6 +7,12 @@
 		<version>0.1</version>
 	</parent>
 	<artifactId>RevedereService</artifactId>
+	<repositories>
+		<repository>
+			<id>distry-snapshots</id>
+			<url>https://github.com/nucandrei/repository/raw/master/snapshots</url>
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.nuc.revedere</groupId>
