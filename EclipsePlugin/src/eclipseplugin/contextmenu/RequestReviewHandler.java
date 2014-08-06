@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
@@ -40,8 +41,10 @@ import org.nuc.revedere.review.ReviewDocumentSection;
 import org.nuc.revedere.review.ReviewFile;
 import org.osgi.framework.Bundle;
 
+import eclipseplugin.Activator;
 import eclipseplugin.dialogs.ReviewDocumentDialog;
 import eclipseplugin.dialogs.ReviewFilesDialog;
+import eclipseplugin.preferences.PreferenceConstants;
 import eclipseplugin.revedere.RevedereManager;
 
 public class RequestReviewHandler extends AbstractHandler {
@@ -78,7 +81,13 @@ public class RequestReviewHandler extends AbstractHandler {
         }
         final IProject selectedProject = getSelectedProject();
         final IPath projectPath = selectedProject.getLocation();
-        final ReviewFilesDialog reviewFilesDialog = new ReviewFilesDialog(window.getShell(), getAllResources(projectPath));
+        final IPreferenceStore preferencePage = Activator.getDefault().getPreferenceStore();
+        
+        final boolean includeEmptyFolders = preferencePage.getBoolean(PreferenceConstants.EMPTY_FOLDERS_VISIBLE_IN_REVIEW_FILES_DIALOG);
+        final boolean filterFiles = preferencePage.getBoolean(PreferenceConstants.FILTER_REVIEW_FILES);
+        final String filesFilter = preferencePage.getString(PreferenceConstants.REVIEW_FILES_FILTER);
+
+        final ReviewFilesDialog reviewFilesDialog = new ReviewFilesDialog(window.getShell(), getAllResources(projectPath, includeEmptyFolders, filterFiles, filesFilter));
         final int dialogResult = reviewFilesDialog.open();
         if (dialogResult == Window.CANCEL) {
             return null;
@@ -114,15 +123,24 @@ public class RequestReviewHandler extends AbstractHandler {
         }
     }
 
-    private List<IResource> getAllResources(IPath path) {
+    private List<IResource> getAllResources(IPath path, boolean includeEmptyFolders, boolean filterFiles, String fileFilter) {
         final List<IResource> resources = new ArrayList<>();
         final IContainer container = ResourcesPlugin.getWorkspace().getRoot().getContainerForLocation(path);
         try {
             for (IResource resource : container.members()) {
                 if (resource.getType() == IResource.FOLDER) {
-                    resources.addAll(getAllResources(resource.getLocation()));
+                    final List<IResource> containedResources = getAllResources(resource.getLocation(), includeEmptyFolders, filterFiles, fileFilter);
+                    if (includeEmptyFolders || !containedResources.isEmpty()) {
+                        resources.addAll(containedResources);
+                        resources.add(resource);
+                    }
                 }
-                resources.add(resource);
+
+                if (resource.getType() == IResource.FILE) {
+                    if (!filterFiles || resource.getProjectRelativePath().toString().matches(fileFilter)) {
+                        resources.add(resource);
+                    }
+                }
             }
         } catch (CoreException e) {
             e.printStackTrace();

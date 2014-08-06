@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -13,6 +14,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
 
@@ -39,7 +41,6 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
     public RevederePreferences() {
         super(GRID);
         setPreferenceStore(Activator.getDefault().getPreferenceStore());
-        setDescription("Revedere");
         noDefaultAndApplyButton();
     }
 
@@ -48,6 +49,19 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
     }
 
     public void createFieldEditors() {
+        final BooleanFieldEditor emptyFoldersVisibleInReviewFilesDialog = new BooleanFieldEditor(PreferenceConstants.EMPTY_FOLDERS_VISIBLE_IN_REVIEW_FILES_DIALOG, "Empty folders are visible in review files dialog", getFieldEditorParent());
+        addField(emptyFoldersVisibleInReviewFilesDialog);
+        
+        final BooleanFieldEditor applyReviewFilesFilter = new BooleanFieldEditor(PreferenceConstants.FILTER_REVIEW_FILES, "Review files are filtered", getFieldEditorParent());
+        addField(applyReviewFilesFilter);
+        
+        final StringFieldEditor reviewFilesFilter = new StringFieldEditor(PreferenceConstants.REVIEW_FILES_FILTER, "Filter value(regex)", getFieldEditorParent());
+        reviewFilesFilter.setTextLimit(30);
+        addField(reviewFilesFilter);
+
+        final Label separator = new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridDataFactory.fillDefaults().span(3, 1).grab(true, false).applyTo(separator);
+
         usernameFieldEditor = new StringFieldEditor(PreferenceConstants.USER_STRING, "Username:", getFieldEditorParent()) {
             @Override
             protected boolean checkState() {
