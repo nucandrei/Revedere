@@ -13,5 +13,6 @@ public class PreferenceConstants {
     public static final String FILTER_REVIEW_FILES = "filterReviewFiles";
     public static final String REVIEW_FILES_FILTER = "reviewFilesFilter";
     public static final String EMPTY_FOLDERS_VISIBLE_IN_REVIEW_FILES_DIALOG = "emptyFiles";
+    public static final String CONNECT_AT_STARTUP_STRING = "connectAtStartUp";
 
 }

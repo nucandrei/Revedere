@@ -51,10 +51,10 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
     public void createFieldEditors() {
         final BooleanFieldEditor emptyFoldersVisibleInReviewFilesDialog = new BooleanFieldEditor(PreferenceConstants.EMPTY_FOLDERS_VISIBLE_IN_REVIEW_FILES_DIALOG, "Empty folders are visible in review files dialog", getFieldEditorParent());
         addField(emptyFoldersVisibleInReviewFilesDialog);
-        
+
         final BooleanFieldEditor applyReviewFilesFilter = new BooleanFieldEditor(PreferenceConstants.FILTER_REVIEW_FILES, "Review files are filtered", getFieldEditorParent());
         addField(applyReviewFilesFilter);
-        
+
         final StringFieldEditor reviewFilesFilter = new StringFieldEditor(PreferenceConstants.REVIEW_FILES_FILTER, "Filter value(regex)", getFieldEditorParent());
         reviewFilesFilter.setTextLimit(30);
         addField(reviewFilesFilter);
@@ -111,6 +111,9 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
             }
         };
         addField(gatewayFieldEditor);
+
+        final BooleanFieldEditor connectAtStartup = new BooleanFieldEditor(PreferenceConstants.CONNECT_AT_STARTUP_STRING, "Connect at startup", getFieldEditorParent());
+        addField(connectAtStartup);
     }
 
     @Override

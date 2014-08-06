@@ -70,5 +70,9 @@
     </action> 
    	</viewerContribution> 
 	</extension>
+	
+	<extension point="org.eclipse.ui.startup">
+     <startup class="eclipseplugin.StartUp"/>
+   </extension>
    
 </plugin>

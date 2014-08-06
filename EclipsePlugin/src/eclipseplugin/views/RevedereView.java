@@ -2,6 +2,7 @@ package eclipseplugin.views;
 
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.part.*;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.review.Review;
@@ -33,7 +34,12 @@ public class RevedereView extends ViewPart implements ViewStack {
         reviewsComposite = new ReviewsComposite(parent, this);
         singleReviewComposite = new SingleReviewComposite(parent, this);
         revedereManager.setViewStack(this);
-        changeToNoConnectionOrSession();
+        if (RevedereManager.getInstance().getCurrentSession() != null) {
+            changeToUsersView();
+            
+        } else {
+            changeToNoConnectionOrSession();
+        }
     }
 
     @Override
@@ -77,7 +83,13 @@ public class RevedereView extends ViewPart implements ViewStack {
 
     @Override
     public void layout() {
-        ((Composite) stackLayout.topControl).layout();
-        this.parent.layout();
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                ((Composite) stackLayout.topControl).layout();
+                RevedereView.this.parent.layout();
+            }
+        });
+
     }
 }
