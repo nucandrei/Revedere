@@ -85,9 +85,9 @@ public class MessageComposite extends Composite {
     public void update(User user) {
         this.hasFocus = true;
         if (user != currentUser) {
-            updateHistoricMessages(revedereManager.getCurrentSession().getMessageBox().getMessages(user));
+            updateHistoricMessages(revedereManager.getCurrentSession().getMessagesForUser(user));
         }
-        
+
         this.currentUser = user;
         this.userNameLabel.setText(user.getUsername());
         addListenerOnShortMessageUpdateIfMissing();
@@ -101,7 +101,7 @@ public class MessageComposite extends Composite {
                 @Override
                 public void onUpdate(Collector<ShortMessageUpdate> collector, ShortMessageUpdate update) {
                     if (hasFocus) {
-                        updateHistoricMessages(currentRevedereSession.getMessageBox().getMessages(currentUser));
+                        updateHistoricMessages(currentRevedereSession.getMessagesForUser(currentUser));
                     }
                 }
             };

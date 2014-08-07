@@ -5,16 +5,16 @@ import org.nuc.revedere.core.User;
 public class ShortMessageHistoricalRequest extends Request {
     private static final long serialVersionUID = 8075011076524868655L;
     private final User user;
-    private final boolean requestReadMessages;
+    private final boolean requestReceivedMessages;
     private final boolean requestSentMessages;
-    private final boolean requestUnreadMessages;
+    private final long fromTimestamp;
 
-    public ShortMessageHistoricalRequest(User user, boolean requestReadMessages, boolean requestSentMessages, boolean requestUnreadMessages) {
+    public ShortMessageHistoricalRequest(User user, boolean requestReceivedMessages, boolean requestSentMessages, long fromTimestamp) {
         super();
         this.user = user;
-        this.requestReadMessages = requestReadMessages;
+        this.requestReceivedMessages = requestReceivedMessages;
         this.requestSentMessages = requestSentMessages;
-        this.requestUnreadMessages = requestUnreadMessages;
+        this.fromTimestamp = fromTimestamp;
     }
 
     public User getUser() {
@@ -22,14 +22,14 @@ public class ShortMessageHistoricalRequest extends Request {
     }
 
     public boolean isRequestReadMessages() {
-        return requestReadMessages;
+        return requestReceivedMessages;
     }
 
     public boolean isRequestSentMessages() {
         return requestSentMessages;
     }
 
-    public boolean isRequestUnreadMessages() {
-        return requestUnreadMessages;
+    public long getFromTimestamp() {
+        return fromTimestamp;
     }
 }

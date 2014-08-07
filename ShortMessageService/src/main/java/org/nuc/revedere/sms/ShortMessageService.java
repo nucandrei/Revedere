@@ -44,13 +44,6 @@ public class ShortMessageService extends RevedereService {
                 for (User newOnlineUser : update.getUsersWhoWentOnline()) {
                     final String username = newOnlineUser.getUsername();
                     createMessageBoxIfMissing(username);
-                    final MessageBox messageBox = msgBoxes.get(username);
-                    try {
-                        sendMessage(Topics.SHORT_MESSAGE_TOPIC, new ShortMessageUpdate(messageBox.getUnreadMessages(), newOnlineUser));
-                        LOGGER.info(String.format("Sent update message for user %s", username));
-                    } catch (JMSException e) {
-                        LOGGER.error(String.format("Could not send update message for user %s, reason", username), e);
-                    }
                 }
             }
         });
@@ -76,25 +69,32 @@ public class ShortMessageService extends RevedereService {
                         final ShortMessageHistoricalRequest shortMessageHistoricalRequest = (ShortMessageHistoricalRequest) message;
                         final List<ShortMessage> messagesToSend = new ArrayList<>();
                         final MessageBox messageBox = msgBoxes.get(shortMessageHistoricalRequest.getUser().getUsername());
+                        final long fromTimestamp = shortMessageHistoricalRequest.getFromTimestamp();
                         if (shortMessageHistoricalRequest.isRequestReadMessages()) {
                             for (ShortMessage shortMessage : messageBox.getReadMessages()) {
-                                messagesToSend.add(shortMessage);
+                                if (shortMessage.getTimestamp() > fromTimestamp) {
+                                    messagesToSend.add(shortMessage);
+                                }
                             }
                         }
 
                         if (shortMessageHistoricalRequest.isRequestSentMessages()) {
                             for (ShortMessage shortMessage : messageBox.getSentMessages()) {
+                                if (shortMessage.getTimestamp() > fromTimestamp) {
+                                    messagesToSend.add(shortMessage);
+                                }
+                            }
+                        }
+                        
+                        for (ShortMessage shortMessage : messageBox.getUnreadMessages()) {
+                            if (shortMessage.getTimestamp() > fromTimestamp) {
                                 messagesToSend.add(shortMessage);
                             }
                         }
 
-                        if (shortMessageHistoricalRequest.isRequestUnreadMessages()) {
-                            for (ShortMessage shortMessage : messageBox.getUnreadMessages()) {
-                                messagesToSend.add(shortMessage);
-                            }
-                        }
                         final Response<ShortMessageHistoricalRequest> response = new Response<>(shortMessageHistoricalRequest, true, "");
                         response.attach((Serializable) messagesToSend);
+                        LOGGER.info("Sent messages" + messagesToSend);
                         sendMessage(Topics.SHORT_MESSAGE_RESPONSE_TOPIC, response);
                     }
 

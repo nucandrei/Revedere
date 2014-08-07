@@ -16,6 +16,7 @@ public class MessageBox {
     private final List<ShortMessage> readMessages = new LinkedList<>();
     private final List<ShortMessage> unreadMessages = new LinkedList<>();
     private final List<ShortMessage> sentMessages = new LinkedList<>();
+    private long lastTimestamp = 0;
 
     public MessageBox(String msgBoxName, MessageBoxPersistence persistence) {
         this.msgBoxName = msgBoxName;
@@ -33,6 +34,9 @@ public class MessageBox {
             } else {
                 this.unreadMessages.add(message);
             }
+        }
+        if (lastTimestamp < message.getTimestamp()) {
+            lastTimestamp = message.getTimestamp();
         }
         persistence.save(message, msgBoxName);
     }
@@ -115,6 +119,10 @@ public class MessageBox {
     public String getName() {
         return msgBoxName;
     }
+    
+    public long getLastTimestamp() {
+        return lastTimestamp;
+    }
 
     /**
      * Clear all old instances of the short message
@@ -130,5 +138,23 @@ public class MessageBox {
         unreadMessages.addAll(persistence.getUnreadMessages(msgBoxName));
         readMessages.addAll(persistence.getReadMessages(msgBoxName));
         sentMessages.addAll(persistence.getSentMessages(msgBoxName));
+        
+        for (ShortMessage shortMessage : unreadMessages) {
+            if (shortMessage.getTimestamp() > lastTimestamp) {
+                this.lastTimestamp = shortMessage.getTimestamp();
+            }
+        }
+
+        for (ShortMessage shortMessage : readMessages) {
+            if (shortMessage.getTimestamp() > lastTimestamp) {
+                this.lastTimestamp = shortMessage.getTimestamp();
+            }
+        }
+
+        for (ShortMessage shortMessage : sentMessages) {
+            if (shortMessage.getTimestamp() > lastTimestamp) {
+                this.lastTimestamp = shortMessage.getTimestamp();
+            }
+        }
     }
 }

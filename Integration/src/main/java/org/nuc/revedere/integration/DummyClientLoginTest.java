@@ -8,7 +8,6 @@ import org.nuc.revedere.client.RevedereConnector;
 import org.nuc.revedere.client.RevedereSession;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.update.UserListUpdate;
-import org.nuc.revedere.shortmessage.MessageBox;
 import org.nuc.revedere.util.Collector;
 import org.nuc.revedere.util.Collector.CollectorListener;
 import org.nuc.revedere.util.Container;
@@ -37,14 +36,14 @@ public class DummyClientLoginTest {
             assertNotNull(expectedUpdateContainer.getContent());
             assertTrue(expectedUpdateContainer.getContent().getUsersWhoWentOnline().contains(new User("user", "user")));
 
-            MessageBox myMessageBox = session.getMessageBox();
-            Thread.sleep(1000);
-            assertFalse(myMessageBox.getUnreadMessages().isEmpty());
-            
-            assertFalse(session.getReadMessages().isEmpty());
-            assertFalse(session.getUnreadMessages().isEmpty());
-            assertFalse(session.getSentMessages().isEmpty());
-            
+            // MessageBox myMessageBox = session.getMessageBox();
+            // Thread.sleep(1000);
+            // assertFalse(myMessageBox.getUnreadMessages().isEmpty());
+            //
+            // assertFalse(session.getReadMessages().isEmpty());
+            // assertFalse(session.getUnreadMessages().isEmpty());
+            // assertFalse(session.getSentMessages().isEmpty());
+
             // session.emptyMessageBox();
             // assertTrue(myMessageBox.getUnreadMessages().isEmpty());
         } finally {

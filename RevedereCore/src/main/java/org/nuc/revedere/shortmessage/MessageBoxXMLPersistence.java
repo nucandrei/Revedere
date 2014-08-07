@@ -69,7 +69,7 @@ public class MessageBoxXMLPersistence implements MessageBoxPersistence {
     }
 
     public List<ShortMessage> getSentMessages(String messageBoxName) {
-        List<ShortMessage> sentMessagesForMessageBoxName = readMessages.get(messageBoxName);
+        List<ShortMessage> sentMessagesForMessageBoxName = sentMessages.get(messageBoxName);
         if (sentMessagesForMessageBoxName == null) {
             sentMessagesForMessageBoxName = new ArrayList<>();
             sentMessages.put(messageBoxName, sentMessagesForMessageBoxName);
@@ -87,6 +87,12 @@ public class MessageBoxXMLPersistence implements MessageBoxPersistence {
 
     private void loadData() {
         File messagesFile = new File(messageBoxPath);
+        if (!messagesFile.exists()) {
+            save();
+            LOGGER.info("Created persistence file");
+            return;
+        }
+        
         try {
             final Document document = new SAXBuilder().build(messagesFile);
             final Element rootNode = document.getRootElement();

@@ -97,7 +97,7 @@ public class UsersComposite extends Composite {
                         public void run() {
                             resetAllIconsToDefault(MESSAGE_TABLE_ROW, messages);
                             for (ShortMessage shortMessage : update.getUpdate()) {
-                                if (!shortMessage.isRead()) {
+                                if (!shortMessage.getSender().equals(currentSession.getCurrentUser()) && !shortMessage.isRead()) {
                                     itemsByUser.getValue(shortMessage.getSender()).setImage(MESSAGE_TABLE_ROW, newMessages);
                                 }
                             }
@@ -167,7 +167,7 @@ public class UsersComposite extends Composite {
                         viewStack.changeToMessageView(selectedUser);
                         return;
                     }
-                    
+
                     final Rectangle reviewRectangle = selectedItem.getBounds(REVIEW_TABLE_ROW);
                     if (reviewRectangle.contains(clickPoint)) {
                         // message button was pressed

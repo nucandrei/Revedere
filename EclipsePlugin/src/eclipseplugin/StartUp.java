@@ -1,5 +1,6 @@
 package eclipseplugin;
 
+import org.apache.log4j.BasicConfigurator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IStartup;
 
@@ -10,6 +11,7 @@ public class StartUp implements IStartup {
 
     @Override
     public void earlyStartup() {
+        BasicConfigurator.configure();
         final IPreferenceStore preferencePage = Activator.getDefault().getPreferenceStore();
         final boolean connectAtStartup = preferencePage.getBoolean(PreferenceConstants.CONNECT_AT_STARTUP_STRING);
         if (!connectAtStartup) {

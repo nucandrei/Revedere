@@ -2,10 +2,13 @@ package org.nuc.revedere.client;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.client.connector.MinaClient;
+import org.nuc.revedere.client.persistence.ShortMessagePersistence;
 import org.nuc.revedere.client.persistence.UsersHandler;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Response;
@@ -14,7 +17,6 @@ import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
 import org.nuc.revedere.core.messages.request.ReviewRequest;
-import org.nuc.revedere.core.messages.request.ShortMessageEmptyBoxRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageMarkAsReadRequest;
 import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
@@ -26,110 +28,73 @@ import org.nuc.revedere.review.Review;
 import org.nuc.revedere.review.ReviewData;
 import org.nuc.revedere.review.ReviewDocument;
 import org.nuc.revedere.review.ReviewState;
-import org.nuc.revedere.shortmessage.DoNothingMessageBoxPersistence;
-import org.nuc.revedere.shortmessage.MessageBox;
-import org.nuc.revedere.shortmessage.MessageBoxPersistence;
 import org.nuc.revedere.shortmessage.ShortMessage;
-import org.nuc.revedere.shortmessage.ShortMessageCollector;
-import org.nuc.revedere.util.Collector;
 import org.nuc.revedere.util.Collector.CollectorListener;
 
 public class RevedereSession {
+    private static final Logger LOGGER = Logger.getLogger(RevedereSession.class);
     private final MinaClient minaClient;
     private final User currentUser;
-    public final UsersHandler usersHandler;
-    private final ShortMessageCollector shortMessageCollector;
+    private final UsersHandler usersHandler;
+    private final ShortMessagePersistence shortMessagePersistence;
     private final ReviewCollector reviewCollector;
-    private final MessageBox clientMessageBox;
 
     public RevedereSession(MinaClient minaClient, String username) {
         this.minaClient = minaClient;
         this.currentUser = new User(username);
         this.usersHandler = new UsersHandler(currentUser);
-        this.shortMessageCollector = new ShortMessageCollector();
+        this.shortMessagePersistence = new ShortMessagePersistence(currentUser);
         this.reviewCollector = new ReviewCollector();
-        final MessageBoxPersistence persistence = new DoNothingMessageBoxPersistence();
-        this.clientMessageBox = new MessageBox(username, persistence);
-        this.shortMessageCollector.addListener(new CollectorListener<ShortMessageUpdate>() {
-            @Override
-            public void onUpdate(Collector<ShortMessageUpdate> source, ShortMessageUpdate update) {
-                clientMessageBox.addAll(update.getUpdate());
-            }
-        });
-
         initialize();
     }
 
     public void addListenerToUserCollector(CollectorListener<UserListUpdate> listener) {
         this.usersHandler.addListenerToChange(listener);
+        LOGGER.debug("Attached listener to user collector");
     }
 
     public void removeListenerFromUserCollector(CollectorListener<UserListUpdate> listener) {
         this.usersHandler.addListenerToChange(listener);
+        LOGGER.debug("Removed listener from user collector");
     }
 
     public String[] getUsers() {
         return usersHandler.getUsers();
     }
 
-    public void addListenerToShortMessageCollector(CollectorListener<ShortMessageUpdate> listener) {
-        this.shortMessageCollector.addListener(listener);
-    }
-
-    public void removeListenerFromShortMessageCollector(CollectorListener<ShortMessageUpdate> listener) {
-        this.shortMessageCollector.removeListener(listener);
-    }
-
-    public MessageBox getMessageBox() {
-        return clientMessageBox;
-    }
-
-    public void addListenerToReviewCollector(CollectorListener<ReviewUpdate> listener) {
-        this.reviewCollector.addListener(listener);
-    }
-
-    public void removeListenerFromReviewCollector(CollectorListener<ReviewUpdate> listener) {
-        this.reviewCollector.removeListener(listener);
-    }
-
-    public ReviewCollector getReviewCollector() {
-        return this.reviewCollector;
-    }
-
     public void sendMessage(User receiver, String content) {
         final long timestamp = System.currentTimeMillis();
         final ShortMessage shortMessage = new ShortMessage(currentUser, receiver, content, timestamp);
         this.minaClient.sendMessage(new ShortMessageSendRequest(shortMessage));
+        LOGGER.debug("Sent short message to " + receiver.getUsername());
     }
 
-    public void emptyMessageBox() {
-        final MinaRequestor<ShortMessageEmptyBoxRequest> requestor = new MinaRequestor<>(minaClient);
-        final Response<ShortMessageEmptyBoxRequest> response = requestor.request(new ShortMessageEmptyBoxRequest(currentUser));
-        if (response != null) {
-            clientMessageBox.removeAll();
-        }
+    public void addListenerToShortMessageCollector(CollectorListener<ShortMessageUpdate> listener) {
+        this.shortMessagePersistence.addListenerToChange(listener);
+        LOGGER.debug("Attached listener to short message collector");
     }
 
-    public List<ShortMessage> getUnreadMessages() {
-        return requestShortMessages(false, false, true);
+    public void removeListenerFromShortMessageCollector(CollectorListener<ShortMessageUpdate> listener) {
+        this.shortMessagePersistence.addListenerToChange(listener);
+        LOGGER.debug("Removed listener from short message collector");
     }
 
-    public List<ShortMessage> getReadMessages() {
-        return requestShortMessages(true, false, false);
+    public Set<ShortMessage> getMessagesForUser(User user) {
+        return this.shortMessagePersistence.getMessagesForUser(user);
     }
 
-    public List<ShortMessage> getSentMessages() {
-        return requestShortMessages(false, true, false);
+    public void addListenerToReviewCollector(CollectorListener<ReviewUpdate> listener) {
+        this.reviewCollector.addListener(listener);
+        LOGGER.debug("Attached listener to review collector");
     }
 
-    @SuppressWarnings("unchecked")
-    private List<ShortMessage> requestShortMessages(boolean read, boolean sent, boolean unread) {
-        final MinaRequestor<ShortMessageHistoricalRequest> requestor = new MinaRequestor<>(minaClient);
-        final Response<ShortMessageHistoricalRequest> response = requestor.request(new ShortMessageHistoricalRequest(currentUser, read, sent, unread));
-        if (response != null) {
-            return (List<ShortMessage>) response.getAttachment();
-        }
-        return Collections.emptyList();
+    public void removeListenerFromReviewCollector(CollectorListener<ReviewUpdate> listener) {
+        this.reviewCollector.removeListener(listener);
+        LOGGER.debug("Removed listener from review collector");
+    }
+
+    public ReviewCollector getReviewCollector() {
+        return this.reviewCollector;
     }
 
     @SuppressWarnings("unchecked")
@@ -179,26 +144,30 @@ public class RevedereSession {
                     final Response<UserListRequest> userListResponse = (Response<UserListRequest>) message;
                     final UserListUpdate userListUpdate = (UserListUpdate) userListResponse.getAttachment();
                     usersHandler.onUpdate(userListUpdate);
+                    LOGGER.debug("Received users update");
                     return;
                 } catch (Exception e) {
                     // ignore this exception
                 }
 
                 if (message instanceof ShortMessageUpdate) {
-                    shortMessageCollector.agregate((ShortMessageUpdate) message);
+                    shortMessagePersistence.onUpdate((ShortMessageUpdate) message);
+                    LOGGER.debug("Received short message update " + ((ShortMessageUpdate)message).getUpdate());
                     return;
                 }
 
                 if (message instanceof ReviewUpdate) {
                     reviewCollector.agregate((ReviewUpdate) message);
+                    LOGGER.debug("Received review update");
                     return;
                 }
             }
         });
-        this.clientMessageBox.addAll(this.getReadMessages());
-        this.clientMessageBox.addAll(this.getSentMessages());
-        this.clientMessageBox.addAll(this.getUnreadMessages());
 
+        final ShortMessageHistoricalRequest request = shortMessagePersistence.getInitialRequest();
+        final MinaRequestor<ShortMessageHistoricalRequest> requestor = new MinaRequestor<>(minaClient);
+
+        shortMessagePersistence.init(requestor.request(request));
         reviewCollector.addReviews(this.getReviews());
     }
 }
