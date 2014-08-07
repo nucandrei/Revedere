@@ -1,14 +1,13 @@
 package org.nuc.revedere.client;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.client.connector.MinaClient;
+import org.nuc.revedere.client.persistence.UsersHandler;
 import org.nuc.revedere.core.User;
-import org.nuc.revedere.core.UserCollector;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
@@ -38,7 +37,7 @@ import org.nuc.revedere.util.Collector.CollectorListener;
 public class RevedereSession {
     private final MinaClient minaClient;
     private final User currentUser;
-    private final UserCollector userCollector;
+    public final UsersHandler usersHandler;
     private final ShortMessageCollector shortMessageCollector;
     private final ReviewCollector reviewCollector;
     private final MessageBox clientMessageBox;
@@ -46,7 +45,7 @@ public class RevedereSession {
     public RevedereSession(MinaClient minaClient, String username) {
         this.minaClient = minaClient;
         this.currentUser = new User(username);
-        this.userCollector = new UserCollector();
+        this.usersHandler = new UsersHandler(currentUser);
         this.shortMessageCollector = new ShortMessageCollector();
         this.reviewCollector = new ReviewCollector();
         final MessageBoxPersistence persistence = new DoNothingMessageBoxPersistence();
@@ -62,26 +61,15 @@ public class RevedereSession {
     }
 
     public void addListenerToUserCollector(CollectorListener<UserListUpdate> listener) {
-        this.userCollector.addListener(listener);
+        this.usersHandler.addListenerToChange(listener);
     }
 
     public void removeListenerFromUserCollector(CollectorListener<UserListUpdate> listener) {
-        this.userCollector.removeListener(listener);
+        this.usersHandler.addListenerToChange(listener);
     }
 
     public String[] getUsers() {
-        final int noUsers = userCollector.getConnectedUsers().size() + userCollector.getDisconnectedUsers().size();
-        final List<String> users = new ArrayList<>(noUsers);
-        
-        for (User connectedUser : userCollector.getConnectedUsers()) {
-            users.add(connectedUser.getUsername());
-        }
-
-        for (User disconnectedUser : userCollector.getDisconnectedUsers()) {
-            users.add(disconnectedUser.getUsername());
-        }
-        
-        return users.toArray(new String[noUsers]);
+        return usersHandler.getUsers();
     }
 
     public void addListenerToShortMessageCollector(CollectorListener<ShortMessageUpdate> listener) {
@@ -190,8 +178,7 @@ public class RevedereSession {
                     @SuppressWarnings("unchecked")
                     final Response<UserListRequest> userListResponse = (Response<UserListRequest>) message;
                     final UserListUpdate userListUpdate = (UserListUpdate) userListResponse.getAttachment();
-                    userListUpdate.getUsersWhoWentOnline().remove(currentUser);
-                    userCollector.agregate(userListUpdate);
+                    usersHandler.onUpdate(userListUpdate);
                     return;
                 } catch (Exception e) {
                     // ignore this exception
