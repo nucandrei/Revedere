@@ -139,7 +139,7 @@ public class ReviewsComposite extends Composite {
                 }
                 reviewItems.clear();
 
-                for (Review review : revedereManager.getCurrentSession().getReviewCollector().getReviews(currentUser)) {
+                for (Review review : revedereManager.getCurrentSession().getReviews(currentUser)) {
                     reviewItems.put(createTableItem(review.getState().toString(), review.getReviewDocument().getSectionText(ReviewDocument.PROJECT_NAME_SECTION)), review);
                 }
                 viewStack.layout();

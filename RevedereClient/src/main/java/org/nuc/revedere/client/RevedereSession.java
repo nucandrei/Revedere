@@ -1,6 +1,5 @@
 package org.nuc.revedere.client;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -8,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.client.connector.MinaClient;
+import org.nuc.revedere.client.persistence.ReviewPersistence;
 import org.nuc.revedere.client.persistence.ShortMessagePersistence;
 import org.nuc.revedere.client.persistence.UsersHandler;
 import org.nuc.revedere.core.User;
@@ -37,14 +37,14 @@ public class RevedereSession {
     private final User currentUser;
     private final UsersHandler usersHandler;
     private final ShortMessagePersistence shortMessagePersistence;
-    private final ReviewCollector reviewCollector;
+    private final ReviewPersistence reviewPersistence;
 
     public RevedereSession(MinaClient minaClient, String username) {
         this.minaClient = minaClient;
         this.currentUser = new User(username);
         this.usersHandler = new UsersHandler(currentUser);
         this.shortMessagePersistence = new ShortMessagePersistence(currentUser);
-        this.reviewCollector = new ReviewCollector();
+        this.reviewPersistence = new ReviewPersistence(currentUser);
         initialize();
     }
 
@@ -84,27 +84,17 @@ public class RevedereSession {
     }
 
     public void addListenerToReviewCollector(CollectorListener<ReviewUpdate> listener) {
-        this.reviewCollector.addListener(listener);
+        this.reviewPersistence.addListenerToChange(listener);
         LOGGER.debug("Attached listener to review collector");
     }
 
     public void removeListenerFromReviewCollector(CollectorListener<ReviewUpdate> listener) {
-        this.reviewCollector.removeListener(listener);
+        this.reviewPersistence.addListenerToChange(listener);
         LOGGER.debug("Removed listener from review collector");
     }
-
-    public ReviewCollector getReviewCollector() {
-        return this.reviewCollector;
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Review> getReviews() {
-        final MinaRequestor<ReviewHistoricalRequest> requestor = new MinaRequestor<>(minaClient);
-        final Response<ReviewHistoricalRequest> response = requestor.request(new ReviewHistoricalRequest(currentUser));
-        if (response != null) {
-            return (List<Review>) response.getAttachment();
-        }
-        return Collections.emptyList();
+    
+    public List<Review> getReviews(User user) {
+        return this.reviewPersistence.getReviews(user);
     }
 
     public void markMessagesAsRead(List<ShortMessage> listToMark) {
@@ -152,22 +142,24 @@ public class RevedereSession {
 
                 if (message instanceof ShortMessageUpdate) {
                     shortMessagePersistence.onUpdate((ShortMessageUpdate) message);
-                    LOGGER.debug("Received short message update " + ((ShortMessageUpdate)message).getUpdate());
+                    LOGGER.debug("Received short message update " + ((ShortMessageUpdate) message).getUpdate());
                     return;
                 }
 
                 if (message instanceof ReviewUpdate) {
-                    reviewCollector.agregate((ReviewUpdate) message);
+                    reviewPersistence.onUpdate((ReviewUpdate) message);
                     LOGGER.debug("Received review update");
                     return;
                 }
             }
         });
 
-        final ShortMessageHistoricalRequest request = shortMessagePersistence.getInitialRequest();
-        final MinaRequestor<ShortMessageHistoricalRequest> requestor = new MinaRequestor<>(minaClient);
+        final ShortMessageHistoricalRequest shortMessageRequest = shortMessagePersistence.getInitialRequest();
+        final MinaRequestor<ShortMessageHistoricalRequest> shortMessageRequestor = new MinaRequestor<>(minaClient);
+        shortMessagePersistence.init(shortMessageRequestor.request(shortMessageRequest));
 
-        shortMessagePersistence.init(requestor.request(request));
-        reviewCollector.addReviews(this.getReviews());
+        final ReviewHistoricalRequest reviewRequest = reviewPersistence.getInitialRequest();
+        final MinaRequestor<ReviewHistoricalRequest> reviewRequestor = new MinaRequestor<>(minaClient);
+        reviewPersistence.init(reviewRequestor.request(reviewRequest));
     }
 }
