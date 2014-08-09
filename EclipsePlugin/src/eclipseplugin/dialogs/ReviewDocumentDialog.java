@@ -152,13 +152,14 @@ public class ReviewDocumentDialog extends Dialog {
                 project.open(nullProgressMonitor);
             }
 
+            for (String folderName : currentReview.getData().getFolders()) {
+                prepareFolder(project.getFolder(folderName));
+            }
+
             for (ReviewFile reviewFile : currentReview.getData().getReviewFiles()) {
                 final IFile file = project.getFile(reviewFile.getFileRelativePath());
                 final InputStream stream = new ByteArrayInputStream(reviewFile.getFileContent().getBytes(StandardCharsets.UTF_8));
                 if (!file.exists()) {
-                    if (file.getParent() instanceof IFolder) {
-                        prepareFolder((IFolder) file.getParent());
-                    }
                     file.create(stream, false, nullProgressMonitor);
 
                 } else {
@@ -174,11 +175,11 @@ public class ReviewDocumentDialog extends Dialog {
     }
 
     public void prepareFolder(IFolder folder) throws CoreException {
-        final IContainer parent = folder.getParent();
-        if (parent instanceof IFolder) {
-            prepareFolder((IFolder) parent);
-        }
         if (!folder.exists()) {
+            final IContainer parent = folder.getParent();
+            if (parent instanceof IFolder) {
+                prepareFolder((IFolder) parent);
+            }
             folder.create(false, false, null);
         }
     }
