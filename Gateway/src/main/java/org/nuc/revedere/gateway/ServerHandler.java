@@ -1,13 +1,16 @@
 package org.nuc.revedere.gateway;
 
+import org.apache.log4j.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.core.messages.Ping;
-import org.nuc.revedere.core.messages.ack.Acknowledgement;
+import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.ack.LoginAcknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.Request;
 import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
@@ -19,14 +22,28 @@ import org.nuc.revedere.core.messages.request.ShortMessageSendRequest;
 import org.nuc.revedere.core.messages.request.UnregisterRequest;
 
 public class ServerHandler extends IoHandlerAdapter {
+    private static final Logger LOGGER = Logger.getLogger(ServerHandler.class);
     private final GatewayListener listener;
+    private final MessageAuthorizationService authorizationService;
 
-    public ServerHandler(GatewayListener listener) {
+    public ServerHandler(GatewayListener listener, MessageAuthorizationService authorizationService) {
         this.listener = listener;
+        this.authorizationService = authorizationService;
     }
 
     @Override
     public void messageReceived(IoSession session, Object message) {
+        if (!authorizationService.isAllowed(session, message)) {
+            if (!(message instanceof Request)) {
+                LOGGER.warn("Received unwanted " + message.getClass() + " message");
+                return;
+            }
+            final Response<? extends Request> response = new Response<>((Request) message, false, "Illegal request");
+            session.write(response);
+            LOGGER.warn("Received illegal request : " + message.getClass());
+            return;
+        }
+
         if (message instanceof LoginRequest) {
             listener.onLoginRequest((LoginRequest) message, session);
             return;
@@ -70,11 +87,11 @@ public class ServerHandler extends IoHandlerAdapter {
         if (message instanceof ReviewMarkAsSeenRequest) {
             listener.onReviewMarkAsSeen((ReviewMarkAsSeenRequest) message, session);
         }
-        
+
         if (message instanceof ReviewUpdateRequest) {
             listener.onReviewUpdate((ReviewUpdateRequest) message, session);
         }
-        
+
         if (message instanceof ReviewHistoricalRequest) {
             listener.onReviewHistoricalRequest((ReviewHistoricalRequest) message, session);
         }
@@ -84,13 +101,8 @@ public class ServerHandler extends IoHandlerAdapter {
             return;
         }
 
-        try {
-            @SuppressWarnings("unchecked")
-            Acknowledgement<LoginRequest> acknowledgement = (Acknowledgement<LoginRequest>) message;
-            listener.onAcknowledgement(acknowledgement, session);
-            return;
-        } catch (ClassCastException e) {
-            // ignore this exception
+        if (message instanceof LoginAcknowledgement) {
+            listener.onAcknowledgement((LoginAcknowledgement) message, session);
         }
     }
 

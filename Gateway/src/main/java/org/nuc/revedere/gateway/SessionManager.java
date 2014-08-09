@@ -7,12 +7,25 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.mina.core.session.IoSession;
+import org.nuc.revedere.core.messages.ack.LoginAcknowledgement;
+import org.nuc.revedere.core.messages.request.LoginRequest;
+import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.Request;
+import org.nuc.revedere.core.messages.request.UnregisterRequest;
 import org.nuc.revedere.util.BidirectionMap;
 
-public class SessionManager {
+public class SessionManager implements MessageAuthorizationService {
     private final BidirectionMap<String, IoSession> connectedUsers = new BidirectionMap<>();
     private final Map<IoSession, String> awaitingAcknowledgement = new HashMap<>();
     private final Set<IoSession> idleConnections = new HashSet<>();
+
+    private final Set<Class<? extends Request>> requestsSpecificToNotLoggedInState = new HashSet<>();
+
+    public SessionManager() {
+        requestsSpecificToNotLoggedInState.add(LoginRequest.class);
+        requestsSpecificToNotLoggedInState.add(RegisterRequest.class);
+        requestsSpecificToNotLoggedInState.add(UnregisterRequest.class);
+    }
 
     public void setOnline(String user, IoSession activeSession) {
         connectedUsers.put(user, activeSession);
@@ -67,5 +80,14 @@ public class SessionManager {
 
     public void notePing(IoSession session) {
         idleConnections.remove(session);
+    }
+
+    @Override
+    public boolean isAllowed(IoSession session, Object request) {
+        if (awaitingAcknowledgement.containsKey(session)) {
+            return request instanceof LoginAcknowledgement;
+        }
+
+        return connectedUsers.containsValue(session) != requestsSpecificToNotLoggedInState.contains(request.getClass());
     }
 }

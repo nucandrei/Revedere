@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 import org.nuc.distry.service.DistryListener;
 import org.nuc.distry.service.Service;
 import org.nuc.revedere.core.messages.Response;
-import org.nuc.revedere.core.messages.ack.Acknowledgement;
+import org.nuc.revedere.core.messages.ack.LoginAcknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
@@ -43,7 +43,7 @@ public class UsersManager {
         usersHandler.logout(request);
     }
 
-    public void acknowledgeLogin(Acknowledgement<LoginRequest> ack) {
+    public void acknowledgeLogin(LoginAcknowledgement ack) {
         usersHandler.ack(ack);
     }
 
@@ -94,14 +94,11 @@ public class UsersManager {
                         supportService.sendMessage(Topics.USERS_RESPONSE_TOPIC, response);
                     }
 
-                    try {
-                        @SuppressWarnings("unchecked")
-                        Acknowledgement<LoginRequest> acknowledgement = (Acknowledgement<LoginRequest>) message;
+                    if (message instanceof LoginAcknowledgement) {
+                        final LoginAcknowledgement acknowledgement = (LoginAcknowledgement) message;
                         usersHandler.ack(acknowledgement);
-                        return;
-                    } catch (ClassCastException e) {
-                        // ignore this exception
                     }
+                    
                 } catch (Exception e) {
                     LOGGER.error("Caught exception while processing received message ", e);
                 }

@@ -10,7 +10,7 @@ import org.nuc.distry.service.messaging.ActiveMQAdapter;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Ping;
 import org.nuc.revedere.core.messages.Response;
-import org.nuc.revedere.core.messages.ack.Acknowledgement;
+import org.nuc.revedere.core.messages.ack.LoginAcknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
@@ -58,7 +58,7 @@ public class Gateway extends RevedereService {
             }
 
             @Override
-            public void onAcknowledgement(Acknowledgement<LoginRequest> acknowledgement, IoSession session) {
+            public void onAcknowledgement(LoginAcknowledgement acknowledgement, IoSession session) {
                 sessionManager.markReceivedAcknowledgement(session);
                 usersManager.acknowledgeLogin(acknowledgement);
             }
@@ -158,7 +158,7 @@ public class Gateway extends RevedereService {
 
             }
         };
-        new MinaServer(new ServerHandler(gatewayListener));
+        new MinaServer(new ServerHandler(gatewayListener, sessionManager));
 
         this.addMessageListener(Topics.SHORT_MESSAGE_TOPIC, new DistryListener() {
             @Override
@@ -188,7 +188,7 @@ public class Gateway extends RevedereService {
     private void writeResponse(IoSession session, Request request, Response<? extends Request> response) {
         if (response != null) {
             session.write(response);
-            
+
         } else {
             session.write(new Response<>(request, false, "Did not receive a response in timeout"));
         }

@@ -17,7 +17,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Response;
-import org.nuc.revedere.core.messages.ack.Acknowledgement;
+import org.nuc.revedere.core.messages.ack.LoginAcknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
@@ -114,7 +114,7 @@ public class UsersHandler {
         return new Response<>(request, false, AUTH_FAILED);
     }
 
-    public void ack(Acknowledgement<LoginRequest> possibleAcknowledgement) {
+    public void ack(LoginAcknowledgement possibleAcknowledgement) {
         final User correspondingUser = usersWaitingAcknowledgement.remove(possibleAcknowledgement.getResponse().getRequest());
         if (correspondingUser == null) {
             LOGGER.error("Received acknowledgement for not logged in user");
