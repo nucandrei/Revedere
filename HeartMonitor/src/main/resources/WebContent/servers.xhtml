@@ -53,6 +53,8 @@
 						<f:facet name="header">Actions</f:facet>
 						<h:commandButton value="Kill" type="submit"
 							action="#{page.killServer(service.serviceName)}" />
+						<h:commandButton value="Reset heartbeat" type="submit"
+							action="#{page.resetHeartbeat(service.serviceName)}" />
 					</h:column>
 				</h:dataTable>
 			</h:panelGroup>
@@ -85,6 +87,8 @@
 						<f:facet name="header">Actions</f:facet>
 						<h:commandButton value="Kill" type="submit"
 							action="#{page.killServer(service.serviceName)}" />
+						<h:commandButton value="Reset heartbeat" type="submit"
+							action="#{page.resetHeartbeat(service.serviceName)}" />
 					</h:column>
 				</h:dataTable>
 			</h:panelGroup>

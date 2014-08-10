@@ -14,6 +14,7 @@ import javax.jms.JMSException;
 import org.apache.log4j.Logger;
 import org.nuc.distry.monitor.ServiceHeartInfo;
 import org.nuc.distry.monitor.ServiceStatus;
+import org.nuc.distry.service.cmd.ResetHeartbeatCommand;
 import org.nuc.distry.service.cmd.StopCommand;
 import org.nuc.distry.service.hb.ServiceState;
 import org.nuc.revedere.heartmonitor.HeartMonitor;
@@ -21,7 +22,7 @@ import org.nuc.revedere.heartmonitor.ServiceHeartInfoListener;
 
 @ManagedBean(name = "page")
 @SessionScoped
-public class ServersPageBean implements Serializable, ServiceHeartInfoListener{
+public class ServersPageBean implements Serializable, ServiceHeartInfoListener {
     private static final Logger LOGGER = Logger.getLogger(ServersPageBean.class);
     private static final String CSS_CLASS_WARNING_SERVICE = "warningservice";
     private static final String CSS_CLASS_ERROR_SERVICE = "errorservice";
@@ -89,6 +90,15 @@ public class ServersPageBean implements Serializable, ServiceHeartInfoListener{
 
         } catch (JMSException e) {
             LOGGER.error("Could not send kill message", e);
+        }
+    }
+
+    public void resetHeartbeat(String serviceName) {
+        try {
+            this.heartMonitor.sendCommand(new ResetHeartbeatCommand(serviceName));
+
+        } catch (JMSException e) {
+            LOGGER.error("Could not send reset heartbeat message", e);
         }
     }
 
