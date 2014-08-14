@@ -32,9 +32,12 @@ public class UsersHandler {
     private static final String AUTH_FAILED = "Authentification failed";
     private static final String REGISTER_SUCCEDDED = "Register succedded";
     private static final String UNREGISTER_SUCCEDDED = "Unregister succedded";
+    private static final String ONLY_ADMINS_IN_HEARTMONITOR = "Only administrators are allowed in HeartMonitor";
 
+    private static final boolean NOT_ADMIN = false;
     private static final String USERS_FILE = "users.xml";
     private static final Logger LOGGER = Logger.getLogger(UsersHandler.class.getName());
+   
 
     private final Map<String, User> users = new HashMap<>();
     private final Set<User> connectedUsers = new HashSet<>();
@@ -57,12 +60,17 @@ public class UsersHandler {
         if (correspondingUser == null) {
             return new Response<>(request, false, USER_DOES_NOT_EXIST);
         }
+        
+        if (loginSource.equals(LoginRequest.FROM_HEARTMONITOR) && !correspondingUser.isAdmin()) {
+            return new Response<>(request, false, ONLY_ADMINS_IN_HEARTMONITOR);
+        }
 
         if (correspondingUser.matchesAuthInfo(authInfo)) {
             LOGGER.info(String.format("Authentification succedded for \"%s\"", username));
             usersWaitingAcknowledgement.put(request, correspondingUser);
             return new Response<>(request, true, AUTH_SUCCESS);
         }
+        
         LOGGER.info(String.format("Authentification failed for \"%s\"", username));
         return new Response<>(request, false, AUTH_FAILED);
     }
@@ -93,7 +101,7 @@ public class UsersHandler {
             return new Response<>(request, false, USER_ALREADY_EXISTS);
         }
 
-        users.put(username, new User(username, authInfo));
+        users.put(username, new User(username, authInfo, NOT_ADMIN));
         saveUsers();
         LOGGER.info(String.format("User \"%s\" registered succesfully", username));
         return new Response<>(request, true, REGISTER_SUCCEDDED);
@@ -152,6 +160,7 @@ public class UsersHandler {
             final Element userElement = new Element("user");
             userElement.setAttribute("username", user.getUsername());
             userElement.setAttribute("authinfo", user.getAuthInfo());
+            userElement.setAttribute("isAdmin", user.isAdmin() + "");
             rootElement.addContent(userElement);
         }
 
@@ -177,7 +186,8 @@ public class UsersHandler {
             for (Element e : rootNode.getChildren("user")) {
                 final String username = e.getAttributeValue("username");
                 final String authInfo = e.getAttributeValue("authinfo");
-                final User newUser = new User(username, authInfo);
+                final boolean isAdmin = Boolean.parseBoolean(e.getAttributeValue("isAdmin"));
+                final User newUser = new User(username, authInfo, isAdmin);
                 users.put(username, newUser);
                 disconnectedUsers.add(newUser);
                 LOGGER.info(String.format("Loaded user \"%s\" ", username));

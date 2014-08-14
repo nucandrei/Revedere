@@ -12,9 +12,10 @@ public class UserTest {
 
     @Test
     public void testUser() {
-        User user = new User(USERNAME, AUTH_INFO);
+        final User user = new User(USERNAME, AUTH_INFO, false);
         assertEquals(USERNAME, user.getUsername());
         assertTrue(user.matchesAuthInfo(AUTH_INFO));
         assertFalse(user.matchesAuthInfo(ANOTHER_AUTH_INFO));
+        assertFalse(user.isAdmin());
     }
 }

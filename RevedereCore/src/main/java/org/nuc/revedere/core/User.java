@@ -6,15 +6,18 @@ public class User implements Serializable {
     private static final long serialVersionUID = 1935328134263444764L;
     private final String username;
     private final String authInfo;
+    private final boolean isAdmin;
 
-    public User(String username, String authInfo) {
+    public User(String username, String authInfo, boolean isAdmin) {
         this.username = username;
         this.authInfo = authInfo;
+        this.isAdmin = isAdmin;
     }
 
     public User(String username) {
         this.username = username;
         this.authInfo = "";
+        this.isAdmin = false;
     }
 
     public String getUsername() {
@@ -30,7 +33,11 @@ public class User implements Serializable {
     }
 
     public User getCleanInstance() {
-        return new User(username, "");
+        return new User(username, "", false);
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
     }
 
     @Override
