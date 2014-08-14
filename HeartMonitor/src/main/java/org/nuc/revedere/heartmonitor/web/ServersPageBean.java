@@ -87,7 +87,8 @@ public class ServersPageBean implements Serializable, ServiceHeartInfoListener {
     public void killServer(String serviceName) {
         try {
             this.heartMonitor.sendCommand(new StopCommand(serviceName));
-
+            LOGGER.info("Sent kill message for service " + serviceName);
+            
         } catch (JMSException e) {
             LOGGER.error("Could not send kill message", e);
         }
@@ -96,7 +97,8 @@ public class ServersPageBean implements Serializable, ServiceHeartInfoListener {
     public void resetHeartbeat(String serviceName) {
         try {
             this.heartMonitor.sendCommand(new ResetHeartbeatCommand(serviceName));
-
+            LOGGER.info("Sent reset heartbeat message for service " + serviceName);
+            
         } catch (JMSException e) {
             LOGGER.error("Could not send reset heartbeat message", e);
         }
