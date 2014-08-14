@@ -40,7 +40,7 @@ public class ShortMessagePersistence {
 
     @SuppressWarnings("unchecked")
     public void init(Response<ShortMessageHistoricalRequest> response) {
-        if (response != null) {
+        if (response != null && response.isSuccessfull()) {
             final List<ShortMessage> shortMessages = (List<ShortMessage>) response.getAttachment();
             this.shortMessageCollector.agregate(new ShortMessageUpdate(shortMessages, currentUser));
             this.messageBox.addAll(shortMessages);
