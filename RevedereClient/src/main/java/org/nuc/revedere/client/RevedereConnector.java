@@ -14,8 +14,8 @@ public class RevedereConnector {
         this.minaClient = new MinaClient(address);
     }
 
-    public RevedereSession login(String username, String authInfo) throws Exception {
-        final LoginRequest loginRequest = new LoginRequest(username, authInfo);
+    public RevedereSession login(String username, String authInfo, String loginSource) throws Exception {
+        final LoginRequest loginRequest = new LoginRequest(username, authInfo, loginSource);
         final MinaRequestor<LoginRequest> requestor = new MinaRequestor<>(minaClient);
         final Response<LoginRequest> response = requestor.request(loginRequest);
         if (response.isSuccessfull()) {

@@ -51,7 +51,8 @@ public class UsersHandler {
     public Response<LoginRequest> login(LoginRequest request) {
         final String username = request.getUsername();
         final String authInfo = request.getAuthInfo();
-        LOGGER.info(String.format("Received login request from \"%s\"", username));
+        final String loginSource = request.getLoginSource();
+        LOGGER.info(String.format("Received login request for \"%s\" from \"%s\"", username, loginSource));
         final User correspondingUser = users.get(username);
         if (correspondingUser == null) {
             return new Response<>(request, false, USER_DOES_NOT_EXIST);

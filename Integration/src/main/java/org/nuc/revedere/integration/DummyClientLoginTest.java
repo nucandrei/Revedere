@@ -20,7 +20,7 @@ public class DummyClientLoginTest {
     @Test
     public void testLogin() throws Exception {
         final RevedereConnector revedereConnector = new RevedereConnector("127.0.0.1:6045");
-        final RevedereSession session = revedereConnector.login("user", "user");
+        final RevedereSession session = revedereConnector.login("user", "user", "Integration");
         try {
             final Container<UserListUpdate> expectedUpdateContainer = new Container<>();
             final CountDownLatch latch = new CountDownLatch(2);

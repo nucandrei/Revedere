@@ -21,7 +21,7 @@ public class TestClientConnectionOperations {
     @Test
     public void testTryLoginWithoutRegister() throws Exception {
         try {
-            revedereConnector.login(GENERATED_USERNAME, PASSWORD);
+            revedereConnector.login(GENERATED_USERNAME, PASSWORD, "Integration");
             fail();
         } catch (Exception e) {
             assertEquals("User does not exist", e.getMessage());

@@ -62,7 +62,7 @@ public class LoginPageBean implements Serializable {
         isLoggedIn = true;
 
         final JMSRequestor<LoginRequest> requestor = new JMSRequestor<>(heartMonitor);
-        final Response<LoginRequest> response = requestor.request(Topics.USERS_TOPIC, new LoginRequest(username, password));
+        final Response<LoginRequest> response = requestor.request(Topics.USERS_TOPIC, new LoginRequest(username, password, LoginRequest.FROM_HEARTMONITOR));
         if (response.isSuccessfull()) {
             return "servers?faces-redirect=true";
         } else {

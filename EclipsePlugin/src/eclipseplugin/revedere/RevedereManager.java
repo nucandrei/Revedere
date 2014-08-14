@@ -36,7 +36,7 @@ public class RevedereManager {
 
     public void login(String username, String password) throws Exception {
         verifyAPrioriConnector("No connection was established before login");
-        this.revedereSession = revedereConnector.login(username, password);
+        this.revedereSession = revedereConnector.login(username, password, "Eclipse");
         this.revedereSession.addListenerToReviewCollector(new CollectorListener<ReviewUpdate>() {
 
             @Override
