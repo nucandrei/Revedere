@@ -13,6 +13,7 @@ import org.nuc.revedere.client.persistence.UsersHandler;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Response;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
+import org.nuc.revedere.core.messages.request.ReviewDocumentRequest;
 import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
@@ -27,6 +28,7 @@ import org.nuc.revedere.core.messages.update.UserListUpdate;
 import org.nuc.revedere.review.Review;
 import org.nuc.revedere.review.ReviewData;
 import org.nuc.revedere.review.ReviewDocument;
+import org.nuc.revedere.review.ReviewDocumentSection;
 import org.nuc.revedere.review.ReviewState;
 import org.nuc.revedere.shortmessage.ShortMessage;
 import org.nuc.revedere.util.Collector.CollectorListener;
@@ -92,9 +94,13 @@ public class RevedereSession {
         this.reviewPersistence.addListenerToChange(listener);
         LOGGER.debug("Removed listener from review collector");
     }
-    
+
     public List<Review> getReviews(User user) {
         return this.reviewPersistence.getReviews(user);
+    }
+    
+    public Set<ReviewDocumentSection> getReviewDocumentSections() {
+        return reviewPersistence.getReviewDocumentSections();
     }
 
     public void markMessagesAsRead(List<ShortMessage> listToMark) {
@@ -161,5 +167,9 @@ public class RevedereSession {
         final ReviewHistoricalRequest reviewRequest = reviewPersistence.getInitialRequest();
         final MinaRequestor<ReviewHistoricalRequest> reviewRequestor = new MinaRequestor<>(minaClient);
         reviewPersistence.init(reviewRequestor.request(reviewRequest));
+
+        final ReviewDocumentRequest reviewDocumentRequest = new ReviewDocumentRequest();
+        final MinaRequestor<ReviewDocumentRequest> reviewMinaRequestor = new MinaRequestor<>(minaClient);
+        reviewPersistence.setReviewDocumentSections(reviewMinaRequestor.request(reviewDocumentRequest));
     }
 }

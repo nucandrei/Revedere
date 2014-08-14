@@ -5,6 +5,7 @@ import org.nuc.revedere.core.messages.ack.LoginAcknowledgement;
 import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
+import org.nuc.revedere.core.messages.request.ReviewDocumentRequest;
 import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
@@ -47,4 +48,6 @@ public interface GatewayListener {
     public void onPing(IoSession session);
 
     public void onReviewHistoricalRequest(ReviewHistoricalRequest message, IoSession session);
+    
+    public void onReviewDocumentRequest(ReviewDocumentRequest message, IoSession session);
 }

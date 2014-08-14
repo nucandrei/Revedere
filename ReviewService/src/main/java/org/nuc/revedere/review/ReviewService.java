@@ -1,17 +1,25 @@
 package org.nuc.revedere.review;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.jms.JMSException;
 
 import org.apache.log4j.Logger;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.nuc.distry.service.DistryListener;
 import org.nuc.distry.service.ServiceConfiguration;
+import org.nuc.distry.service.hb.ServiceState;
 import org.nuc.distry.service.messaging.ActiveMQAdapter;
 import org.nuc.revedere.core.User;
 import org.nuc.revedere.core.messages.Response;
+import org.nuc.revedere.core.messages.request.ReviewDocumentRequest;
 import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
@@ -22,13 +30,24 @@ import org.nuc.revedere.service.core.SupervisorTopics;
 import org.nuc.revedere.service.core.Topics;
 
 public class ReviewService extends RevedereService {
+    private static final String FAILED_TO_LOAD_REVIEW_DOCUMENT = "Failed to load review document";
     private static final Logger LOGGER = Logger.getLogger(ReviewService.class);
     private final static String REVIEW_SERVICE_NAME = "ReviewService";
     private final ReviewManager reviewManager = new ReviewManager();
+    private Set<ReviewDocumentSection> reviewDocumentSections = new HashSet<>();
 
     public ReviewService(ServiceConfiguration serviceConfiguration) throws Exception {
         super(REVIEW_SERVICE_NAME, serviceConfiguration);
         super.start(true);
+        
+        try {
+            loadReviewDocumentSections();
+            
+        } catch (Exception e) {
+            LOGGER.error(FAILED_TO_LOAD_REVIEW_DOCUMENT, e);
+            setServiceComment(FAILED_TO_LOAD_REVIEW_DOCUMENT, false);
+            setServiceState(ServiceState.ERROR, true);
+        }
 
         addMessageListener(Topics.REVIEW_REQUEST_TOPIC, new DistryListener() {
             public void onMessage(Serializable message) {
@@ -89,12 +108,32 @@ public class ReviewService extends RevedereService {
                         return;
                     }
 
+                    if (message instanceof ReviewDocumentRequest) {
+                        final ReviewDocumentRequest request = (ReviewDocumentRequest) message;
+                        final Response<ReviewDocumentRequest> response = new Response<>(request, true, "");
+                        response.attach((Serializable) reviewDocumentSections);
+                        sendMessage(Topics.REVIEW_RESPONSE_TOPIC, response);
+                        LOGGER.info("Sent review document sections at request");
+                    }
+
                 } catch (Exception e) {
                     LOGGER.error("Caught exception while processing received message", e);
                 }
 
             }
         });
+    }
+
+    private void loadReviewDocumentSections() throws JDOMException, IOException {
+        final Document reviewDocumentTemplate = loadXMLDocument("reviewdocument.xml");
+        final Element fieldsElement = reviewDocumentTemplate.getRootElement().getChild("fields");
+        for (Element fieldElement : fieldsElement.getChildren("field")) {
+            final String name = fieldElement.getChildText("name");
+            final boolean mandatory = Boolean.valueOf(fieldElement.getChildText("mandatory"));
+            final String initialValue = fieldElement.getChildText("initialValue");
+            final int noLines = Integer.parseInt(fieldElement.getChildText("noLines"));
+            reviewDocumentSections.add(new ReviewDocumentSection(name, mandatory, initialValue, noLines));
+        }
     }
 
     private void notifyActors(Review review) throws JMSException {
@@ -112,7 +151,7 @@ public class ReviewService extends RevedereService {
             final String serverAddress = parseArguments(args);
             final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(new ActiveMQAdapter(serverAddress), true, 10000, SupervisorTopics.HEARTBEAT_TOPIC, true, SupervisorTopics.COMMAND_TOPIC, SupervisorTopics.PUBLISH_TOPIC);
             new ReviewService(serviceConfiguration);
-            
+
         } catch (Exception e) {
             LOGGER.error("Failed to start review service", e);
         }

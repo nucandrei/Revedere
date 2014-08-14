@@ -11,6 +11,7 @@ import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
 import org.nuc.revedere.core.messages.request.Request;
+import org.nuc.revedere.core.messages.request.ReviewDocumentRequest;
 import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
@@ -66,34 +67,42 @@ public class ServerHandler extends IoHandlerAdapter {
 
         if (message instanceof ShortMessageSendRequest) {
             listener.onShortMessageSendRequest((ShortMessageSendRequest) message, session);
+            return;
         }
 
         if (message instanceof ShortMessageEmptyBoxRequest) {
             listener.onShortMessageEmptyBoxRequest((ShortMessageEmptyBoxRequest) message, session);
+            return;
         }
 
         if (message instanceof ShortMessageHistoricalRequest) {
             listener.onShortMessageHistoricalRequest((ShortMessageHistoricalRequest) message, session);
+            return;
         }
 
         if (message instanceof ShortMessageMarkAsReadRequest) {
             listener.onShortMessageMarkAsRead((ShortMessageMarkAsReadRequest) message, session);
+            return;
         }
 
         if (message instanceof ReviewRequest) {
             listener.onRequestReview((ReviewRequest) message, session);
+            return;
         }
 
         if (message instanceof ReviewMarkAsSeenRequest) {
             listener.onReviewMarkAsSeen((ReviewMarkAsSeenRequest) message, session);
+            return;
         }
 
         if (message instanceof ReviewUpdateRequest) {
             listener.onReviewUpdate((ReviewUpdateRequest) message, session);
+            return;
         }
 
         if (message instanceof ReviewHistoricalRequest) {
             listener.onReviewHistoricalRequest((ReviewHistoricalRequest) message, session);
+            return;
         }
 
         if (message instanceof Ping) {
@@ -103,6 +112,12 @@ public class ServerHandler extends IoHandlerAdapter {
 
         if (message instanceof LoginAcknowledgement) {
             listener.onAcknowledgement((LoginAcknowledgement) message, session);
+            return;
+        }
+
+        if (message instanceof ReviewDocumentRequest) {
+            listener.onReviewDocumentRequest((ReviewDocumentRequest) message, session);
+            return;
         }
     }
 

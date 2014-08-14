@@ -15,6 +15,7 @@ import org.nuc.revedere.core.messages.request.LoginRequest;
 import org.nuc.revedere.core.messages.request.LogoutRequest;
 import org.nuc.revedere.core.messages.request.RegisterRequest;
 import org.nuc.revedere.core.messages.request.Request;
+import org.nuc.revedere.core.messages.request.ReviewDocumentRequest;
 import org.nuc.revedere.core.messages.request.ReviewHistoricalRequest;
 import org.nuc.revedere.core.messages.request.ReviewMarkAsSeenRequest;
 import org.nuc.revedere.core.messages.request.ReviewUpdateRequest;
@@ -156,6 +157,13 @@ public class Gateway extends RevedereService {
                 final Response<ReviewHistoricalRequest> response = requestor.request(Topics.REVIEW_TOPIC, request);
                 writeResponse(session, request, response);
 
+            }
+
+            @Override
+            public void onReviewDocumentRequest(ReviewDocumentRequest request, IoSession session) {
+                final JMSRequestor<ReviewDocumentRequest> requestor = new JMSRequestor<>(Gateway.this);
+                final Response<ReviewDocumentRequest> response = requestor.request(Topics.REVIEW_TOPIC, request);
+                writeResponse(session, request, response);
             }
         };
         new MinaServer(new ServerHandler(gatewayListener, sessionManager));
