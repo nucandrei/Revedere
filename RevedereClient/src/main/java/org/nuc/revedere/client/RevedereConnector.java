@@ -25,8 +25,8 @@ public class RevedereConnector {
         throw new Exception(response.getMessage());
     }
 
-    public String register(String username, String authInfo) {
-        final RegisterRequest registerRequest = new RegisterRequest(username, authInfo);
+    public String register(String username, String authInfo, String realName, boolean publishRealName, String emailAddress, boolean allowEmails) {
+        final RegisterRequest registerRequest = new RegisterRequest(username, authInfo, realName, publishRealName, emailAddress, allowEmails);
         final MinaRequestor<RegisterRequest> requestor = new MinaRequestor<>(minaClient);
         final Response<RegisterRequest> response = requestor.request(registerRequest);
         return response.getMessage();

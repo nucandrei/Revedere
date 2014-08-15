@@ -58,9 +58,9 @@ public class RevedereManager {
         }
     }
 
-    public String register(String username, String password) throws Exception {
+    public String register(String username, String password, String realName, boolean publishRealName, String emailAddress, boolean allowEmails) throws Exception {
         verifyAPrioriConnector("No connection was established before register");
-        return revedereConnector.register(username, password);
+        return revedereConnector.register(username, password, realName, publishRealName, emailAddress, allowEmails);
     }
 
     public String unregister(String username, String password) throws Exception {

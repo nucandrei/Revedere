@@ -6,6 +6,7 @@ import java.util.Set;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.*;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -19,6 +20,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
 
 import eclipseplugin.Activator;
+import eclipseplugin.dialogs.RegisterDialog;
 import eclipseplugin.revedere.RevedereManager;
 
 public class RevederePreferences extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
@@ -125,9 +127,15 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
                 final String username = usernameFieldEditor.getStringValue();
                 final String password = passwordFieldEditor.getStringValue();
                 final String gateway = gatewayFieldEditor.getStringValue();
+                final RegisterDialog registerDialog = new RegisterDialog(RevederePreferences.this.getShell(), password);
+                registerDialog.open();
+                if (registerDialog.getReturnCode() == Window.CANCEL) {
+                    return;
+                }
+                
                 try {
                     establishConnectionIfMissing(gateway);
-                    final String response = register(username, password);
+                    final String response = register(username, password, registerDialog.getRealName(), registerDialog.publishRealName(), registerDialog.getEmailAddress(), registerDialog.allowEmails());
                     setInfoMessage(response);
                 } catch (Exception exception) {
                     setError(exception.getMessage());
@@ -229,7 +237,7 @@ public class RevederePreferences extends FieldEditorPreferencePage implements IW
         revedereManager.login(username, password);
     }
 
-    protected String register(String username, String password) throws Exception {
-        return revedereManager.register(username, password);
+    protected String register(String username, String password, String realName, boolean publishRealName, String emailAddress, boolean allowEmails) throws Exception {
+        return revedereManager.register(username, password, realName, publishRealName, emailAddress, allowEmails);
     }
 }

@@ -43,6 +43,12 @@ public class UsersHandler {
 
     private final Map<String, User> users = new HashMap<>();
     private final Map<User, String> salts = new HashMap<>();
+
+    private final Map<User, String> realNames = new HashMap<>();
+    private final Map<User, Boolean> publishRealNames = new HashMap<>();
+    private final Map<User, String> emails = new HashMap<>();
+    private final Map<User, Boolean> allowEmails = new HashMap<>();
+
     private final Set<User> connectedUsers = new HashSet<>();
     private final Set<User> disconnectedUsers = new HashSet<>();
     private final Map<LoginRequest, User> usersWaitingAcknowledgement = new HashMap<>();
@@ -109,6 +115,10 @@ public class UsersHandler {
         final User user = new User(username, hashedPassword, NOT_ADMIN);
         users.put(username, user);
         salts.put(user, salt);
+        emails.put(user, request.getEmailAddress());
+        allowEmails.put(user, request.allowEmails());
+        realNames.put(user, request.getRealName());
+        publishRealNames.put(user, request.publishRealName());
 
         saveUsers();
         LOGGER.info(String.format("User \"%s\" registered succesfully", username));
@@ -178,8 +188,21 @@ public class UsersHandler {
             final Element securityElement = new Element("security");
             securityElement.addContent(authinfoElement);
             securityElement.addContent(saltElement);
-
             userElement.addContent(securityElement);
+
+            final Element realNameElement = new Element("realName");
+            realNameElement.setText(realNames.get(user));
+            realNameElement.setAttribute("publish", publishRealNames.get(user).toString());
+
+            final Element emailElement = new Element("email");
+            emailElement.setText(emails.get(user));
+            emailElement.setAttribute("allow", allowEmails.get(user).toString());
+
+            final Element detailsElement = new Element("details");
+            detailsElement.addContent(realNameElement);
+            detailsElement.addContent(emailElement);
+            userElement.addContent(detailsElement);
+
             rootElement.addContent(userElement);
         }
 
@@ -210,9 +233,20 @@ public class UsersHandler {
                 final String authInfo = securityElement.getChildText("digest");
                 final String salt = securityElement.getChildText("salt");
 
+                final Element detailsElement = e.getChild("details");
+                final String realName = detailsElement.getChildText("realName");
+                final boolean publishRealName = Boolean.parseBoolean(detailsElement.getChild("realName").getAttributeValue("publish"));
+
+                final String emailAddress = detailsElement.getChildText("email");
+                final boolean allowEmails = Boolean.parseBoolean(detailsElement.getChild("email").getAttributeValue("allow"));
+
                 final User newUser = new User(username, authInfo, isAdmin);
                 users.put(username, newUser);
                 salts.put(newUser, salt);
+                realNames.put(newUser, realName);
+                publishRealNames.put(newUser, publishRealName);
+                emails.put(newUser, emailAddress);
+                this.allowEmails.put(newUser, allowEmails);
                 disconnectedUsers.add(newUser);
                 LOGGER.info(String.format("Loaded user \"%s\" ", username));
             }

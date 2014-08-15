@@ -8,9 +8,10 @@ import org.nuc.revedere.client.RevedereConnector;
 
 public class TestClientConnectionOperations {
 
-    private final int TEST_PORT = 6045;
-    private final String GENERATED_USERNAME = String.format("user_%d", System.currentTimeMillis());
-    private final String PASSWORD = "p@ssW0rD";
+    private static final int TEST_PORT = 6045;
+    private static final String GENERATED_USERNAME = String.format("user_%d", System.currentTimeMillis());
+    private static final String PASSWORD = "p@ssW0rD";
+    private static final String EMAIL_ADDRESS = "test@test.com";
     private RevedereConnector revedereConnector;
 
     @Before
@@ -30,7 +31,7 @@ public class TestClientConnectionOperations {
 
     @Test
     public void testRegisterLogin() {
-        final String response = revedereConnector.register(GENERATED_USERNAME, PASSWORD);
+        final String response = revedereConnector.register(GENERATED_USERNAME, PASSWORD, GENERATED_USERNAME, true, EMAIL_ADDRESS, true);
         assertEquals("Register succedded", response);
         removeUser(GENERATED_USERNAME, PASSWORD);
     }
