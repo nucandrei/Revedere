@@ -69,7 +69,7 @@ public class UsersComposite extends Composite {
                             for (User onlineUser : collector.getCurrentState().getUsersWhoWentOnline()) {
                                 TableItem tableItem = itemsByUser.getValue(onlineUser);
                                 if (tableItem == null) {
-                                    tableItem = createTableItem(table, onlineUser.getUsername());
+                                    tableItem = createTableItem(table, onlineUser.getName());
                                     itemsByUser.put(onlineUser, tableItem);
                                 }
                                 tableItem.setImage(0, onlineImage);
@@ -78,7 +78,7 @@ public class UsersComposite extends Composite {
                             for (User offlineUser : collector.getCurrentState().getUsersWhoWentOffline()) {
                                 TableItem tableItem = itemsByUser.getValue(offlineUser);
                                 if (tableItem == null) {
-                                    tableItem = createTableItem(table, offlineUser.getUsername());
+                                    tableItem = createTableItem(table, offlineUser.getName());
                                     itemsByUser.put(offlineUser, tableItem);
                                 }
                                 tableItem.setImage(0, offlineImage);

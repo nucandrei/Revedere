@@ -111,7 +111,7 @@ public class ReviewsComposite extends Composite {
             this.currentUser = user;
             updateReviews();
         }
-        this.usernameLabel.setText(user.getUsername());
+        this.usernameLabel.setText(user.getName());
         addListenerOnReviewUpdateIfMissing();
     }
 

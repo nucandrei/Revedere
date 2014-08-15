@@ -35,11 +35,11 @@ public class UsersPageBean implements Serializable, CollectorListener<UserListUp
         final int arraySize = connectedUsers.size() + disconnectedUsers.size();
         final List<UserLine> list = new ArrayList<>(arraySize);
         for (User user : connectedUsers) {
-            list.add(new UserLine(user.getUsername(), true));
+            list.add(new UserLine(user.getName(), true));
         }
 
         for (User user : disconnectedUsers) {
-            list.add(new UserLine(user.getUsername(), false));
+            list.add(new UserLine(user.getName(), false));
         }
 
         Collections.sort(list);

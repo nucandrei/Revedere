@@ -2,22 +2,22 @@
 <users>
   <user username="admin" isAdmin="true">
     <security>
-      <digest>RzSrTNuNhWupKPLfTBOf/iz5ch/dAT33g77IuxThMVg+NWmgWZ1vmXDg3BsTdbo5</digest>
-      <salt>N2QyN2VmYzItZTQ4Yi00NTZhLWE4ODAtNWE3MzA5YWUxYzdk</salt>
+      <digest>9TP4Lo0kxpX5gzm6fvQT8Ezrwg97zVQYQI/k7yOHRMa2ZZE2fEsKXx8QwD45KIqf</digest>
+      <salt>Zjk1N2E0NTEtOGM3Ni00YTRhLWFmMjAtYzM1YjI4ZGEwYjky</salt>
     </security>
     <details>
-      <realName publish="false">Admin</realName>
+      <realName publish="false">admin</realName>
       <email allow="false">admin@revedere.com</email>
     </details>
   </user>
   <user username="user" isAdmin="false">
     <security>
-      <digest>AH6qPRr/Knb9mHwGAoZMHq6Py2EGqrjGnBiGr7kJx5L88cLsl4sPsO4mee/sOCSd</digest>
-      <salt>Y2VmOWFiMmEtMDJkNC00ZDJiLWFiNmQtYzI1OWM2M2I0M2Zm</salt>
+      <digest>FMbVmvtoQ0WER5l6kc42bV9R9fbv3d9IZReHFjs5X/AY56mtG2JR51B9bFugZwZL</digest>
+      <salt>ZTYyMThkMjgtZDdkMS00YjYyLTg1NjQtMmNlMDNkYjllNTQ3</salt>
     </security>
     <details>
       <realName publish="true">User</realName>
-      <email allow="true">revedere@revedere.com</email>
+      <email allow="true">user@revedere.com</email>
     </details>
   </user>
 </users>

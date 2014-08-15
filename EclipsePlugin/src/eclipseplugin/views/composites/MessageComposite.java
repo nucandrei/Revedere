@@ -89,9 +89,8 @@ public class MessageComposite extends Composite {
         }
 
         this.currentUser = user;
-        this.userNameLabel.setText(user.getUsername());
+        this.userNameLabel.setText(user.getName());
         addListenerOnShortMessageUpdateIfMissing();
-
     }
 
     private void addListenerOnShortMessageUpdateIfMissing() {

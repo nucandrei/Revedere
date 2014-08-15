@@ -43,10 +43,9 @@ public class UsersHandler {
 
     private final Map<String, User> users = new HashMap<>();
     private final Map<User, String> salts = new HashMap<>();
-
-    private final Map<User, String> realNames = new HashMap<>();
-    private final Map<User, Boolean> publishRealNames = new HashMap<>();
     private final Map<User, String> emails = new HashMap<>();
+    
+    private final Map<User, Boolean> publishRealNames = new HashMap<>();
     private final Map<User, Boolean> allowEmails = new HashMap<>();
 
     private final Set<User> connectedUsers = new HashSet<>();
@@ -104,6 +103,7 @@ public class UsersHandler {
     public Response<RegisterRequest> register(RegisterRequest request) {
         final String username = request.getUsername();
         final String authInfo = request.getAuthInfo();
+        final String realName = request.getRealName();
         LOGGER.info(String.format("Received register request from \"%s\"", username));
         if (users.containsKey(username)) {
             LOGGER.info(String.format("User \"%s\" is already taken", username));
@@ -112,12 +112,11 @@ public class UsersHandler {
 
         final String salt = generateSalt();
         final String hashedPassword = digestPassword(authInfo, salt);
-        final User user = new User(username, hashedPassword, NOT_ADMIN);
+        final User user = new User(username, hashedPassword, realName, NOT_ADMIN);
         users.put(username, user);
         salts.put(user, salt);
         emails.put(user, request.getEmailAddress());
         allowEmails.put(user, request.allowEmails());
-        realNames.put(user, request.getRealName());
         publishRealNames.put(user, request.publishRealName());
 
         saveUsers();
@@ -157,11 +156,11 @@ public class UsersHandler {
         final Set<User> onlineUsers = new HashSet<>();
         final Set<User> offlineUsers = new HashSet<>();
         for (User user : connectedUsers) {
-            onlineUsers.add(user.getCleanInstance());
+            onlineUsers.add(user.getCleanInstance(publishRealNames.get(user)));
         }
 
         for (User user : disconnectedUsers) {
-            offlineUsers.add(user.getCleanInstance());
+            offlineUsers.add(user.getCleanInstance(publishRealNames.get(user)));
         }
 
         final UserListUpdate userListUpdate = new UserListUpdate(false, onlineUsers, offlineUsers);
@@ -191,7 +190,7 @@ public class UsersHandler {
             userElement.addContent(securityElement);
 
             final Element realNameElement = new Element("realName");
-            realNameElement.setText(realNames.get(user));
+            realNameElement.setText(user.getRealName());
             realNameElement.setAttribute("publish", publishRealNames.get(user).toString());
 
             final Element emailElement = new Element("email");
@@ -240,10 +239,9 @@ public class UsersHandler {
                 final String emailAddress = detailsElement.getChildText("email");
                 final boolean allowEmails = Boolean.parseBoolean(detailsElement.getChild("email").getAttributeValue("allow"));
 
-                final User newUser = new User(username, authInfo, isAdmin);
+                final User newUser = new User(username, authInfo, realName, isAdmin);
                 users.put(username, newUser);
                 salts.put(newUser, salt);
-                realNames.put(newUser, realName);
                 publishRealNames.put(newUser, publishRealName);
                 emails.put(newUser, emailAddress);
                 this.allowEmails.put(newUser, allowEmails);

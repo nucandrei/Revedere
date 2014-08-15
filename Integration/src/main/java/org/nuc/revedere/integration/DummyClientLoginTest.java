@@ -34,7 +34,7 @@ public class DummyClientLoginTest {
 
             latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
             assertNotNull(expectedUpdateContainer.getContent());
-            assertTrue(expectedUpdateContainer.getContent().getUsersWhoWentOnline().contains(new User("user", "user", false)));
+            assertTrue(expectedUpdateContainer.getContent().getUsersWhoWentOnline().contains(new User("user", "user", "user", false)));
 
             // MessageBox myMessageBox = session.getMessageBox();
             // Thread.sleep(1000);
