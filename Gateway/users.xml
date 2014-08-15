@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <users>
-  <user username="admin" authinfo="admin" isAdmin="true" />
-  <user username="user" authinfo="user" isAdmin="false" />
+  <user username="admin" isAdmin="true">
+    <security>
+      <digest>7nVRzvppve7iwnjhUgRCSAHCjyiVJwXDsuwyWIQMqRFFwiOGyW9051mGGdn/o1Vi</digest>
+      <salt>OWFhOGVlODctMzg3NC00YjM4LTk3YTQtMzU3ZDhkZjU4NmI3</salt>
+    </security>
+  </user>
+  <user username="user" isAdmin="false">
+    <security>
+      <digest>TRyVoN/0nKBeRL90DsPRs9DU+Bv59HI10d0iROvcD9JoY0WLYpe71SWVe50JSIFf</digest>
+      <salt>YWZjNzhjY2ItZmE5OS00ZTMyLWI2YTQtNDFmOWZmNmUzN2Fk</salt>
+    </security>
+  </user>
 </users>
