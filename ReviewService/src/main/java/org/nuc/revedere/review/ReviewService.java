@@ -33,21 +33,23 @@ public class ReviewService extends RevedereService {
     private static final String FAILED_TO_LOAD_REVIEW_DOCUMENT = "Failed to load review document";
     private static final Logger LOGGER = Logger.getLogger(ReviewService.class);
     private final static String REVIEW_SERVICE_NAME = "ReviewService";
-    private final ReviewManager reviewManager = new ReviewManager();
+    private final ReviewManager reviewManager;
     private Set<ReviewDocumentSection> reviewDocumentSections = new HashSet<>();
 
     public ReviewService(ServiceConfiguration serviceConfiguration) throws Exception {
         super(REVIEW_SERVICE_NAME, serviceConfiguration);
         super.start(true);
-        
+
         try {
             loadReviewDocumentSections();
-            
+
         } catch (Exception e) {
             LOGGER.error(FAILED_TO_LOAD_REVIEW_DOCUMENT, e);
             setServiceComment(FAILED_TO_LOAD_REVIEW_DOCUMENT, false);
             setServiceState(ServiceState.ERROR, true);
         }
+
+        this.reviewManager = new ReviewManager(new ReviewDocumentSectionsManager(reviewDocumentSections));
 
         addMessageListener(Topics.REVIEW_REQUEST_TOPIC, new DistryListener() {
             public void onMessage(Serializable message) {
@@ -102,9 +104,10 @@ public class ReviewService extends RevedereService {
                     if (message instanceof ReviewHistoricalRequest) {
                         final ReviewHistoricalRequest request = (ReviewHistoricalRequest) message;
                         final Response<ReviewHistoricalRequest> response = new Response<>(request, true, "");
-                        response.attach((Serializable) reviewManager.getReviews(request.getUser()));
+                        final List<Review> reviews = reviewManager.getReviews(request.getUser(), request.getFromReviewIndex());
+                        response.attach((Serializable) reviews);
                         sendMessage(Topics.REVIEW_RESPONSE_TOPIC, response);
-                        LOGGER.info(String.format("Sent all reviews for user %s", request.getUser()));
+                        LOGGER.info(String.format("Sent reviews for user %s from index %s (%d)", request.getUser(), request.getFromReviewIndex(), reviews.size()));
                         return;
                     }
 
@@ -125,6 +128,9 @@ public class ReviewService extends RevedereService {
     }
 
     private void loadReviewDocumentSections() throws JDOMException, IOException {
+        reviewDocumentSections.add(ReviewDocument.PROJECT_NAME_SECTION);
+        reviewDocumentSections.add(ReviewDocument.USER_SECTION);
+
         final Document reviewDocumentTemplate = loadXMLDocument("reviewdocument.xml");
         final Element fieldsElement = reviewDocumentTemplate.getRootElement().getChild("fields");
         for (Element fieldElement : fieldsElement.getChildren("field")) {

@@ -15,11 +15,15 @@ public class Review implements Serializable {
     private final ReviewDocument reviewDocument;
 
     public Review(User sourceUser, User destinationUser, ReviewData reviewData, ReviewDocument reviewDocument, String reviewID) {
+        this(sourceUser, destinationUser, reviewData, reviewDocument, reviewID, ReviewState.REQUEST);
+    }
+
+    public Review(User sourceUser, User destinationUser, ReviewData reviewData, ReviewDocument reviewDocument, String reviewID, ReviewState reviewState) {
         this.sourceUser = sourceUser;
         this.destinationUser = destinationUser;
         this.reviewData = reviewData;
         this.reviewID = reviewID;
-        this.reviewState = ReviewState.REQUEST;
+        this.reviewState = reviewState;
         this.reviewDocument = reviewDocument;
     }
 

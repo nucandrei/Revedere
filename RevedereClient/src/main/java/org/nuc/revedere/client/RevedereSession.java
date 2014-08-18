@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.nuc.revedere.client.connector.MinaClient;
-import org.nuc.revedere.client.persistence.ReviewPersistence;
+import org.nuc.revedere.client.persistence.ReviewClientPersistence;
 import org.nuc.revedere.client.persistence.ShortMessagePersistence;
 import org.nuc.revedere.client.persistence.UsersHandler;
 import org.nuc.revedere.core.User;
@@ -39,14 +39,14 @@ public class RevedereSession {
     private final User currentUser;
     private final UsersHandler usersHandler;
     private final ShortMessagePersistence shortMessagePersistence;
-    private final ReviewPersistence reviewPersistence;
+    private final ReviewClientPersistence reviewPersistence;
 
     public RevedereSession(MinaClient minaClient, String username) {
         this.minaClient = minaClient;
         this.currentUser = new User(username);
         this.usersHandler = new UsersHandler(currentUser);
         this.shortMessagePersistence = new ShortMessagePersistence(currentUser);
-        this.reviewPersistence = new ReviewPersistence(currentUser);
+        this.reviewPersistence = new ReviewClientPersistence(currentUser);
         initialize();
     }
 
@@ -164,12 +164,12 @@ public class RevedereSession {
         final MinaRequestor<ShortMessageHistoricalRequest> shortMessageRequestor = new MinaRequestor<>(minaClient);
         shortMessagePersistence.init(shortMessageRequestor.request(shortMessageRequest));
 
-        final ReviewHistoricalRequest reviewRequest = reviewPersistence.getInitialRequest();
-        final MinaRequestor<ReviewHistoricalRequest> reviewRequestor = new MinaRequestor<>(minaClient);
-        reviewPersistence.init(reviewRequestor.request(reviewRequest));
-
         final ReviewDocumentRequest reviewDocumentRequest = new ReviewDocumentRequest();
         final MinaRequestor<ReviewDocumentRequest> reviewMinaRequestor = new MinaRequestor<>(minaClient);
         reviewPersistence.setReviewDocumentSections(reviewMinaRequestor.request(reviewDocumentRequest));
+        
+        final ReviewHistoricalRequest reviewRequest = reviewPersistence.getInitialRequest();
+        final MinaRequestor<ReviewHistoricalRequest> reviewRequestor = new MinaRequestor<>(minaClient);
+        reviewPersistence.init(reviewRequestor.request(reviewRequest));
     }
 }
